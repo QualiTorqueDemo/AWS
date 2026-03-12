@@ -1,0 +1,604 @@
+spec_version: 2
+description: |
+  Terraform module which creates Amazon EKS (Kubernetes) resources
+inputs:
+  cluster_name:
+    type: string
+    description: Name of the EKS cluster
+  vpc_id:
+    type: string
+    description: ID of the VPC where the cluster security group will be provisioned
+  access_entries:
+    type: string
+    default: '{}'
+    description: Map of access entries to add to the cluster
+  attach_cluster_encryption_policy:
+    type: string
+    default: true
+    description: Indicates whether or not to attach an additional policy for the cluster IAM role to utilize the encryption key provided
+  authentication_mode:
+    type: string
+    default: API_AND_CONFIG_MAP
+    description: The authentication mode for the cluster. Valid values are `CONFIG_MAP`, `API` or `API_AND_CONFIG_MAP`
+  cloudwatch_log_group_class:
+    type: string
+    default: 'null'
+    description: 'Specified the log class of the log group. Possible values are: `STANDARD` or `INFREQUENT_ACCESS`'
+  cloudwatch_log_group_kms_key_id:
+    type: string
+    default: 'null'
+    description: If a KMS Key ARN is set, this key will be used to encrypt the corresponding log group. Please be sure that the KMS Key has an appropriate key policy (https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/encrypt-log-data-kms.html)
+  cloudwatch_log_group_retention_in_days:
+    type: string
+    default: 90
+    description: Number of days to retain log events. Default retention - 90 days
+  cloudwatch_log_group_tags:
+    type: string
+    default: '{}'
+    description: A map of additional tags to add to the cloudwatch log group created
+  cluster_additional_security_group_ids:
+    type: string
+    default: '[]'
+    description: List of additional, externally created security group IDs to attach to the cluster control plane
+  cluster_addons:
+    type: string
+    default: '{}'
+    description: Map of cluster addon configurations to enable for the cluster. Addon name can be the map keys or set with `name`
+  cluster_addons_timeouts:
+    type: string
+    default: '{}'
+    description: Create, update, and delete timeout configurations for the cluster addons
+  cluster_enabled_log_types:
+    type: string
+    default: |-
+      [
+        "audit",
+        "api",
+        "authenticator"
+      ]
+    description: A list of the desired control plane logs to enable. For more information, see Amazon EKS Control Plane Logging documentation (https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html)
+  cluster_encryption_config:
+    type: string
+    default: |-
+      {
+        "resources": [
+          "secrets"
+        ]
+      }
+    description: Configuration block with encryption configuration for the cluster. To disable secret encryption, set this value to `{}`
+  cluster_encryption_policy_description:
+    type: string
+    default: Cluster encryption policy to allow cluster role to utilize CMK provided
+    description: Description of the cluster encryption policy created
+  cluster_encryption_policy_name:
+    type: string
+    default: 'null'
+    description: Name to use on cluster encryption policy created
+  cluster_encryption_policy_path:
+    type: string
+    default: 'null'
+    description: Cluster encryption policy path
+  cluster_encryption_policy_tags:
+    type: string
+    default: '{}'
+    description: A map of additional tags to add to the cluster encryption policy created
+  cluster_encryption_policy_use_name_prefix:
+    type: string
+    default: true
+    description: Determines whether cluster encryption policy name (`cluster_encryption_policy_name`) is used as a prefix
+  cluster_endpoint_private_access:
+    type: string
+    default: true
+    description: Indicates whether or not the Amazon EKS private API server endpoint is enabled
+  cluster_endpoint_public_access:
+    type: string
+    description: Indicates whether or not the Amazon EKS public API server endpoint is enabled
+  cluster_endpoint_public_access_cidrs:
+    type: string
+    default: |-
+      [
+        "0.0.0.0/0"
+      ]
+    description: List of CIDR blocks which can access the Amazon EKS public API server endpoint
+  cluster_identity_providers:
+    type: string
+    default: '{}'
+    description: Map of cluster identity provider configurations to enable for the cluster. Note - this is different/separate from IRSA
+  cluster_ip_family:
+    type: string
+    default: ipv4
+    description: The IP family used to assign Kubernetes pod and service addresses. Valid values are `ipv4` (default) and `ipv6`. You can only specify an IP family when you create a cluster, changing this value will force a new cluster to be created
+  cluster_security_group_additional_rules:
+    type: string
+    default: '{}'
+    description: List of additional security group rules to add to the cluster security group created. Set `source_node_security_group = true` inside rules to set the `node_security_group` as source
+  cluster_security_group_description:
+    type: string
+    default: EKS cluster security group
+    description: Description of the cluster security group created
+  cluster_security_group_id:
+    type: string
+    description: Existing security group ID to be attached to the cluster
+  cluster_security_group_name:
+    type: string
+    default: 'null'
+    description: Name to use on cluster security group created
+  cluster_security_group_tags:
+    type: string
+    default: '{}'
+    description: A map of additional tags to add to the cluster security group created
+  cluster_security_group_use_name_prefix:
+    type: string
+    default: true
+    description: Determines whether cluster security group name (`cluster_security_group_name`) is used as a prefix
+  cluster_service_ipv4_cidr:
+    type: string
+    default: 'null'
+    description: The CIDR block to assign Kubernetes service IP addresses from. If you don't specify a block, Kubernetes assigns addresses from either the 10.100.0.0/16 or 172.20.0.0/16 CIDR blocks
+  cluster_service_ipv6_cidr:
+    type: string
+    default: 'null'
+    description: The CIDR block to assign Kubernetes pod and service IP addresses from if `ipv6` was specified when the cluster was created. Kubernetes assigns service addresses from the unique local address range (fc00::/7) because you can't specify a custom IPv6 CIDR block when you create the cluster
+  cluster_tags:
+    type: string
+    default: '{}'
+    description: A map of additional tags to add to the cluster
+  cluster_timeouts:
+    type: string
+    default: '{}'
+    description: Create, update, and delete timeout configurations for the cluster
+  cluster_version:
+    type: string
+    default: 'null'
+    description: 'Kubernetes `<major>.<minor>` version to use for the EKS cluster (i.e.: `1.27`)'
+  control_plane_subnet_ids:
+    type: string
+    default: '[]'
+    description: A list of subnet IDs where the EKS cluster control plane (ENIs) will be provisioned. Used for expanding the pool of subnets used by nodes/node groups without replacing the EKS control plane
+  create:
+    type: string
+    default: true
+    description: Controls if resources should be created (affects nearly all resources)
+  create_cloudwatch_log_group:
+    type: string
+    default: true
+    description: Determines whether a log group is created by this module for the cluster logs. If not, AWS will automatically create one if logging is enabled
+  create_cluster_primary_security_group_tags:
+    type: string
+    default: true
+    description: Indicates whether or not to tag the cluster's primary security group. This security group is created by the EKS service, not the module, and therefore tagging is handled after cluster creation
+  create_cluster_security_group:
+    type: string
+    default: true
+    description: 'Determines if a security group is created for the cluster. Note: the EKS service creates a primary security group for the cluster by default'
+  create_cni_ipv6_iam_policy:
+    type: string
+    description: Determines whether to create an [`AmazonEKS_CNI_IPv6_Policy`](https://docs.aws.amazon.com/eks/latest/userguide/cni-iam-role.html#cni-iam-role-create-ipv6-policy)
+  create_iam_role:
+    type: string
+    default: true
+    description: Determines whether a an IAM role is created or to use an existing IAM role
+  create_kms_key:
+    type: string
+    default: true
+    description: Controls if a KMS key for cluster encryption should be created
+  create_node_security_group:
+    type: string
+    default: true
+    description: Determines whether to create a security group for the node groups or use the existing `node_security_group_id`
+  custom_oidc_thumbprints:
+    type: string
+    default: '[]'
+    description: Additional list of server certificate thumbprints for the OpenID Connect (OIDC) identity provider's server certificate(s)
+  dataplane_wait_duration:
+    type: string
+    default: 30s
+    description: Duration to wait after the EKS cluster has become active before creating the dataplane components (EKS managed node group(s), self-managed node group(s), Fargate profile(s))
+  eks_managed_node_group_defaults:
+    type: string
+    default: '{}'
+    description: Map of EKS managed node group default configurations
+  eks_managed_node_groups:
+    type: string
+    default: '{}'
+    description: Map of EKS managed node group definitions to create
+  enable_cluster_creator_admin_permissions:
+    type: string
+    description: Indicates whether or not to add the cluster creator (the identity used by Terraform) as an administrator via access entry
+  enable_efa_support:
+    type: string
+    description: Determines whether to enable Elastic Fabric Adapter (EFA) support
+  enable_irsa:
+    type: string
+    default: true
+    description: Determines whether to create an OpenID Connect Provider for EKS to enable IRSA
+  enable_kms_key_rotation:
+    type: string
+    default: true
+    description: Specifies whether key rotation is enabled
+  fargate_profile_defaults:
+    type: string
+    default: '{}'
+    description: Map of Fargate Profile default configurations
+  fargate_profiles:
+    type: string
+    default: '{}'
+    description: Map of Fargate Profile definitions to create
+  iam_role_additional_policies:
+    type: string
+    default: '{}'
+    description: Additional policies to be added to the IAM role
+  iam_role_arn:
+    type: string
+    default: 'null'
+    description: Existing IAM role ARN for the cluster. Required if `create_iam_role` is set to `false`
+  iam_role_description:
+    type: string
+    default: 'null'
+    description: Description of the role
+  iam_role_name:
+    type: string
+    default: 'null'
+    description: Name to use on IAM role created
+  iam_role_path:
+    type: string
+    default: 'null'
+    description: Cluster IAM role path
+  iam_role_permissions_boundary:
+    type: string
+    default: 'null'
+    description: ARN of the policy that is used to set the permissions boundary for the IAM role
+  iam_role_tags:
+    type: string
+    default: '{}'
+    description: A map of additional tags to add to the IAM role created
+  iam_role_use_name_prefix:
+    type: string
+    default: true
+    description: Determines whether the IAM role name (`iam_role_name`) is used as a prefix
+  include_oidc_root_ca_thumbprint:
+    type: string
+    default: true
+    description: Determines whether to include the root CA thumbprint in the OpenID Connect (OIDC) identity provider's server certificate(s)
+  kms_key_administrators:
+    type: string
+    default: '[]'
+    description: A list of IAM ARNs for [key administrators](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#key-policy-default-allow-administrators). If no value is provided, the current caller identity is used to ensure at least one key admin is available
+  kms_key_aliases:
+    type: string
+    default: '[]'
+    description: A list of aliases to create. Note - due to the use of `toset()`, values must be static strings and not computed values
+  kms_key_deletion_window_in_days:
+    type: string
+    default: 'null'
+    description: The waiting period, specified in number of days. After the waiting period ends, AWS KMS deletes the KMS key. If you specify a value, it must be between `7` and `30`, inclusive. If you do not specify a value, it defaults to `30`
+  kms_key_description:
+    type: string
+    default: 'null'
+    description: The description of the key as viewed in AWS console
+  kms_key_enable_default_policy:
+    type: string
+    default: true
+    description: Specifies whether to enable the default key policy
+  kms_key_override_policy_documents:
+    type: string
+    default: '[]'
+    description: List of IAM policy documents that are merged together into the exported document. In merging, statements with non-blank `sid`s will override statements with the same `sid`
+  kms_key_owners:
+    type: string
+    default: '[]'
+    description: A list of IAM ARNs for those who will have full key permissions (`kms:*`)
+  kms_key_service_users:
+    type: string
+    default: '[]'
+    description: A list of IAM ARNs for [key service users](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#key-policy-service-integration)
+  kms_key_source_policy_documents:
+    type: string
+    default: '[]'
+    description: List of IAM policy documents that are merged together into the exported document. Statements must have unique `sid`s
+  kms_key_users:
+    type: string
+    default: '[]'
+    description: A list of IAM ARNs for [key users](https://docs.aws.amazon.com/kms/latest/developerguide/key-policy-default.html#key-policy-default-allow-users)
+  node_security_group_additional_rules:
+    type: string
+    default: '{}'
+    description: List of additional security group rules to add to the node security group created. Set `source_cluster_security_group = true` inside rules to set the `cluster_security_group` as source
+  node_security_group_description:
+    type: string
+    default: EKS node shared security group
+    description: Description of the node security group created
+  node_security_group_enable_recommended_rules:
+    type: string
+    default: true
+    description: Determines whether to enable recommended security group rules for the node security group created. This includes node-to-node TCP ingress on ephemeral ports and allows all egress traffic
+  node_security_group_id:
+    type: string
+    description: ID of an existing security group to attach to the node groups created
+  node_security_group_name:
+    type: string
+    default: 'null'
+    description: Name to use on node security group created
+  node_security_group_tags:
+    type: string
+    default: '{}'
+    description: A map of additional tags to add to the node security group created
+  node_security_group_use_name_prefix:
+    type: string
+    default: true
+    description: Determines whether node security group name (`node_security_group_name`) is used as a prefix
+  openid_connect_audiences:
+    type: string
+    default: '[]'
+    description: List of OpenID Connect audience client IDs to add to the IRSA provider
+  outpost_config:
+    type: string
+    default: '{}'
+    description: Configuration for the AWS Outpost to provision the cluster on
+  prefix_separator:
+    type: string
+    default: '-'
+    description: The separator to use between the prefix and the generated timestamp for resource names
+  putin_khuylo:
+    type: string
+    default: true
+    description: 'Do you agree that Putin doesn''t respect Ukrainian sovereignty and territorial integrity? More info: https://en.wikipedia.org/wiki/Putin_khuylo!'
+  self_managed_node_group_defaults:
+    type: string
+    default: '{}'
+    description: Map of self-managed node group default configurations
+  self_managed_node_groups:
+    type: string
+    default: '{}'
+    description: Map of self-managed node group definitions to create
+  subnet_ids:
+    type: string
+    default: '[]'
+    description: A list of subnet IDs where the nodes/node groups will be provisioned. If `control_plane_subnet_ids` is not provided, the EKS cluster control plane (ENIs) will be provisioned in these subnets
+  agent:
+    type: agent
+outputs:
+  terraform-aws-eks_access_entries:
+    value: '{{ .grains.terraform-aws-eks.outputs.access_entries }}'
+    quick: true
+  terraform-aws-eks_access_policy_associations:
+    value: '{{ .grains.terraform-aws-eks.outputs.access_policy_associations }}'
+    quick: true
+  terraform-aws-eks_cloudwatch_log_group_arn:
+    value: '{{ .grains.terraform-aws-eks.outputs.cloudwatch_log_group_arn }}'
+    quick: true
+  terraform-aws-eks_cloudwatch_log_group_name:
+    value: '{{ .grains.terraform-aws-eks.outputs.cloudwatch_log_group_name }}'
+    quick: true
+  terraform-aws-eks_cluster_addons:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_addons }}'
+    quick: true
+  terraform-aws-eks_cluster_arn:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_arn }}'
+    quick: true
+  terraform-aws-eks_cluster_certificate_authority_data:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_certificate_authority_data }}'
+    quick: true
+  terraform-aws-eks_cluster_endpoint:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_endpoint }}'
+    quick: true
+  terraform-aws-eks_cluster_iam_role_arn:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_iam_role_arn }}'
+    quick: true
+  terraform-aws-eks_cluster_iam_role_name:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_iam_role_name }}'
+    quick: true
+  terraform-aws-eks_cluster_iam_role_unique_id:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_iam_role_unique_id }}'
+    quick: true
+  terraform-aws-eks_cluster_id:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_id }}'
+    quick: true
+  terraform-aws-eks_cluster_identity_providers:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_identity_providers }}'
+    quick: true
+  terraform-aws-eks_cluster_ip_family:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_ip_family }}'
+    quick: true
+  terraform-aws-eks_cluster_name:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_name }}'
+    quick: true
+  terraform-aws-eks_cluster_oidc_issuer_url:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_oidc_issuer_url }}'
+    quick: true
+  terraform-aws-eks_cluster_platform_version:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_platform_version }}'
+    quick: true
+  terraform-aws-eks_cluster_primary_security_group_id:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_primary_security_group_id }}'
+    quick: true
+  terraform-aws-eks_cluster_security_group_arn:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_security_group_arn }}'
+    quick: true
+  terraform-aws-eks_cluster_security_group_id:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_security_group_id }}'
+    quick: true
+  terraform-aws-eks_cluster_service_cidr:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_service_cidr }}'
+    quick: true
+  terraform-aws-eks_cluster_status:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_status }}'
+    quick: true
+  terraform-aws-eks_cluster_tls_certificate_sha1_fingerprint:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_tls_certificate_sha1_fingerprint }}'
+    quick: true
+  terraform-aws-eks_cluster_version:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_version }}'
+    quick: true
+  terraform-aws-eks_eks_managed_node_groups:
+    value: '{{ .grains.terraform-aws-eks.outputs.eks_managed_node_groups }}'
+    quick: true
+  terraform-aws-eks_eks_managed_node_groups_autoscaling_group_names:
+    value: '{{ .grains.terraform-aws-eks.outputs.eks_managed_node_groups_autoscaling_group_names }}'
+    quick: true
+  terraform-aws-eks_fargate_profiles:
+    value: '{{ .grains.terraform-aws-eks.outputs.fargate_profiles }}'
+    quick: true
+  terraform-aws-eks_kms_key_arn:
+    value: '{{ .grains.terraform-aws-eks.outputs.kms_key_arn }}'
+    quick: true
+  terraform-aws-eks_kms_key_id:
+    value: '{{ .grains.terraform-aws-eks.outputs.kms_key_id }}'
+    quick: true
+  terraform-aws-eks_kms_key_policy:
+    value: '{{ .grains.terraform-aws-eks.outputs.kms_key_policy }}'
+    quick: true
+  terraform-aws-eks_node_security_group_arn:
+    value: '{{ .grains.terraform-aws-eks.outputs.node_security_group_arn }}'
+    quick: true
+  terraform-aws-eks_node_security_group_id:
+    value: '{{ .grains.terraform-aws-eks.outputs.node_security_group_id }}'
+    quick: true
+  terraform-aws-eks_oidc_provider:
+    value: '{{ .grains.terraform-aws-eks.outputs.oidc_provider }}'
+    quick: true
+  terraform-aws-eks_oidc_provider_arn:
+    value: '{{ .grains.terraform-aws-eks.outputs.oidc_provider_arn }}'
+    quick: true
+  terraform-aws-eks_self_managed_node_groups:
+    value: '{{ .grains.terraform-aws-eks.outputs.self_managed_node_groups }}'
+    quick: true
+  terraform-aws-eks_self_managed_node_groups_autoscaling_group_names:
+    value: '{{ .grains.terraform-aws-eks.outputs.self_managed_node_groups_autoscaling_group_names }}'
+    quick: true
+grains:
+  terraform-aws-eks:
+    kind: terraform
+    spec:
+      source:
+        path: AWS/assets/terraform-aws-eks
+      agent:
+        name: '{{ .inputs.agent }}'
+      env-vars: []
+      version: 1.5.5
+      inputs:
+        - access_entries: '{{ .inputs.access_entries }}'
+        - attach_cluster_encryption_policy: '{{ .inputs.attach_cluster_encryption_policy }}'
+        - authentication_mode: '{{ .inputs.authentication_mode }}'
+        - cloudwatch_log_group_class: '{{ .inputs.cloudwatch_log_group_class }}'
+        - cloudwatch_log_group_kms_key_id: '{{ .inputs.cloudwatch_log_group_kms_key_id }}'
+        - cloudwatch_log_group_retention_in_days: '{{ .inputs.cloudwatch_log_group_retention_in_days }}'
+        - cloudwatch_log_group_tags: '{{ .inputs.cloudwatch_log_group_tags }}'
+        - cluster_additional_security_group_ids: '{{ .inputs.cluster_additional_security_group_ids }}'
+        - cluster_addons: '{{ .inputs.cluster_addons }}'
+        - cluster_addons_timeouts: '{{ .inputs.cluster_addons_timeouts }}'
+        - cluster_enabled_log_types: '{{ .inputs.cluster_enabled_log_types }}'
+        - cluster_encryption_config: '{{ .inputs.cluster_encryption_config }}'
+        - cluster_encryption_policy_description: '{{ .inputs.cluster_encryption_policy_description }}'
+        - cluster_encryption_policy_name: '{{ .inputs.cluster_encryption_policy_name }}'
+        - cluster_encryption_policy_path: '{{ .inputs.cluster_encryption_policy_path }}'
+        - cluster_encryption_policy_tags: '{{ .inputs.cluster_encryption_policy_tags }}'
+        - cluster_encryption_policy_use_name_prefix: '{{ .inputs.cluster_encryption_policy_use_name_prefix }}'
+        - cluster_endpoint_private_access: '{{ .inputs.cluster_endpoint_private_access }}'
+        - cluster_endpoint_public_access: '{{ .inputs.cluster_endpoint_public_access }}'
+        - cluster_endpoint_public_access_cidrs: '{{ .inputs.cluster_endpoint_public_access_cidrs }}'
+        - cluster_identity_providers: '{{ .inputs.cluster_identity_providers }}'
+        - cluster_ip_family: '{{ .inputs.cluster_ip_family }}'
+        - cluster_name: '{{ .inputs.cluster_name }}'
+        - cluster_security_group_additional_rules: '{{ .inputs.cluster_security_group_additional_rules }}'
+        - cluster_security_group_description: '{{ .inputs.cluster_security_group_description }}'
+        - cluster_security_group_id: '{{ .inputs.cluster_security_group_id }}'
+        - cluster_security_group_name: '{{ .inputs.cluster_security_group_name }}'
+        - cluster_security_group_tags: '{{ .inputs.cluster_security_group_tags }}'
+        - cluster_security_group_use_name_prefix: '{{ .inputs.cluster_security_group_use_name_prefix }}'
+        - cluster_service_ipv4_cidr: '{{ .inputs.cluster_service_ipv4_cidr }}'
+        - cluster_service_ipv6_cidr: '{{ .inputs.cluster_service_ipv6_cidr }}'
+        - cluster_tags: '{{ .inputs.cluster_tags }}'
+        - cluster_timeouts: '{{ .inputs.cluster_timeouts }}'
+        - cluster_version: '{{ .inputs.cluster_version }}'
+        - control_plane_subnet_ids: '{{ .inputs.control_plane_subnet_ids }}'
+        - create: '{{ .inputs.create }}'
+        - create_cloudwatch_log_group: '{{ .inputs.create_cloudwatch_log_group }}'
+        - create_cluster_primary_security_group_tags: '{{ .inputs.create_cluster_primary_security_group_tags }}'
+        - create_cluster_security_group: '{{ .inputs.create_cluster_security_group }}'
+        - create_cni_ipv6_iam_policy: '{{ .inputs.create_cni_ipv6_iam_policy }}'
+        - create_iam_role: '{{ .inputs.create_iam_role }}'
+        - create_kms_key: '{{ .inputs.create_kms_key }}'
+        - create_node_security_group: '{{ .inputs.create_node_security_group }}'
+        - custom_oidc_thumbprints: '{{ .inputs.custom_oidc_thumbprints }}'
+        - dataplane_wait_duration: '{{ .inputs.dataplane_wait_duration }}'
+        - eks_managed_node_group_defaults: '{{ .inputs.eks_managed_node_group_defaults }}'
+        - eks_managed_node_groups: '{{ .inputs.eks_managed_node_groups }}'
+        - enable_cluster_creator_admin_permissions: '{{ .inputs.enable_cluster_creator_admin_permissions }}'
+        - enable_efa_support: '{{ .inputs.enable_efa_support }}'
+        - enable_irsa: '{{ .inputs.enable_irsa }}'
+        - enable_kms_key_rotation: '{{ .inputs.enable_kms_key_rotation }}'
+        - fargate_profile_defaults: '{{ .inputs.fargate_profile_defaults }}'
+        - fargate_profiles: '{{ .inputs.fargate_profiles }}'
+        - iam_role_additional_policies: '{{ .inputs.iam_role_additional_policies }}'
+        - iam_role_arn: '{{ .inputs.iam_role_arn }}'
+        - iam_role_description: '{{ .inputs.iam_role_description }}'
+        - iam_role_name: '{{ .inputs.iam_role_name }}'
+        - iam_role_path: '{{ .inputs.iam_role_path }}'
+        - iam_role_permissions_boundary: '{{ .inputs.iam_role_permissions_boundary }}'
+        - iam_role_tags: '{{ .inputs.iam_role_tags }}'
+        - iam_role_use_name_prefix: '{{ .inputs.iam_role_use_name_prefix }}'
+        - include_oidc_root_ca_thumbprint: '{{ .inputs.include_oidc_root_ca_thumbprint }}'
+        - kms_key_administrators: '{{ .inputs.kms_key_administrators }}'
+        - kms_key_aliases: '{{ .inputs.kms_key_aliases }}'
+        - kms_key_deletion_window_in_days: '{{ .inputs.kms_key_deletion_window_in_days }}'
+        - kms_key_description: '{{ .inputs.kms_key_description }}'
+        - kms_key_enable_default_policy: '{{ .inputs.kms_key_enable_default_policy }}'
+        - kms_key_override_policy_documents: '{{ .inputs.kms_key_override_policy_documents }}'
+        - kms_key_owners: '{{ .inputs.kms_key_owners }}'
+        - kms_key_service_users: '{{ .inputs.kms_key_service_users }}'
+        - kms_key_source_policy_documents: '{{ .inputs.kms_key_source_policy_documents }}'
+        - kms_key_users: '{{ .inputs.kms_key_users }}'
+        - node_security_group_additional_rules: '{{ .inputs.node_security_group_additional_rules }}'
+        - node_security_group_description: '{{ .inputs.node_security_group_description }}'
+        - node_security_group_enable_recommended_rules: '{{ .inputs.node_security_group_enable_recommended_rules }}'
+        - node_security_group_id: '{{ .inputs.node_security_group_id }}'
+        - node_security_group_name: '{{ .inputs.node_security_group_name }}'
+        - node_security_group_tags: '{{ .inputs.node_security_group_tags }}'
+        - node_security_group_use_name_prefix: '{{ .inputs.node_security_group_use_name_prefix }}'
+        - openid_connect_audiences: '{{ .inputs.openid_connect_audiences }}'
+        - outpost_config: '{{ .inputs.outpost_config }}'
+        - prefix_separator: '{{ .inputs.prefix_separator }}'
+        - putin_khuylo: '{{ .inputs.putin_khuylo }}'
+        - self_managed_node_group_defaults: '{{ .inputs.self_managed_node_group_defaults }}'
+        - self_managed_node_groups: '{{ .inputs.self_managed_node_groups }}'
+        - subnet_ids: '{{ .inputs.subnet_ids }}'
+        - tags: '{}'
+        - vpc_id: '{{ .inputs.vpc_id }}'
+      outputs:
+        - access_entries
+        - access_policy_associations
+        - cloudwatch_log_group_arn
+        - cloudwatch_log_group_name
+        - cluster_addons
+        - cluster_arn
+        - cluster_certificate_authority_data
+        - cluster_endpoint
+        - cluster_iam_role_arn
+        - cluster_iam_role_name
+        - cluster_iam_role_unique_id
+        - cluster_id
+        - cluster_identity_providers
+        - cluster_ip_family
+        - cluster_name
+        - cluster_oidc_issuer_url
+        - cluster_platform_version
+        - cluster_primary_security_group_id
+        - cluster_security_group_arn
+        - cluster_security_group_id
+        - cluster_service_cidr
+        - cluster_status
+        - cluster_tls_certificate_sha1_fingerprint
+        - cluster_version
+        - eks_managed_node_groups
+        - eks_managed_node_groups_autoscaling_group_names
+        - fargate_profiles
+        - kms_key_arn
+        - kms_key_id
+        - kms_key_policy
+        - node_security_group_arn
+        - node_security_group_id
+        - oidc_provider
+        - oidc_provider_arn
+        - self_managed_node_groups
+        - self_managed_node_groups_autoscaling_group_names

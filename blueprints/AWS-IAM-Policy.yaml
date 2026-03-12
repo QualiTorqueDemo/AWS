@@ -1,0 +1,77 @@
+spec_version: 2
+description: |
+  This blueprint creates an IAM policy in AWS based on the provided inputs and deploys it using Terraform.
+  The blueprint connects the inputs provided by the user to the Terraform module for IAM policy creation, allowing for customization of the policy's name, description, path, and other attributes. The end goal is to automate the creation of IAM policies in AWS based on user-defined parameters.
+inputs:
+  create_policy:
+    type: string
+    default: true
+    description: Whether to create the IAM policy
+  name:
+    type: string
+    description: The name of the policy
+  name_prefix:
+    type: string
+    default: 'null'
+    description: IAM policy name prefix
+  path:
+    type: string
+    default: /
+    description: The path of the policy in IAM
+  policy:
+    type: string
+    description: The path of the policy in IAM (tpl file)
+  tags:
+    type: string
+    default: '{}'
+    description: A map of tags to add to all resources.
+  agent:
+    type: agent
+  description:
+    type: string
+    default: IAM Policy
+    description: The description of the policy
+outputs:
+  iam-policy_arn:
+    value: '{{ .grains.iam-policy.outputs.arn }}'
+    quick: true
+  iam-policy_description:
+    value: '{{ .grains.iam-policy.outputs.description }}'
+    quick: true
+  iam-policy_id:
+    value: '{{ .grains.iam-policy.outputs.id }}'
+    quick: true
+  iam-policy_name:
+    value: '{{ .grains.iam-policy.outputs.name }}'
+    quick: true
+  iam-policy_path:
+    value: '{{ .grains.iam-policy.outputs.path }}'
+    quick: true
+  iam-policy_policy:
+    value: '{{ .grains.iam-policy.outputs.policy }}'
+    quick: true
+grains:
+  iam-policy:
+    kind: terraform
+    spec:
+      source:
+        path: AWS/assets/terraform-aws-iam-policy
+      agent:
+        name: '{{ .inputs.agent }}'
+      env-vars: []
+      version: 1.5.5
+      inputs:
+        - create_policy: '{{ .inputs.create_policy }}'
+        - description: '{{ .inputs.description }}'
+        - name: '{{ .inputs.name }}'
+        - name_prefix: '{{ .inputs.name_prefix }}'
+        - path: '{{ .inputs.path }}'
+        - policy: '{{ .inputs.policy }}'
+        - tags: '{{ .inputs.tags }}'
+      outputs:
+        - arn
+        - description
+        - id
+        - name
+        - path
+        - policy

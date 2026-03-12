@@ -1,0 +1,93 @@
+spec_version: 2
+description: |
+  This blueprint manages the IAM account alias and password policy in AWS.
+  The blueprint aims to configure and enforce specific password policies for IAM users within the AWS environment, ensuring security and compliance with set standards.
+inputs:
+  account_alias:
+    type: string
+    description: AWS IAM account alias for this account
+  allow_users_to_change_password:
+    type: string
+    default: true
+    description: Whether to allow users to change their own password
+  create_account_password_policy:
+    type: string
+    default: true
+    description: Whether to create AWS IAM account password policy
+  get_caller_identity:
+    type: string
+    default: true
+    description: Whether to get AWS account ID, User ID, and ARN in which Terraform is authorized
+  hard_expiry:
+    type: string
+    description: Whether users are prevented from setting a new password after their password has expired (i.e. require administrator reset)
+  max_password_age:
+    type: string
+    description: The number of days that an user password is valid.
+  minimum_password_length:
+    type: string
+    default: 8
+    description: Minimum length to require for user passwords
+  password_reuse_prevention:
+    type: string
+    default: 'null'
+    description: The number of previous passwords that users are prevented from reusing
+  require_lowercase_characters:
+    type: string
+    default: true
+    description: Whether to require lowercase characters for user passwords
+  require_numbers:
+    type: string
+    default: true
+    description: Whether to require numbers for user passwords
+  require_symbols:
+    type: string
+    default: true
+    description: Whether to require symbols for user passwords
+  require_uppercase_characters:
+    type: string
+    default: true
+    description: Whether to require uppercase characters for user passwords
+  agent:
+    type: agent
+outputs:
+  iam-account_caller_identity_account_id:
+    value: '{{ .grains.iam-account.outputs.caller_identity_account_id }}'
+    quick: true
+  iam-account_caller_identity_arn:
+    value: '{{ .grains.iam-account.outputs.caller_identity_arn }}'
+    quick: true
+  iam-account_caller_identity_user_id:
+    value: '{{ .grains.iam-account.outputs.caller_identity_user_id }}'
+    quick: true
+  iam-account_iam_account_password_policy_expire_passwords:
+    value: '{{ .grains.iam-account.outputs.iam_account_password_policy_expire_passwords }}'
+    quick: true
+grains:
+  iam-account:
+    kind: terraform
+    spec:
+      source:
+        path: AWS/assets/terraform-aws-iam-account
+      agent:
+        name: '{{ .inputs.agent }}'
+      env-vars: []
+      version: 1.5.5
+      inputs:
+        - account_alias: '{{ .inputs.account_alias }}'
+        - allow_users_to_change_password: '{{ .inputs.allow_users_to_change_password }}'
+        - create_account_password_policy: '{{ .inputs.create_account_password_policy }}'
+        - get_caller_identity: '{{ .inputs.get_caller_identity }}'
+        - hard_expiry: '{{ .inputs.hard_expiry }}'
+        - max_password_age: '{{ .inputs.max_password_age }}'
+        - minimum_password_length: '{{ .inputs.minimum_password_length }}'
+        - password_reuse_prevention: '{{ .inputs.password_reuse_prevention }}'
+        - require_lowercase_characters: '{{ .inputs.require_lowercase_characters }}'
+        - require_numbers: '{{ .inputs.require_numbers }}'
+        - require_symbols: '{{ .inputs.require_symbols }}'
+        - require_uppercase_characters: '{{ .inputs.require_uppercase_characters }}'
+      outputs:
+        - caller_identity_account_id
+        - caller_identity_arn
+        - caller_identity_user_id
+        - iam_account_password_policy_expire_passwords

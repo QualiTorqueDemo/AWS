@@ -1,0 +1,52 @@
+spec_version: 2
+description: |
+  Creates an AWS RDS DB subnet group.
+inputs:
+  create:
+    type: string
+    default: true
+    description: Whether to create this resource or not?
+  name:
+    type: string
+    description: The name of the DB subnet group
+  subnet_ids:
+    type: string
+    default: '[]'
+    description: A list of VPC subnet IDs
+  use_name_prefix:
+    type: string
+    default: true
+    description: Determines whether to use `name` as is or create a unique name beginning with `name` as the specified prefix
+  agent:
+    type: agent
+  description:
+    type: string
+    default: 'null'
+    description: The description of the DB subnet group
+outputs:
+  db_subnet_group_db_subnet_group_arn:
+    value: '{{ .grains.db_subnet_group.outputs.db_subnet_group_arn }}'
+    quick: true
+  db_subnet_group_db_subnet_group_id:
+    value: '{{ .grains.db_subnet_group.outputs.db_subnet_group_id }}'
+    quick: true
+grains:
+  db_subnet_group:
+    kind: terraform
+    spec:
+      source:
+        path: AWS/assets/terraform-aws-rds-db-subnet-group
+      agent:
+        name: '{{ .inputs.agent }}'
+      env-vars: []
+      version: 1.5.5
+      inputs:
+        - create: '{{ .inputs.create }}'
+        - description: '{{ .inputs.description }}'
+        - name: '{{ .inputs.name }}'
+        - subnet_ids: '{{ .inputs.subnet_ids }}'
+        - tags: '{}'
+        - use_name_prefix: '{{ .inputs.use_name_prefix }}'
+      outputs:
+        - db_subnet_group_arn
+        - db_subnet_group_id

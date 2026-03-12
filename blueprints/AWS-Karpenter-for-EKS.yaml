@@ -1,0 +1,319 @@
+spec_version: 2
+description: |
+  Create the AWS resources required by Karpenter.
+
+  In the following example, the Karpenter module will create:
+  - An IAM role for use with Pod Identity and a scoped IAM policy for the Karpenter controller
+  - A Pod Identity association to grant Karpenter controller access provided by the IAM Role
+  - A Node IAM role that Karpenter will use to create an Instance Profile for the nodes to receive IAM permissions
+  - An access entry for the Node IAM role to allow nodes to join the cluster
+  - SQS queue and EventBridge event rules for Karpenter to utilize for spot termination handling, capacity re-balancing, etc.
+inputs:
+  access_entry_type:
+    type: string
+    default: EC2_LINUX
+    description: Type of the access entry. `EC2_LINUX`, `FARGATE_LINUX`, or `EC2_WINDOWS`; defaults to `EC2_LINUX`
+  ami_id_ssm_parameter_arns:
+    type: string
+    default: '[]'
+    description: List of SSM Parameter ARNs that Karpenter controller is allowed read access (for retrieving AMI IDs)
+  cluster_ip_family:
+    type: string
+    default: ipv4
+    description: 'The IP family used to assign Kubernetes pod and service addresses. Valid values are `ipv4` (default) and `ipv6`. Note: If `ipv6` is specified, the `AmazonEKS_CNI_IPv6_Policy` must exist in the account. This policy is created by the EKS module with `create_cni_ipv6_iam_policy = true`'
+  cluster_name:
+    type: string
+    description: The name of the EKS cluster
+  create:
+    type: string
+    default: true
+    description: Controls if resources should be created (affects nearly all resources)
+  create_access_entry:
+    type: string
+    default: true
+    description: Determines whether an access entry is created for the IAM role used by the node IAM role
+  create_iam_role:
+    type: string
+    default: true
+    description: Determines whether an IAM role is created
+  create_instance_profile:
+    type: string
+    description: Whether to create an IAM instance profile
+  create_node_iam_role:
+    type: string
+    default: true
+    description: Determines whether an IAM role is created or to use an existing IAM role
+  create_pod_identity_association:
+    type: string
+    description: Determines whether to create pod identity association
+  enable_irsa:
+    type: string
+    description: Determines whether to enable support for IAM role for service accounts
+  enable_pod_identity:
+    type: string
+    default: true
+    description: Determines whether to enable support for EKS pod identity
+  enable_spot_termination:
+    type: string
+    default: true
+    description: Determines whether to enable native spot termination handling
+  iam_policy_description:
+    type: string
+    default: Karpenter controller IAM policy
+    description: IAM policy description
+  iam_policy_name:
+    type: string
+    default: KarpenterController
+    description: Name of the IAM policy
+  iam_policy_path:
+    type: string
+    default: /
+    description: Path of the IAM policy
+  iam_policy_use_name_prefix:
+    type: string
+    default: true
+    description: Determines whether the name of the IAM policy (`iam_policy_name`) is used as a prefix
+  iam_role_description:
+    type: string
+    default: Karpenter controller IAM role
+    description: IAM role description
+  iam_role_max_session_duration:
+    type: string
+    default: 'null'
+    description: Maximum API session duration in seconds between 3600 and 43200
+  iam_role_name:
+    type: string
+    default: KarpenterController
+    description: Name of the IAM role
+  iam_role_path:
+    type: string
+    default: /
+    description: Path of the IAM role
+  iam_role_permissions_boundary_arn:
+    type: string
+    default: 'null'
+    description: Permissions boundary ARN to use for the IAM role
+  iam_role_policies:
+    type: string
+    default: '{}'
+    description: Policies to attach to the IAM role in `{'static_name' = 'policy_arn'}` format
+  iam_role_tags:
+    type: string
+    default: '{}'
+    description: A map of additional tags to add the the IAM role
+  iam_role_use_name_prefix:
+    type: string
+    default: true
+    description: Determines whether the name of the IAM role (`iam_role_name`) is used as a prefix
+  irsa_assume_role_condition_test:
+    type: string
+    default: StringEquals
+    description: Name of the [IAM condition operator](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition_operators.html) to evaluate when assuming the role
+  irsa_namespace_service_accounts:
+    type: string
+    default: |-
+      [
+        "karpenter:karpenter"
+      ]
+    description: List of `namespace:serviceaccount`pairs to use in trust policy for IAM role for service accounts
+  irsa_oidc_provider_arn:
+    type: string
+    description: OIDC provider arn used in trust policy for IAM role for service accounts
+  namespace:
+    type: string
+    default: kube-system
+    description: Namespace to associate with the Karpenter Pod Identity
+  node_iam_role_additional_policies:
+    type: string
+    default: '{}'
+    description: Additional policies to be added to the IAM role
+  node_iam_role_arn:
+    type: string
+    default: 'null'
+    description: Existing IAM role ARN for the IAM instance profile. Required if `create_iam_role` is set to `false`
+  node_iam_role_attach_cni_policy:
+    type: string
+    default: true
+    description: 'Whether to attach the `AmazonEKS_CNI_Policy`/`AmazonEKS_CNI_IPv6_Policy` IAM policy to the IAM IAM role. WARNING: If set `false` the permissions must be assigned to the `aws-node` DaemonSet pods via another method or nodes will not be able to join the cluster'
+  node_iam_role_description:
+    type: string
+    default: 'null'
+    description: Description of the role
+  node_iam_role_max_session_duration:
+    type: string
+    default: 'null'
+    description: Maximum API session duration in seconds between 3600 and 43200
+  node_iam_role_name:
+    type: string
+    default: 'null'
+    description: Name to use on IAM role created
+  node_iam_role_path:
+    type: string
+    default: /
+    description: IAM role path
+  node_iam_role_permissions_boundary:
+    type: string
+    default: 'null'
+    description: ARN of the policy that is used to set the permissions boundary for the IAM role
+  node_iam_role_tags:
+    type: string
+    default: '{}'
+    description: A map of additional tags to add to the IAM role created
+  node_iam_role_use_name_prefix:
+    type: string
+    default: true
+    description: Determines whether the IAM role name (`iam_role_name`) is used as a prefix
+  queue_kms_data_key_reuse_period_seconds:
+    type: string
+    default: 'null'
+    description: The length of time, in seconds, for which Amazon SQS can reuse a data key to encrypt or decrypt messages before calling AWS KMS again
+  queue_kms_master_key_id:
+    type: string
+    default: 'null'
+    description: The ID of an AWS-managed customer master key (CMK) for Amazon SQS or a custom CMK
+  queue_managed_sse_enabled:
+    type: string
+    default: true
+    description: Boolean to enable server-side encryption (SSE) of message content with SQS-owned encryption keys
+  queue_name:
+    type: string
+    default: 'null'
+    description: Name of the SQS queue
+  rule_name_prefix:
+    type: string
+    default: Karpenter
+    description: Prefix used for all event bridge rules
+  service_account:
+    type: string
+    default: karpenter
+    description: Service account to associate with the Karpenter Pod Identity
+  agent:
+    type: agent
+outputs:
+  karpenter_event_rules:
+    value: '{{ .grains.karpenter.outputs.event_rules }}'
+    quick: true
+  karpenter_iam_role_arn:
+    value: '{{ .grains.karpenter.outputs.iam_role_arn }}'
+    quick: true
+  karpenter_iam_role_name:
+    value: '{{ .grains.karpenter.outputs.iam_role_name }}'
+    quick: true
+  karpenter_iam_role_unique_id:
+    value: '{{ .grains.karpenter.outputs.iam_role_unique_id }}'
+    quick: true
+  karpenter_instance_profile_arn:
+    value: '{{ .grains.karpenter.outputs.instance_profile_arn }}'
+    quick: true
+  karpenter_instance_profile_id:
+    value: '{{ .grains.karpenter.outputs.instance_profile_id }}'
+    quick: true
+  karpenter_instance_profile_name:
+    value: '{{ .grains.karpenter.outputs.instance_profile_name }}'
+    quick: true
+  karpenter_instance_profile_unique:
+    value: '{{ .grains.karpenter.outputs.instance_profile_unique }}'
+    quick: true
+  karpenter_namespace:
+    value: '{{ .grains.karpenter.outputs.namespace }}'
+    quick: true
+  karpenter_node_access_entry_arn:
+    value: '{{ .grains.karpenter.outputs.node_access_entry_arn }}'
+    quick: true
+  karpenter_node_iam_role_arn:
+    value: '{{ .grains.karpenter.outputs.node_iam_role_arn }}'
+    quick: true
+  karpenter_node_iam_role_name:
+    value: '{{ .grains.karpenter.outputs.node_iam_role_name }}'
+    quick: true
+  karpenter_node_iam_role_unique_id:
+    value: '{{ .grains.karpenter.outputs.node_iam_role_unique_id }}'
+    quick: true
+  karpenter_queue_arn:
+    value: '{{ .grains.karpenter.outputs.queue_arn }}'
+    quick: true
+  karpenter_queue_name:
+    value: '{{ .grains.karpenter.outputs.queue_name }}'
+    quick: true
+  karpenter_queue_url:
+    value: '{{ .grains.karpenter.outputs.queue_url }}'
+    quick: true
+  karpenter_service_account:
+    value: '{{ .grains.karpenter.outputs.service_account }}'
+    quick: true
+grains:
+  karpenter:
+    kind: terraform
+    spec:
+      source:
+        path: AWS/assets/terraform-aws-eks-karpenter
+      namespace: '{{ .inputs.namespace }}'
+      agent:
+        name: '{{ .inputs.agent }}'
+      env-vars: []
+      version: 1.5.5
+      inputs:
+        - access_entry_type: '{{ .inputs.access_entry_type }}'
+        - ami_id_ssm_parameter_arns: '{{ .inputs.ami_id_ssm_parameter_arns }}'
+        - cluster_ip_family: '{{ .inputs.cluster_ip_family }}'
+        - cluster_name: '{{ .inputs.cluster_name }}'
+        - create: '{{ .inputs.create }}'
+        - create_access_entry: '{{ .inputs.create_access_entry }}'
+        - create_iam_role: '{{ .inputs.create_iam_role }}'
+        - create_instance_profile: '{{ .inputs.create_instance_profile }}'
+        - create_node_iam_role: '{{ .inputs.create_node_iam_role }}'
+        - create_pod_identity_association: '{{ .inputs.create_pod_identity_association }}'
+        - enable_irsa: '{{ .inputs.enable_irsa }}'
+        - enable_pod_identity: '{{ .inputs.enable_pod_identity }}'
+        - enable_spot_termination: '{{ .inputs.enable_spot_termination }}'
+        - iam_policy_description: '{{ .inputs.iam_policy_description }}'
+        - iam_policy_name: '{{ .inputs.iam_policy_name }}'
+        - iam_policy_path: '{{ .inputs.iam_policy_path }}'
+        - iam_policy_use_name_prefix: '{{ .inputs.iam_policy_use_name_prefix }}'
+        - iam_role_description: '{{ .inputs.iam_role_description }}'
+        - iam_role_max_session_duration: '{{ .inputs.iam_role_max_session_duration }}'
+        - iam_role_name: '{{ .inputs.iam_role_name }}'
+        - iam_role_path: '{{ .inputs.iam_role_path }}'
+        - iam_role_permissions_boundary_arn: '{{ .inputs.iam_role_permissions_boundary_arn }}'
+        - iam_role_policies: '{{ .inputs.iam_role_policies }}'
+        - iam_role_tags: '{{ .inputs.iam_role_tags }}'
+        - iam_role_use_name_prefix: '{{ .inputs.iam_role_use_name_prefix }}'
+        - irsa_assume_role_condition_test: '{{ .inputs.irsa_assume_role_condition_test }}'
+        - irsa_namespace_service_accounts: '{{ .inputs.irsa_namespace_service_accounts }}'
+        - irsa_oidc_provider_arn: '{{ .inputs.irsa_oidc_provider_arn }}'
+        - namespace: '{{ .inputs.namespace }}'
+        - node_iam_role_additional_policies: '{{ .inputs.node_iam_role_additional_policies }}'
+        - node_iam_role_arn: '{{ .inputs.node_iam_role_arn }}'
+        - node_iam_role_attach_cni_policy: '{{ .inputs.node_iam_role_attach_cni_policy }}'
+        - node_iam_role_description: '{{ .inputs.node_iam_role_description }}'
+        - node_iam_role_max_session_duration: '{{ .inputs.node_iam_role_max_session_duration }}'
+        - node_iam_role_name: '{{ .inputs.node_iam_role_name }}'
+        - node_iam_role_path: '{{ .inputs.node_iam_role_path }}'
+        - node_iam_role_permissions_boundary: '{{ .inputs.node_iam_role_permissions_boundary }}'
+        - node_iam_role_tags: '{{ .inputs.node_iam_role_tags }}'
+        - node_iam_role_use_name_prefix: '{{ .inputs.node_iam_role_use_name_prefix }}'
+        - queue_kms_data_key_reuse_period_seconds: '{{ .inputs.queue_kms_data_key_reuse_period_seconds }}'
+        - queue_kms_master_key_id: '{{ .inputs.queue_kms_master_key_id }}'
+        - queue_managed_sse_enabled: '{{ .inputs.queue_managed_sse_enabled }}'
+        - queue_name: '{{ .inputs.queue_name }}'
+        - rule_name_prefix: '{{ .inputs.rule_name_prefix }}'
+        - service_account: '{{ .inputs.service_account }}'
+        - tags: '{}'
+      outputs:
+        - event_rules
+        - iam_role_arn
+        - iam_role_name
+        - iam_role_unique_id
+        - instance_profile_arn
+        - instance_profile_id
+        - instance_profile_name
+        - instance_profile_unique
+        - namespace
+        - node_access_entry_arn
+        - node_iam_role_arn
+        - node_iam_role_name
+        - node_iam_role_unique_id
+        - queue_arn
+        - queue_name
+        - queue_url
+        - service_account

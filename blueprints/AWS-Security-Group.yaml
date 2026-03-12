@@ -1,0 +1,477 @@
+spec_version: 2
+description: |
+  This module aims to implement ALL combinations of arguments supported by AWS and latest stable version of Terraform:
+  - IPv4/IPv6 CIDR blocks
+  - VPC endpoint prefix lists (use data source aws_prefix_list)
+  - Access from source security groups
+  - Access from self
+  - Named rules
+  - Named groups of rules with ingress (inbound) and egress (outbound) ports open for common scenarios (eg, ssh, http-80, mysql, etc.)
+  - Conditionally create security group and/or all required security group rules.
+  - Ingress and egress rules can be configured in a variety of ways.
+inputs:
+  name:
+    type: string
+    description: Name of security group
+  vpc_id:
+    type: string
+    description: ID of the VPC where to create security group
+  type:
+    type: string
+    allowed-values:
+      - activemq
+      - alertmanager
+      - carbon-relay-ng
+      - cassandra
+      - consul
+      - dax-cluster
+      - docker-swarm
+      - elasticsearch
+      - etcd
+      - grafana
+      - graphite-statsd
+      - http-80
+      - http-8080
+      - https-443
+      - https-8443
+      - ipsec-4500
+      - ipsec-500
+      - kafka
+      - kibana
+      - kubernetes-api
+      - ldap
+      - ldaps
+      - logstash
+      - loki
+      - memcached
+      - minio
+      - mongodb
+      - mssql
+      - mysql
+      - nfs
+      - nomad
+      - ntp
+      - openvpn
+      - oracle-db
+      - postgresql
+      - prometheus
+      - promtail
+      - puppet
+      - rabbitmq
+      - rdp
+      - redis
+      - redshift
+      - smtp
+      - smtp-submission
+      - smtps
+      - solr
+      - splunk
+      - squid
+      - ssh
+      - storm
+      - vault
+      - wazuh
+      - web
+      - winrm
+      - zabbix
+      - zipkin
+      - zookeeper
+    default: cassandra
+  create:
+    type: string
+    default: true
+    description: Whether to create security group and all rules
+  auto_computed_egress_rules:
+    type: string
+    default: '[]'
+    description: List of computed egress rules to add automatically
+  auto_computed_egress_with_self:
+    type: string
+    default: '[]'
+    description: List of maps defining computed egress rules with self to add automatically
+  auto_computed_ingress_rules:
+    type: string
+    default: '[]'
+    description: List of ingress rules to add automatically
+  auto_computed_ingress_with_self:
+    type: string
+    default: '[]'
+    description: List of maps defining computed ingress rules with self to add automatically
+  auto_egress_rules:
+    type: string
+    default: |-
+      [
+        "all-all"
+      ]
+    description: List of egress rules to add automatically
+  auto_egress_with_self:
+    type: string
+    default: '[]'
+    description: List of maps defining egress rules with self to add automatically
+  auto_ingress_rules:
+    type: string
+    default: |-
+      [
+        "cassandra-clients-tcp",
+        "cassandra-thrift-clients-tcp",
+        "cassandra-jmx-tcp"
+      ]
+    description: List of ingress rules to add automatically
+  auto_ingress_with_self:
+    type: string
+    default: |-
+      [
+        {
+          "rule": "all-all"
+        }
+      ]
+    description: List of maps defining ingress rules with self to add automatically
+  auto_number_of_computed_egress_rules:
+    type: string
+    description: Number of computed egress rules to create by name
+  auto_number_of_computed_egress_with_self:
+    type: string
+    description: Number of computed egress rules to create where 'self' is defined
+  auto_number_of_computed_ingress_rules:
+    type: string
+    description: Number of computed ingress rules to create by name
+  auto_number_of_computed_ingress_with_self:
+    type: string
+    description: Number of computed ingress rules to create where 'self' is defined
+  computed_egress_cidr_blocks:
+    type: string
+    default: |-
+      [
+        "0.0.0.0/0"
+      ]
+    description: List of IPv4 CIDR ranges to use on all computed egress rules
+  computed_egress_ipv6_cidr_blocks:
+    type: string
+    default: |-
+      [
+        "::/0"
+      ]
+    description: List of IPv6 CIDR ranges to use on all computed egress rules
+  computed_egress_prefix_list_ids:
+    type: string
+    default: '[]'
+    description: List of prefix list IDs (for allowing access to VPC endpoints) to use on all computed egress rules
+  computed_egress_rules:
+    type: string
+    default: '[]'
+    description: List of computed egress rules to create by name
+  computed_egress_with_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of computed egress rules to create where 'cidr_blocks' is used
+  computed_egress_with_ipv6_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of computed egress rules to create where 'ipv6_cidr_blocks' is used
+  computed_egress_with_prefix_list_ids:
+    type: string
+    default: '[]'
+    description: List of computed egress rules to create where 'prefix_list_ids' is used
+  computed_egress_with_self:
+    type: string
+    default: '[]'
+    description: List of computed egress rules to create where 'self' is defined
+  computed_egress_with_source_security_group_id:
+    type: string
+    default: '[]'
+    description: List of computed egress rules to create where 'source_security_group_id' is used
+  computed_ingress_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of IPv4 CIDR ranges to use on all computed ingress rules
+  computed_ingress_ipv6_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of IPv6 CIDR ranges to use on all computed ingress rules
+  computed_ingress_prefix_list_ids:
+    type: string
+    default: '[]'
+    description: List of prefix list IDs (for allowing access to VPC endpoints) to use on all computed ingress rules
+  computed_ingress_rules:
+    type: string
+    default: '[]'
+    description: List of computed ingress rules to create by name
+  computed_ingress_with_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of computed ingress rules to create where 'cidr_blocks' is used
+  computed_ingress_with_ipv6_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of computed ingress rules to create where 'ipv6_cidr_blocks' is used
+  computed_ingress_with_prefix_list_ids:
+    type: string
+    default: '[]'
+    description: List of computed ingress rules to create where 'prefix_list_ids' is used
+  computed_ingress_with_self:
+    type: string
+    default: '[]'
+    description: List of computed ingress rules to create where 'self' is defined
+  computed_ingress_with_source_security_group_id:
+    type: string
+    default: '[]'
+    description: List of computed ingress rules to create where 'source_security_group_id' is used
+  egress_cidr_blocks:
+    type: string
+    default: |-
+      [
+        "0.0.0.0/0"
+      ]
+    description: List of IPv4 CIDR ranges to use on all egress rules
+  egress_ipv6_cidr_blocks:
+    type: string
+    default: |-
+      [
+        "::/0"
+      ]
+    description: List of IPv6 CIDR ranges to use on all egress rules
+  egress_prefix_list_ids:
+    type: string
+    default: '[]'
+    description: List of prefix list IDs (for allowing access to VPC endpoints) to use on all egress rules
+  egress_rules:
+    type: string
+    default: '[]'
+    description: List of egress rules to create by name
+  egress_with_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of egress rules to create where 'cidr_blocks' is used
+  egress_with_ipv6_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of egress rules to create where 'ipv6_cidr_blocks' is used
+  egress_with_prefix_list_ids:
+    type: string
+    default: '[]'
+    description: List of egress rules to create where 'prefix_list_ids' is used
+  egress_with_self:
+    type: string
+    default: '[]'
+    description: List of egress rules to create where 'self' is defined
+  egress_with_source_security_group_id:
+    type: string
+    default: '[]'
+    description: List of egress rules to create where 'source_security_group_id' is used
+  ingress_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of IPv4 CIDR ranges to use on all ingress rules
+  ingress_ipv6_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of IPv6 CIDR ranges to use on all ingress rules
+  ingress_prefix_list_ids:
+    type: string
+    default: '[]'
+    description: List of prefix list IDs (for allowing access to VPC endpoints) to use on all ingress rules
+  ingress_rules:
+    type: string
+    default: '[]'
+    description: List of ingress rules to create by name
+  ingress_with_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of ingress rules to create where 'cidr_blocks' is used
+  ingress_with_ipv6_cidr_blocks:
+    type: string
+    default: '[]'
+    description: List of ingress rules to create where 'ipv6_cidr_blocks' is used
+  ingress_with_prefix_list_ids:
+    type: string
+    default: '[]'
+    description: List of ingress rules to create where 'prefix_list_ids' is used
+  ingress_with_self:
+    type: string
+    default: '[]'
+    description: List of ingress rules to create where 'self' is defined
+  ingress_with_source_security_group_id:
+    type: string
+    default: '[]'
+    description: List of ingress rules to create where 'source_security_group_id' is used
+  number_of_computed_egress_cidr_blocks:
+    type: string
+    description: Number of IPv4 CIDR ranges to use on all computed egress rules
+  number_of_computed_egress_ipv6_cidr_blocks:
+    type: string
+    description: Number of IPv6 CIDR ranges to use on all computed egress rules
+  number_of_computed_egress_prefix_list_ids:
+    type: string
+    description: Number of prefix list IDs (for allowing access to VPC endpoints) to use on all computed egress rules
+  number_of_computed_egress_rules:
+    type: string
+    description: Number of computed egress rules to create by name
+  number_of_computed_egress_with_cidr_blocks:
+    type: string
+    description: Number of computed egress rules to create where 'cidr_blocks' is used
+  number_of_computed_egress_with_ipv6_cidr_blocks:
+    type: string
+    description: Number of computed egress rules to create where 'ipv6_cidr_blocks' is used
+  number_of_computed_egress_with_prefix_list_ids:
+    type: string
+    description: Number of computed egress rules to create where 'prefix_list_ids' is used
+  number_of_computed_egress_with_self:
+    type: string
+    description: Number of computed egress rules to create where 'self' is defined
+  number_of_computed_egress_with_source_security_group_id:
+    type: string
+    description: Number of computed egress rules to create where 'source_security_group_id' is used
+  number_of_computed_ingress_cidr_blocks:
+    type: string
+    description: Number of IPv4 CIDR ranges to use on all computed ingress rules
+  number_of_computed_ingress_ipv6_cidr_blocks:
+    type: string
+    description: Number of IPv6 CIDR ranges to use on all computed ingress rules
+  number_of_computed_ingress_prefix_list_ids:
+    type: string
+    description: Number of prefix list IDs (for allowing access to VPC endpoints) to use on all computed ingress rules
+  number_of_computed_ingress_rules:
+    type: string
+    description: Number of computed ingress rules to create by name
+  number_of_computed_ingress_with_cidr_blocks:
+    type: string
+    description: Number of computed ingress rules to create where 'cidr_blocks' is used
+  number_of_computed_ingress_with_ipv6_cidr_blocks:
+    type: string
+    description: Number of computed ingress rules to create where 'ipv6_cidr_blocks' is used
+  number_of_computed_ingress_with_prefix_list_ids:
+    type: string
+    description: Number of computed ingress rules to create where 'prefix_list_ids' is used
+  number_of_computed_ingress_with_self:
+    type: string
+    description: Number of computed ingress rules to create where 'self' is defined
+  number_of_computed_ingress_with_source_security_group_id:
+    type: string
+    description: Number of computed ingress rules to create where 'source_security_group_id' is used
+  revoke_rules_on_delete:
+    type: string
+    description: Instruct Terraform to revoke all of the Security Groups attached ingress and egress rules before deleting the rule itself. Enable for EMR.
+  tags:
+    type: string
+    default: '{}'
+    description: A mapping of tags to assign to security group
+  use_name_prefix:
+    type: string
+    default: true
+    description: Whether to use name_prefix or fixed name. Should be true to able to update security group name after initial creation
+  agent:
+    type: agent
+  description:
+    type: string
+    default: Security Group managed by Terraform
+    description: Description of security group
+outputs:
+  security_group_arn:
+    value: '{{ .grains.security_group.outputs.security_group_arn }}'
+    quick: true
+  security_group_description:
+    value: '{{ .grains.security_group.outputs.security_group_description }}'
+    quick: true
+  security_group_id:
+    value: '{{ .grains.security_group.outputs.security_group_id }}'
+    quick: true
+  security_group_name:
+    value: '{{ .grains.security_group.outputs.security_group_name }}'
+    quick: true
+  security_group_owner_id:
+    value: '{{ .grains.security_group.outputs.security_group_owner_id }}'
+    quick: true
+  security_group_vpc_id:
+    value: '{{ .grains.security_group.outputs.security_group_vpc_id }}'
+    quick: true
+grains:
+  security_group:
+    kind: terraform
+    spec:
+      source:
+        path: '{{ "AWS/assets/terraform-aws-security-group/modules/" | append:  .inputs.type }}'
+      agent:
+        name: '{{ .inputs.agent }}'
+      env-vars: []
+      inputs:
+        - auto_computed_egress_rules: '{{ .inputs.auto_computed_egress_rules }}'
+        - auto_computed_egress_with_self: '{{ .inputs.auto_computed_egress_with_self }}'
+        - auto_computed_ingress_rules: '{{ .inputs.auto_computed_ingress_rules }}'
+        - auto_computed_ingress_with_self: '{{ .inputs.auto_computed_ingress_with_self }}'
+        - auto_egress_rules: '{{ .inputs.auto_egress_rules }}'
+        - auto_egress_with_self: '{{ .inputs.auto_egress_with_self }}'
+        - auto_ingress_rules: '{{ .inputs.auto_ingress_rules }}'
+        - auto_ingress_with_self: '{{ .inputs.auto_ingress_with_self }}'
+        - auto_number_of_computed_egress_rules: '{{ .inputs.auto_number_of_computed_egress_rules }}'
+        - auto_number_of_computed_egress_with_self: '{{ .inputs.auto_number_of_computed_egress_with_self }}'
+        - auto_number_of_computed_ingress_rules: '{{ .inputs.auto_number_of_computed_ingress_rules }}'
+        - auto_number_of_computed_ingress_with_self: '{{ .inputs.auto_number_of_computed_ingress_with_self }}'
+        - computed_egress_cidr_blocks: '{{ .inputs.computed_egress_cidr_blocks }}'
+        - computed_egress_ipv6_cidr_blocks: '{{ .inputs.computed_egress_ipv6_cidr_blocks }}'
+        - computed_egress_prefix_list_ids: '{{ .inputs.computed_egress_prefix_list_ids }}'
+        - computed_egress_rules: '{{ .inputs.computed_egress_rules }}'
+        - computed_egress_with_cidr_blocks: '{{ .inputs.computed_egress_with_cidr_blocks }}'
+        - computed_egress_with_ipv6_cidr_blocks: '{{ .inputs.computed_egress_with_ipv6_cidr_blocks }}'
+        - computed_egress_with_prefix_list_ids: '{{ .inputs.computed_egress_with_prefix_list_ids }}'
+        - computed_egress_with_self: '{{ .inputs.computed_egress_with_self }}'
+        - computed_egress_with_source_security_group_id: '{{ .inputs.computed_egress_with_source_security_group_id }}'
+        - computed_ingress_cidr_blocks: '{{ .inputs.computed_ingress_cidr_blocks }}'
+        - computed_ingress_ipv6_cidr_blocks: '{{ .inputs.computed_ingress_ipv6_cidr_blocks }}'
+        - computed_ingress_prefix_list_ids: '{{ .inputs.computed_ingress_prefix_list_ids }}'
+        - computed_ingress_rules: '{{ .inputs.computed_ingress_rules }}'
+        - computed_ingress_with_cidr_blocks: '{{ .inputs.computed_ingress_with_cidr_blocks }}'
+        - computed_ingress_with_ipv6_cidr_blocks: '{{ .inputs.computed_ingress_with_ipv6_cidr_blocks }}'
+        - computed_ingress_with_prefix_list_ids: '{{ .inputs.computed_ingress_with_prefix_list_ids }}'
+        - computed_ingress_with_self: '{{ .inputs.computed_ingress_with_self }}'
+        - computed_ingress_with_source_security_group_id: '{{ .inputs.computed_ingress_with_source_security_group_id }}'
+        - create: '{{ .inputs.create }}'
+        - description: '{{ .inputs.description }}'
+        - egress_cidr_blocks: '{{ .inputs.egress_cidr_blocks }}'
+        - egress_ipv6_cidr_blocks: '{{ .inputs.egress_ipv6_cidr_blocks }}'
+        - egress_prefix_list_ids: '{{ .inputs.egress_prefix_list_ids }}'
+        - egress_rules: '{{ .inputs.egress_rules }}'
+        - egress_with_cidr_blocks: '{{ .inputs.egress_with_cidr_blocks }}'
+        - egress_with_ipv6_cidr_blocks: '{{ .inputs.egress_with_ipv6_cidr_blocks }}'
+        - egress_with_prefix_list_ids: '{{ .inputs.egress_with_prefix_list_ids }}'
+        - egress_with_self: '{{ .inputs.egress_with_self }}'
+        - egress_with_source_security_group_id: '{{ .inputs.egress_with_source_security_group_id }}'
+        - ingress_cidr_blocks: '{{ .inputs.ingress_cidr_blocks }}'
+        - ingress_ipv6_cidr_blocks: '{{ .inputs.ingress_ipv6_cidr_blocks }}'
+        - ingress_prefix_list_ids: '{{ .inputs.ingress_prefix_list_ids }}'
+        - ingress_rules: '{{ .inputs.ingress_rules }}'
+        - ingress_with_cidr_blocks: '{{ .inputs.ingress_with_cidr_blocks }}'
+        - ingress_with_ipv6_cidr_blocks: '{{ .inputs.ingress_with_ipv6_cidr_blocks }}'
+        - ingress_with_prefix_list_ids: '{{ .inputs.ingress_with_prefix_list_ids }}'
+        - ingress_with_self: '{{ .inputs.ingress_with_self }}'
+        - ingress_with_source_security_group_id: '{{ .inputs.ingress_with_source_security_group_id }}'
+        - name: '{{ .inputs.name }}'
+        - number_of_computed_egress_cidr_blocks: '{{ .inputs.number_of_computed_egress_cidr_blocks }}'
+        - number_of_computed_egress_ipv6_cidr_blocks: '{{ .inputs.number_of_computed_egress_ipv6_cidr_blocks }}'
+        - number_of_computed_egress_prefix_list_ids: '{{ .inputs.number_of_computed_egress_prefix_list_ids }}'
+        - number_of_computed_egress_rules: '{{ .inputs.number_of_computed_egress_rules }}'
+        - number_of_computed_egress_with_cidr_blocks: '{{ .inputs.number_of_computed_egress_with_cidr_blocks }}'
+        - number_of_computed_egress_with_ipv6_cidr_blocks: '{{ .inputs.number_of_computed_egress_with_ipv6_cidr_blocks }}'
+        - number_of_computed_egress_with_prefix_list_ids: '{{ .inputs.number_of_computed_egress_with_prefix_list_ids }}'
+        - number_of_computed_egress_with_self: '{{ .inputs.number_of_computed_egress_with_self }}'
+        - number_of_computed_egress_with_source_security_group_id: '{{ .inputs.number_of_computed_egress_with_source_security_group_id }}'
+        - number_of_computed_ingress_cidr_blocks: '{{ .inputs.number_of_computed_ingress_cidr_blocks }}'
+        - number_of_computed_ingress_ipv6_cidr_blocks: '{{ .inputs.number_of_computed_ingress_ipv6_cidr_blocks }}'
+        - number_of_computed_ingress_prefix_list_ids: '{{ .inputs.number_of_computed_ingress_prefix_list_ids }}'
+        - number_of_computed_ingress_rules: '{{ .inputs.number_of_computed_ingress_rules }}'
+        - number_of_computed_ingress_with_cidr_blocks: '{{ .inputs.number_of_computed_ingress_with_cidr_blocks }}'
+        - number_of_computed_ingress_with_ipv6_cidr_blocks: '{{ .inputs.number_of_computed_ingress_with_ipv6_cidr_blocks }}'
+        - number_of_computed_ingress_with_prefix_list_ids: '{{ .inputs.number_of_computed_ingress_with_prefix_list_ids }}'
+        - number_of_computed_ingress_with_self: '{{ .inputs.number_of_computed_ingress_with_self }}'
+        - number_of_computed_ingress_with_source_security_group_id: '{{ .inputs.number_of_computed_ingress_with_source_security_group_id }}'
+        - revoke_rules_on_delete: '{{ .inputs.revoke_rules_on_delete }}'
+        - tags: '{{ .inputs.tags }}'
+        - use_name_prefix: '{{ .inputs.use_name_prefix }}'
+        - vpc_id: '{{ .inputs.vpc_id }}'
+      outputs:
+        - security_group_arn
+        - security_group_description
+        - security_group_id
+        - security_group_name
+        - security_group_owner_id
+        - security_group_vpc_id
+    tf-version: 1.5.5

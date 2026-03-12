@@ -1,0 +1,460 @@
+spec_version: 2
+description: |
+  Creates set of VPC resources which may be sufficient for staging or production environment.
+  There are public, private, database, ElastiCache, intra (private w/o Internet access) subnets, and NAT Gateways created in each availability zone.
+inputs:
+  agent:
+    type: agent
+outputs:
+  complete_cgw_arns:
+    value: '{{ .grains.complete_vpc.outputs.cgw_arns }}'
+    quick: true
+  complete_cgw_ids:
+    value: '{{ .grains.complete_vpc.outputs.cgw_ids }}'
+    quick: true
+  complete_database_internet_gateway_route_id:
+    value: '{{ .grains.complete_vpc.outputs.database_internet_gateway_route_id }}'
+    quick: true
+  complete_database_ipv6_egress_route_id:
+    value: '{{ .grains.complete_vpc.outputs.database_ipv6_egress_route_id }}'
+    quick: true
+  complete_database_nat_gateway_route_ids:
+    value: '{{ .grains.complete_vpc.outputs.database_nat_gateway_route_ids }}'
+    quick: true
+  complete_database_network_acl_arn:
+    value: '{{ .grains.complete_vpc.outputs.database_network_acl_arn }}'
+    quick: true
+  complete_database_network_acl_id:
+    value: '{{ .grains.complete_vpc.outputs.database_network_acl_id }}'
+    quick: true
+  complete_database_route_table_association_ids:
+    value: '{{ .grains.complete_vpc.outputs.database_route_table_association_ids }}'
+    quick: true
+  complete_database_route_table_ids:
+    value: '{{ .grains.complete_vpc.outputs.database_route_table_ids }}'
+    quick: true
+  complete_database_subnet_arns:
+    value: '{{ .grains.complete_vpc.outputs.database_subnet_arns }}'
+    quick: true
+  complete_database_subnet_group:
+    value: '{{ .grains.complete_vpc.outputs.database_subnet_group }}'
+    quick: true
+  complete_database_subnet_group_name:
+    value: '{{ .grains.complete_vpc.outputs.database_subnet_group_name }}'
+    quick: true
+  complete_database_subnets:
+    value: '{{ .grains.complete_vpc.outputs.database_subnets }}'
+    quick: true
+  complete_database_subnets_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.database_subnets_cidr_blocks }}'
+    quick: true
+  complete_database_subnets_ipv6_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.database_subnets_ipv6_cidr_blocks }}'
+    quick: true
+  complete_default_network_acl_id:
+    value: '{{ .grains.complete_vpc.outputs.default_network_acl_id }}'
+    quick: true
+  complete_default_route_table_id:
+    value: '{{ .grains.complete_vpc.outputs.default_route_table_id }}'
+    quick: true
+  complete_default_security_group_id:
+    value: '{{ .grains.complete_vpc.outputs.default_security_group_id }}'
+    quick: true
+  complete_default_vpc_arn:
+    value: '{{ .grains.complete_vpc.outputs.default_vpc_arn }}'
+    quick: true
+  complete_default_vpc_cidr_block:
+    value: '{{ .grains.complete_vpc.outputs.default_vpc_cidr_block }}'
+    quick: true
+  complete_default_vpc_default_network_acl_id:
+    value: '{{ .grains.complete_vpc.outputs.default_vpc_default_network_acl_id }}'
+    quick: true
+  complete_default_vpc_default_route_table_id:
+    value: '{{ .grains.complete_vpc.outputs.default_vpc_default_route_table_id }}'
+    quick: true
+  complete_default_vpc_default_security_group_id:
+    value: '{{ .grains.complete_vpc.outputs.default_vpc_default_security_group_id }}'
+    quick: true
+  complete_default_vpc_enable_dns_hostnames:
+    value: '{{ .grains.complete_vpc.outputs.default_vpc_enable_dns_hostnames }}'
+    quick: true
+  complete_default_vpc_enable_dns_support:
+    value: '{{ .grains.complete_vpc.outputs.default_vpc_enable_dns_support }}'
+    quick: true
+  complete_default_vpc_id:
+    value: '{{ .grains.complete_vpc.outputs.default_vpc_id }}'
+    quick: true
+  complete_default_vpc_instance_tenancy:
+    value: '{{ .grains.complete_vpc.outputs.default_vpc_instance_tenancy }}'
+    quick: true
+  complete_default_vpc_main_route_table_id:
+    value: '{{ .grains.complete_vpc.outputs.default_vpc_main_route_table_id }}'
+    quick: true
+  complete_dhcp_options_id:
+    value: '{{ .grains.complete_vpc.outputs.dhcp_options_id }}'
+    quick: true
+  complete_egress_only_internet_gateway_id:
+    value: '{{ .grains.complete_vpc.outputs.egress_only_internet_gateway_id }}'
+    quick: true
+  complete_elasticache_network_acl_arn:
+    value: '{{ .grains.complete_vpc.outputs.elasticache_network_acl_arn }}'
+    quick: true
+  complete_elasticache_network_acl_id:
+    value: '{{ .grains.complete_vpc.outputs.elasticache_network_acl_id }}'
+    quick: true
+  complete_elasticache_route_table_association_ids:
+    value: '{{ .grains.complete_vpc.outputs.elasticache_route_table_association_ids }}'
+    quick: true
+  complete_elasticache_route_table_ids:
+    value: '{{ .grains.complete_vpc.outputs.elasticache_route_table_ids }}'
+    quick: true
+  complete_elasticache_subnet_arns:
+    value: '{{ .grains.complete_vpc.outputs.elasticache_subnet_arns }}'
+    quick: true
+  complete_elasticache_subnet_group:
+    value: '{{ .grains.complete_vpc.outputs.elasticache_subnet_group }}'
+    quick: true
+  complete_elasticache_subnet_group_name:
+    value: '{{ .grains.complete_vpc.outputs.elasticache_subnet_group_name }}'
+    quick: true
+  complete_elasticache_subnets:
+    value: '{{ .grains.complete_vpc.outputs.elasticache_subnets }}'
+    quick: true
+  complete_elasticache_subnets_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.elasticache_subnets_cidr_blocks }}'
+    quick: true
+  complete_elasticache_subnets_ipv6_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.elasticache_subnets_ipv6_cidr_blocks }}'
+    quick: true
+  complete_igw_arn:
+    value: '{{ .grains.complete_vpc.outputs.igw_arn }}'
+    quick: true
+  complete_igw_id:
+    value: '{{ .grains.complete_vpc.outputs.igw_id }}'
+    quick: true
+  complete_intra_network_acl_arn:
+    value: '{{ .grains.complete_vpc.outputs.intra_network_acl_arn }}'
+    quick: true
+  complete_intra_network_acl_id:
+    value: '{{ .grains.complete_vpc.outputs.intra_network_acl_id }}'
+    quick: true
+  complete_intra_route_table_association_ids:
+    value: '{{ .grains.complete_vpc.outputs.intra_route_table_association_ids }}'
+    quick: true
+  complete_intra_route_table_ids:
+    value: '{{ .grains.complete_vpc.outputs.intra_route_table_ids }}'
+    quick: true
+  complete_intra_subnet_arns:
+    value: '{{ .grains.complete_vpc.outputs.intra_subnet_arns }}'
+    quick: true
+  complete_intra_subnets:
+    value: '{{ .grains.complete_vpc.outputs.intra_subnets }}'
+    quick: true
+  complete_intra_subnets_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.intra_subnets_cidr_blocks }}'
+    quick: true
+  complete_intra_subnets_ipv6_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.intra_subnets_ipv6_cidr_blocks }}'
+    quick: true
+  complete_nat_ids:
+    value: '{{ .grains.complete_vpc.outputs.nat_ids }}'
+    quick: true
+  complete_nat_public_ips:
+    value: '{{ .grains.complete_vpc.outputs.nat_public_ips }}'
+    quick: true
+  complete_natgw_ids:
+    value: '{{ .grains.complete_vpc.outputs.natgw_ids }}'
+    quick: true
+  complete_outpost_network_acl_arn:
+    value: '{{ .grains.complete_vpc.outputs.outpost_network_acl_arn }}'
+    quick: true
+  complete_outpost_network_acl_id:
+    value: '{{ .grains.complete_vpc.outputs.outpost_network_acl_id }}'
+    quick: true
+  complete_outpost_subnet_arns:
+    value: '{{ .grains.complete_vpc.outputs.outpost_subnet_arns }}'
+    quick: true
+  complete_outpost_subnets:
+    value: '{{ .grains.complete_vpc.outputs.outpost_subnets }}'
+    quick: true
+  complete_outpost_subnets_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.outpost_subnets_cidr_blocks }}'
+    quick: true
+  complete_outpost_subnets_ipv6_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.outpost_subnets_ipv6_cidr_blocks }}'
+    quick: true
+  complete_private_ipv6_egress_route_ids:
+    value: '{{ .grains.complete_vpc.outputs.private_ipv6_egress_route_ids }}'
+    quick: true
+  complete_private_nat_gateway_route_ids:
+    value: '{{ .grains.complete_vpc.outputs.private_nat_gateway_route_ids }}'
+    quick: true
+  complete_private_network_acl_arn:
+    value: '{{ .grains.complete_vpc.outputs.private_network_acl_arn }}'
+    quick: true
+  complete_private_network_acl_id:
+    value: '{{ .grains.complete_vpc.outputs.private_network_acl_id }}'
+    quick: true
+  complete_private_route_table_association_ids:
+    value: '{{ .grains.complete_vpc.outputs.private_route_table_association_ids }}'
+    quick: true
+  complete_private_route_table_ids:
+    value: '{{ .grains.complete_vpc.outputs.private_route_table_ids }}'
+    quick: true
+  complete_private_subnet_arns:
+    value: '{{ .grains.complete_vpc.outputs.private_subnet_arns }}'
+    quick: true
+  complete_private_subnets:
+    value: '{{ .grains.complete_vpc.outputs.private_subnets }}'
+    quick: true
+  complete_private_subnets_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.private_subnets_cidr_blocks }}'
+    quick: true
+  complete_private_subnets_ipv6_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.private_subnets_ipv6_cidr_blocks }}'
+    quick: true
+  complete_public_internet_gateway_ipv6_route_id:
+    value: '{{ .grains.complete_vpc.outputs.public_internet_gateway_ipv6_route_id }}'
+    quick: true
+  complete_public_internet_gateway_route_id:
+    value: '{{ .grains.complete_vpc.outputs.public_internet_gateway_route_id }}'
+    quick: true
+  complete_public_network_acl_arn:
+    value: '{{ .grains.complete_vpc.outputs.public_network_acl_arn }}'
+    quick: true
+  complete_public_network_acl_id:
+    value: '{{ .grains.complete_vpc.outputs.public_network_acl_id }}'
+    quick: true
+  complete_public_route_table_association_ids:
+    value: '{{ .grains.complete_vpc.outputs.public_route_table_association_ids }}'
+    quick: true
+  complete_public_route_table_ids:
+    value: '{{ .grains.complete_vpc.outputs.public_route_table_ids }}'
+    quick: true
+  complete_public_subnet_arns:
+    value: '{{ .grains.complete_vpc.outputs.public_subnet_arns }}'
+    quick: true
+  complete_public_subnets:
+    value: '{{ .grains.complete_vpc.outputs.public_subnets }}'
+    quick: true
+  complete_public_subnets_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.public_subnets_cidr_blocks }}'
+    quick: true
+  complete_public_subnets_ipv6_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.public_subnets_ipv6_cidr_blocks }}'
+    quick: true
+  complete_redshift_network_acl_arn:
+    value: '{{ .grains.complete_vpc.outputs.redshift_network_acl_arn }}'
+    quick: true
+  complete_redshift_network_acl_id:
+    value: '{{ .grains.complete_vpc.outputs.redshift_network_acl_id }}'
+    quick: true
+  complete_redshift_public_route_table_association_ids:
+    value: '{{ .grains.complete_vpc.outputs.redshift_public_route_table_association_ids }}'
+    quick: true
+  complete_redshift_route_table_association_ids:
+    value: '{{ .grains.complete_vpc.outputs.redshift_route_table_association_ids }}'
+    quick: true
+  complete_redshift_route_table_ids:
+    value: '{{ .grains.complete_vpc.outputs.redshift_route_table_ids }}'
+    quick: true
+  complete_redshift_subnet_arns:
+    value: '{{ .grains.complete_vpc.outputs.redshift_subnet_arns }}'
+    quick: true
+  complete_redshift_subnet_group:
+    value: '{{ .grains.complete_vpc.outputs.redshift_subnet_group }}'
+    quick: true
+  complete_redshift_subnets:
+    value: '{{ .grains.complete_vpc.outputs.redshift_subnets }}'
+    quick: true
+  complete_redshift_subnets_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.redshift_subnets_cidr_blocks }}'
+    quick: true
+  complete_redshift_subnets_ipv6_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.redshift_subnets_ipv6_cidr_blocks }}'
+    quick: true
+  complete_this_customer_gateway:
+    value: '{{ .grains.complete_vpc.outputs.this_customer_gateway }}'
+    quick: true
+  complete_vgw_arn:
+    value: '{{ .grains.complete_vpc.outputs.vgw_arn }}'
+    quick: true
+  complete_vgw_id:
+    value: '{{ .grains.complete_vpc.outputs.vgw_id }}'
+    quick: true
+  complete_vpc_arn:
+    value: '{{ .grains.complete_vpc.outputs.vpc_arn }}'
+    quick: true
+  complete_vpc_cidr_block:
+    value: '{{ .grains.complete_vpc.outputs.vpc_cidr_block }}'
+    quick: true
+  complete_vpc_enable_dns_hostnames:
+    value: '{{ .grains.complete_vpc.outputs.vpc_enable_dns_hostnames }}'
+    quick: true
+  complete_vpc_enable_dns_support:
+    value: '{{ .grains.complete_vpc.outputs.vpc_enable_dns_support }}'
+    quick: true
+  complete_vpc_endpoints:
+    value: '{{ .grains.complete_vpc.outputs.vpc_endpoints }}'
+    quick: true
+  complete_vpc_endpoints_security_group_arn:
+    value: '{{ .grains.complete_vpc.outputs.vpc_endpoints_security_group_arn }}'
+    quick: true
+  complete_vpc_endpoints_security_group_id:
+    value: '{{ .grains.complete_vpc.outputs.vpc_endpoints_security_group_id }}'
+    quick: true
+  complete_vpc_flow_log_cloudwatch_iam_role_arn:
+    value: '{{ .grains.complete_vpc.outputs.vpc_flow_log_cloudwatch_iam_role_arn }}'
+    quick: true
+  complete_vpc_flow_log_destination_arn:
+    value: '{{ .grains.complete_vpc.outputs.vpc_flow_log_destination_arn }}'
+    quick: true
+  complete_vpc_flow_log_destination_type:
+    value: '{{ .grains.complete_vpc.outputs.vpc_flow_log_destination_type }}'
+    quick: true
+  complete_vpc_flow_log_id:
+    value: '{{ .grains.complete_vpc.outputs.vpc_flow_log_id }}'
+    quick: true
+  complete_vpc_id:
+    value: '{{ .grains.complete_vpc.outputs.vpc_id }}'
+    quick: true
+  complete_vpc_instance_tenancy:
+    value: '{{ .grains.complete_vpc.outputs.vpc_instance_tenancy }}'
+    quick: true
+  complete_vpc_ipv6_association_id:
+    value: '{{ .grains.complete_vpc.outputs.vpc_ipv6_association_id }}'
+    quick: true
+  complete_vpc_ipv6_cidr_block:
+    value: '{{ .grains.complete_vpc.outputs.vpc_ipv6_cidr_block }}'
+    quick: true
+  complete_vpc_main_route_table_id:
+    value: '{{ .grains.complete_vpc.outputs.vpc_main_route_table_id }}'
+    quick: true
+  complete_vpc_owner_id:
+    value: '{{ .grains.complete_vpc.outputs.vpc_owner_id }}'
+    quick: true
+  complete_vpc_secondary_cidr_blocks:
+    value: '{{ .grains.complete_vpc.outputs.vpc_secondary_cidr_blocks }}'
+    quick: true
+grains:
+  complete_vpc:
+    kind: terraform
+    spec:
+      source:
+        path: AWS/assets/terraform-aws-vpc
+      agent:
+        name: '{{ .inputs.agent }}'
+      env-vars: []
+      inputs: []
+      outputs:
+        - cgw_arns
+        - cgw_ids
+        - database_internet_gateway_route_id
+        - database_ipv6_egress_route_id
+        - database_nat_gateway_route_ids
+        - database_network_acl_arn
+        - database_network_acl_id
+        - database_route_table_association_ids
+        - database_route_table_ids
+        - database_subnet_arns
+        - database_subnet_group
+        - database_subnet_group_name
+        - database_subnets
+        - database_subnets_cidr_blocks
+        - database_subnets_ipv6_cidr_blocks
+        - default_network_acl_id
+        - default_route_table_id
+        - default_security_group_id
+        - default_vpc_arn
+        - default_vpc_cidr_block
+        - default_vpc_default_network_acl_id
+        - default_vpc_default_route_table_id
+        - default_vpc_default_security_group_id
+        - default_vpc_enable_dns_hostnames
+        - default_vpc_enable_dns_support
+        - default_vpc_id
+        - default_vpc_instance_tenancy
+        - default_vpc_main_route_table_id
+        - dhcp_options_id
+        - egress_only_internet_gateway_id
+        - elasticache_network_acl_arn
+        - elasticache_network_acl_id
+        - elasticache_route_table_association_ids
+        - elasticache_route_table_ids
+        - elasticache_subnet_arns
+        - elasticache_subnet_group
+        - elasticache_subnet_group_name
+        - elasticache_subnets
+        - elasticache_subnets_cidr_blocks
+        - elasticache_subnets_ipv6_cidr_blocks
+        - igw_arn
+        - igw_id
+        - intra_network_acl_arn
+        - intra_network_acl_id
+        - intra_route_table_association_ids
+        - intra_route_table_ids
+        - intra_subnet_arns
+        - intra_subnets
+        - intra_subnets_cidr_blocks
+        - intra_subnets_ipv6_cidr_blocks
+        - nat_ids
+        - nat_public_ips
+        - natgw_ids
+        - outpost_network_acl_arn
+        - outpost_network_acl_id
+        - outpost_subnet_arns
+        - outpost_subnets
+        - outpost_subnets_cidr_blocks
+        - outpost_subnets_ipv6_cidr_blocks
+        - private_ipv6_egress_route_ids
+        - private_nat_gateway_route_ids
+        - private_network_acl_arn
+        - private_network_acl_id
+        - private_route_table_association_ids
+        - private_route_table_ids
+        - private_subnet_arns
+        - private_subnets
+        - private_subnets_cidr_blocks
+        - private_subnets_ipv6_cidr_blocks
+        - public_internet_gateway_ipv6_route_id
+        - public_internet_gateway_route_id
+        - public_network_acl_arn
+        - public_network_acl_id
+        - public_route_table_association_ids
+        - public_route_table_ids
+        - public_subnet_arns
+        - public_subnets
+        - public_subnets_cidr_blocks
+        - public_subnets_ipv6_cidr_blocks
+        - redshift_network_acl_arn
+        - redshift_network_acl_id
+        - redshift_public_route_table_association_ids
+        - redshift_route_table_association_ids
+        - redshift_route_table_ids
+        - redshift_subnet_arns
+        - redshift_subnet_group
+        - redshift_subnets
+        - redshift_subnets_cidr_blocks
+        - redshift_subnets_ipv6_cidr_blocks
+        - this_customer_gateway
+        - vgw_arn
+        - vgw_id
+        - vpc_arn
+        - vpc_cidr_block
+        - vpc_enable_dns_hostnames
+        - vpc_enable_dns_support
+        - vpc_endpoints
+        - vpc_endpoints_security_group_arn
+        - vpc_endpoints_security_group_id
+        - vpc_flow_log_cloudwatch_iam_role_arn
+        - vpc_flow_log_destination_arn
+        - vpc_flow_log_destination_type
+        - vpc_flow_log_id
+        - vpc_id
+        - vpc_instance_tenancy
+        - vpc_ipv6_association_id
+        - vpc_ipv6_cidr_block
+        - vpc_main_route_table_id
+        - vpc_owner_id
+        - vpc_secondary_cidr_blocks
+    tf-version: 1.5.5

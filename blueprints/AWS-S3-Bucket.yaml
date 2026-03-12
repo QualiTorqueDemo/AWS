@@ -1,0 +1,67 @@
+spec_version: 2
+description: |
+  Configuration in this directory creates S3 bucket which demos such capabilities:
+   - static web-site hosting
+  - access logging (for S3, ELB and ALB/NLB)
+  - versioning
+  - CORS
+  - lifecycle rules
+  - server-side encryption
+  - object locking
+  - grants (required for CloudFront logs)
+inputs:
+  agent:
+    type: agent
+outputs:
+  complete_s3_bucket_website_domain:
+    value: https://{{ .grains.complete_s3_bucket.outputs.s3_bucket_website_domain }}
+    quick: true
+  complete_s3_bucket_website_endpoint:
+    value: https://{{ .grains.complete_s3_bucket.outputs.s3_bucket_website_endpoint }}
+    quick: true
+  complete_s3_bucket_arn:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_arn }}'
+    quick: true
+  complete_s3_bucket_bucket_domain_name:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_bucket_domain_name }}'
+    quick: true
+  complete_s3_bucket_bucket_regional_domain_name:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_bucket_regional_domain_name }}'
+    quick: true
+  complete_s3_bucket_hosted_zone_id:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_hosted_zone_id }}'
+    quick: true
+  complete_s3_bucket_id:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_id }}'
+    quick: true
+  complete_s3_bucket_lifecycle_configuration_rules:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_lifecycle_configuration_rules }}'
+    quick: true
+  complete_s3_bucket_policy:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_policy }}'
+    quick: true
+  complete_s3_bucket_region:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_region }}'
+    quick: true
+grains:
+  complete_s3_bucket:
+    kind: terraform
+    spec:
+      source:
+        path: AWS/assets/terraform-aws-s3-bucket
+      agent:
+        name: '{{ .inputs.agent }}'
+      env-vars: []
+      inputs: []
+      outputs:
+        - s3_bucket_arn
+        - s3_bucket_bucket_domain_name
+        - s3_bucket_bucket_regional_domain_name
+        - s3_bucket_hosted_zone_id
+        - s3_bucket_id
+        - s3_bucket_lifecycle_configuration_rules
+        - s3_bucket_policy
+        - s3_bucket_region
+        - s3_bucket_website_domain
+        - s3_bucket_website_endpoint
+    tf-version: 1.5.5

@@ -1,0 +1,116 @@
+spec_version: 2
+description: |
+  Creates single IAM role which can be assumed by trusted resources using OpenID Connect Federated Users.
+  * Creating IAM OIDC Identity Providers - https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html
+  * This module supports IAM Roles for kubernetes service accounts as described in the EKS documentation - https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+inputs:
+  allow_self_assume_role:
+    type: string
+    description: Determines whether to allow the role to be [assume itself](https://aws.amazon.com/blogs/security/announcing-an-update-to-iam-role-trust-policy-behavior/)
+  aws_account_id:
+    type: string
+    description: The AWS account ID where the OIDC provider lives, leave empty to use the account for the AWS provider
+  create_role:
+    type: string
+    description: Whether to create a role
+  force_detach_policies:
+    type: string
+    description: Whether policies should be detached from this role when destroying
+  max_session_duration:
+    type: string
+    default: 3600
+    description: Maximum CLI/API session duration in seconds between 3600 and 43200
+  number_of_role_policy_arns:
+    type: string
+    default: 'null'
+    description: Number of IAM policies to attach to IAM role
+  oidc_fully_qualified_audiences:
+    type: string
+    default: '[]'
+    description: The audience to be added to the role policy. Set to sts.amazonaws.com for cross-account assumable role. Leave empty otherwise.
+  oidc_fully_qualified_subjects:
+    type: string
+    default: '[]'
+    description: The fully qualified OIDC subjects to be added to the role policy
+  oidc_subjects_with_wildcards:
+    type: string
+    default: '[]'
+    description: The OIDC subject using wildcards to be added to the role policy
+  provider_url:
+    type: string
+    description: URL of the OIDC Provider. Use provider_urls to specify several URLs.
+  provider_urls:
+    type: string
+    default: '[]'
+    description: List of URLs of the OIDC Providers
+  role_description:
+    type: string
+    description: IAM Role description
+  role_name:
+    type: string
+    default: 'null'
+    description: IAM role name
+  role_name_prefix:
+    type: string
+    default: 'null'
+    description: IAM role name prefix
+  role_path:
+    type: string
+    default: /
+    description: Path of IAM role
+  role_permissions_boundary_arn:
+    type: string
+    description: Permissions boundary ARN to use for IAM role
+  role_policy_arns:
+    type: string
+    default: '[]'
+    description: List of ARNs of IAM policies to attach to IAM role
+  agent:
+    type: agent
+outputs:
+  iam-assumable-role-with-oidc_iam_role_arn:
+    value: '{{ .grains.iam-assumable-role-with-oidc.outputs.iam_role_arn }}'
+    quick: true
+  iam-assumable-role-with-oidc_iam_role_name:
+    value: '{{ .grains.iam-assumable-role-with-oidc.outputs.iam_role_name }}'
+    quick: true
+  iam-assumable-role-with-oidc_iam_role_path:
+    value: '{{ .grains.iam-assumable-role-with-oidc.outputs.iam_role_path }}'
+    quick: true
+  iam-assumable-role-with-oidc_iam_role_unique_id:
+    value: '{{ .grains.iam-assumable-role-with-oidc.outputs.iam_role_unique_id }}'
+    quick: true
+grains:
+  iam-assumable-role-with-oidc:
+    kind: terraform
+    spec:
+      source:
+        path: AWS/assets/terraform-aws-iam-assumable-role-with-oidc
+      agent:
+        name: '{{ .inputs.agent }}'
+      env-vars: []
+      version: 1.5.5
+      inputs:
+        - allow_self_assume_role: '{{ .inputs.allow_self_assume_role }}'
+        - aws_account_id: '{{ .inputs.aws_account_id }}'
+        - create_role: '{{ .inputs.create_role }}'
+        - force_detach_policies: '{{ .inputs.force_detach_policies }}'
+        - max_session_duration: '{{ .inputs.max_session_duration }}'
+        - number_of_role_policy_arns: '{{ .inputs.number_of_role_policy_arns }}'
+        - oidc_fully_qualified_audiences: '{{ .inputs.oidc_fully_qualified_audiences }}'
+        - oidc_fully_qualified_subjects: '{{ .inputs.oidc_fully_qualified_subjects }}'
+        - oidc_subjects_with_wildcards: '{{ .inputs.oidc_subjects_with_wildcards }}'
+        - provider_url: '{{ .inputs.provider_url }}'
+        - provider_urls: '{{ .inputs.provider_urls }}'
+        - role_description: '{{ .inputs.role_description }}'
+        - role_name: '{{ .inputs.role_name }}'
+        - role_name_prefix: '{{ .inputs.role_name_prefix }}'
+        - role_path: '{{ .inputs.role_path }}'
+        - role_permissions_boundary_arn: '{{ .inputs.role_permissions_boundary_arn }}'
+        - role_policy_arns: '{{ .inputs.role_policy_arns }}'
+        - tags: '{}'
+      outputs:
+        - iam_role_arn
+        - iam_role_name
+        - iam_role_path
+        - iam_role_unique_id

@@ -1,0 +1,530 @@
+spec_version: 2
+description: |
+  Creates RDS DB instance.
+inputs:
+  identifier:
+    type: string
+    description: The name of the RDS instance
+  engine:
+    type: string
+    default: postgres
+    allowed-values:
+      - aurora
+      - aurora-mysql
+      - aurora-postgresql
+      - docdb
+      - mariadb
+      - mysql
+      - neptune
+      - oracle-ee
+      - oracle-se
+      - oracle-se1
+      - oracle-se2
+      - postgres
+      - sqlserver-ee
+      - sqlserver-ex
+      - sqlserver-se
+      - sqlserver-web
+    description: The database engine to use
+  engine_version:
+    type: string
+    default: latest
+    description: The engine version to use
+  allocated_storage:
+    type: string
+    default: 'null'
+    description: The allocated storage in gigabytes
+  allow_major_version_upgrade:
+    type: string
+    description: Indicates that major version upgrades are allowed. Changing this parameter does not result in an outage and the change is asynchronously applied as soon as possible
+  apply_immediately:
+    type: string
+    description: Specifies whether any database modifications are applied immediately, or during the next maintenance window
+  auto_minor_version_upgrade:
+    type: string
+    default: true
+    description: Indicates that minor engine upgrades will be applied automatically to the DB instance during the maintenance window
+  availability_zone:
+    type: string
+    default: 'null'
+    description: The Availability Zone of the RDS instance
+  backup_retention_period:
+    type: string
+    default: 'null'
+    description: The days to retain backups for
+  backup_window:
+    type: string
+    default: 'null'
+    description: 'The daily time range (in UTC) during which automated backups are created if they are enabled. Example: ''09:46-10:16''. Must not overlap with maintenance_window'
+  blue_green_update:
+    type: string
+    default: '{}'
+    description: Enables low-downtime updates using RDS Blue/Green deployments.
+  ca_cert_identifier:
+    type: string
+    default: 'null'
+    description: Specifies the identifier of the CA certificate for the DB instance
+  character_set_name:
+    type: string
+    default: 'null'
+    description: The character set name to use for DB encoding in Oracle instances. This can't be changed. See Oracle Character Sets Supported in Amazon RDS and Collations and Character Sets for Microsoft SQL Server for more information. This can only be set on creation.
+  cloudwatch_log_group_class:
+    type: string
+    default: 'null'
+    description: 'Specified the log class of the log group. Possible values are: STANDARD or INFREQUENT_ACCESS'
+  cloudwatch_log_group_kms_key_id:
+    type: string
+    default: 'null'
+    description: The ARN of the KMS Key to use when encrypting log data
+  cloudwatch_log_group_retention_in_days:
+    type: string
+    default: 7
+    description: The number of days to retain CloudWatch logs for the DB instance
+  cloudwatch_log_group_skip_destroy:
+    type: string
+    default: 'null'
+    description: Set to true if you do not wish the log group (and any logs it may contain) to be deleted at destroy time, and instead just remove the log group from the Terraform state
+  copy_tags_to_snapshot:
+    type: string
+    description: On delete, copy all Instance tags to the final snapshot
+  create:
+    type: string
+    default: true
+    description: Whether to create this resource or not?
+  create_cloudwatch_log_group:
+    type: string
+    description: Determines whether a CloudWatch log group is created for each `enabled_cloudwatch_logs_exports`
+  create_monitoring_role:
+    type: string
+    description: Create IAM role with a defined name that permits RDS to send enhanced monitoring metrics to CloudWatch Logs.
+  custom_iam_instance_profile:
+    type: string
+    default: 'null'
+    description: RDS custom iam instance profile
+  db_instance_tags:
+    type: string
+    default: '{}'
+    description: A map of additional tags for the DB instance
+  db_name:
+    type: string
+    default: 'null'
+    description: The DB name to create. If omitted, no database is created initially
+  db_subnet_group_name:
+    type: string
+    default: 'null'
+    description: Name of DB subnet group. DB instance will be created in the VPC associated with the DB subnet group. If unspecified, will be created in the default VPC
+  dedicated_log_volume:
+    type: string
+    description: Use a dedicated log volume (DLV) for the DB instance. Requires Provisioned IOPS.
+  delete_automated_backups:
+    type: string
+    default: true
+    description: Specifies whether to remove automated backups immediately after the DB instance is deleted
+  deletion_protection:
+    type: string
+    description: The database can't be deleted when this value is set to true.
+  domain:
+    type: string
+    default: 'null'
+    description: The ID of the Directory Service Active Directory domain to create the instance in
+  domain_auth_secret_arn:
+    type: string
+    default: 'null'
+    description: (Optional, but required if domain_fqdn is provided) The ARN for the Secrets Manager secret with the self managed Active Directory credentials for the user joining the domain. Conflicts with domain and domain_iam_role_name.
+  domain_dns_ips:
+    type: string
+    default: 'null'
+    description: (Optional, but required if domain_fqdn is provided) The IPv4 DNS IP addresses of your primary and secondary self managed Active Directory domain controllers. Two IP addresses must be provided. If there isn't a secondary domain controller, use the IP address of the primary domain controller for both entries in the list. Conflicts with domain and domain_iam_role_name.
+  domain_fqdn:
+    type: string
+    default: 'null'
+    description: The fully qualified domain name (FQDN) of the self managed Active Directory domain. Conflicts with domain and domain_iam_role_name.
+  domain_iam_role_name:
+    type: string
+    default: 'null'
+    description: (Required if domain is provided) The name of the IAM role to be used when making API calls to the Directory Service
+  domain_ou:
+    type: string
+    default: 'null'
+    description: (Optional, but required if domain_fqdn is provided) The self managed Active Directory organizational unit for your DB instance to join. Conflicts with domain and domain_iam_role_name.
+  enabled_cloudwatch_logs_exports:
+    type: string
+    default: '[]'
+    description: 'List of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on engine): alert, audit, error, general, listener, slowquery, trace, postgresql (PostgreSQL), upgrade (PostgreSQL).'
+  final_snapshot_identifier_prefix:
+    type: string
+    default: final
+    description: The name which is prefixed to the final snapshot on cluster destroy
+  iam_database_authentication_enabled:
+    type: string
+    description: Specifies whether or mappings of AWS Identity and Access Management (IAM) accounts to database accounts is enabled
+  instance_class:
+    type: string
+    default: 'null'
+    description: The instance type of the RDS instance
+  iops:
+    type: string
+    default: 'null'
+    description: The amount of provisioned IOPS. Setting this implies a storage_type of 'io1' or `gp3`. See `notes` for limitations regarding this variable for `gp3`
+  kms_key_id:
+    type: string
+    default: 'null'
+    description: The ARN for the KMS encryption key. If creating an encrypted replica, set this to the destination KMS ARN. If storage_encrypted is set to true and kms_key_id is not specified the default KMS key created in your account will be used
+  license_model:
+    type: string
+    default: 'null'
+    description: License model information for this DB instance. Optional, but required for some DB engines, i.e. Oracle SE1
+  maintenance_window:
+    type: string
+    default: 'null'
+    description: 'The window to perform maintenance in. Syntax: ''ddd:hh24:mi-ddd:hh24:mi''. Eg: ''Mon:00:00-Mon:03:00'''
+  manage_master_user_password:
+    type: string
+    default: true
+    description: Set to true to allow RDS to manage the master user password in Secrets Manager. Cannot be set if password is provided
+  manage_master_user_password_rotation:
+    type: string
+    description: Whether to manage the master user password rotation. By default, false on creation, rotation is managed by RDS. Setting this value to false after previously having been set to true will disable automatic rotation.
+  master_user_password_rotate_immediately:
+    type: string
+    default: 'null'
+    description: Specifies whether to rotate the secret immediately or wait until the next scheduled rotation window.
+  master_user_password_rotation_automatically_after_days:
+    type: string
+    default: 'null'
+    description: Specifies the number of days between automatic scheduled rotations of the secret. Either automatically_after_days or schedule_expression must be specified.
+  master_user_password_rotation_duration:
+    type: string
+    default: 'null'
+    description: The length of the rotation window in hours. For example, 3h for a three hour window.
+  master_user_password_rotation_schedule_expression:
+    type: string
+    default: 'null'
+    description: A cron() or rate() expression that defines the schedule for rotating your secret. Either automatically_after_days or schedule_expression must be specified.
+  master_user_secret_kms_key_id:
+    type: string
+    default: 'null'
+    description: |2
+        The key ARN, key ID, alias ARN or alias name for the KMS key to encrypt the master user password secret in Secrets Manager.
+        If not specified, the default KMS key for your Amazon Web Services account is used.
+  max_allocated_storage:
+    type: string
+    description: Specifies the value for Storage Autoscaling
+  monitoring_interval:
+    type: string
+    description: 'The interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB instance. To disable collecting Enhanced Monitoring metrics, specify 0. The default is 0. Valid Values: 0, 1, 5, 10, 15, 30, 60.'
+  monitoring_role_arn:
+    type: string
+    default: 'null'
+    description: The ARN for the IAM role that permits RDS to send enhanced monitoring metrics to CloudWatch Logs. Must be specified if monitoring_interval is non-zero.
+  monitoring_role_description:
+    type: string
+    default: 'null'
+    description: Description of the monitoring IAM role
+  monitoring_role_name:
+    type: string
+    default: rds-monitoring-role
+    description: Name of the IAM role which will be created when create_monitoring_role is enabled.
+  monitoring_role_permissions_boundary:
+    type: string
+    default: 'null'
+    description: ARN of the policy that is used to set the permissions boundary for the monitoring IAM role
+  monitoring_role_use_name_prefix:
+    type: string
+    description: Determines whether to use `monitoring_role_name` as is or create a unique identifier beginning with `monitoring_role_name` as the specified prefix
+  multi_az:
+    type: string
+    description: Specifies if the RDS instance is multi-AZ
+  nchar_character_set_name:
+    type: string
+    default: 'null'
+    description: The national character set is used in the NCHAR, NVARCHAR2, and NCLOB data types for Oracle instances. This can't be changed.
+  network_type:
+    type: string
+    default: 'null'
+    description: The type of network stack
+  option_group_name:
+    type: string
+    default: 'null'
+    description: Name of the DB option group to associate.
+  parameter_group_name:
+    type: string
+    default: 'null'
+    description: Name of the DB parameter group to associate
+  password:
+    type: string
+    default: 'null'
+    description: Password for the master DB user. Note that this may show up in logs, and it will be stored in the state file
+  performance_insights_enabled:
+    type: string
+    description: Specifies whether Performance Insights are enabled
+  performance_insights_kms_key_id:
+    type: string
+    default: 'null'
+    description: The ARN for the KMS key to encrypt Performance Insights data.
+  performance_insights_retention_period:
+    type: string
+    default: 7
+    description: The amount of time in days to retain Performance Insights data. Either 7 (7 days) or 731 (2 years).
+  port:
+    type: string
+    default: 'null'
+    description: The port on which the DB accepts connections
+  publicly_accessible:
+    type: string
+    description: Bool to control if instance is publicly accessible
+  replica_mode:
+    type: string
+    default: 'null'
+    description: Specifies whether the replica is in either mounted or open-read-only mode. This attribute is only supported by Oracle instances. Oracle replicas operate in open-read-only mode unless otherwise specified
+  replicate_source_db:
+    type: string
+    default: 'null'
+    description: Specifies that this resource is a Replicate database, and to use this value as the source database. This correlates to the identifier of another Amazon RDS Database to replicate.
+  restore_to_point_in_time:
+    type: string
+    default: 'null'
+    description: Restore to a point in time (MySQL is NOT supported)
+  s3_import:
+    type: string
+    default: 'null'
+    description: Restore from a Percona Xtrabackup in S3 (only MySQL is supported)
+  skip_final_snapshot:
+    type: string
+    description: Determines whether a final DB snapshot is created before the DB instance is deleted. If true is specified, no DBSnapshot is created. If false is specified, a DB snapshot is created before the DB instance is deleted
+  snapshot_identifier:
+    type: string
+    default: 'null'
+    description: 'Specifies whether or not to create this database from a snapshot. This correlates to the snapshot ID you''d find in the RDS console, e.g: rds:production-2015-06-26-06-05.'
+  storage_encrypted:
+    type: string
+    default: true
+    description: Specifies whether the DB instance is encrypted
+  storage_throughput:
+    type: string
+    default: 'null'
+    description: Storage throughput value for the DB instance. This setting applies only to the `gp3` storage type. See `notes` for limitations regarding this variable for `gp3`
+  storage_type:
+    type: string
+    default: 'null'
+    description: One of 'standard' (magnetic), 'gp2' (general purpose SSD), 'gp3' (new generation of general purpose SSD), or 'io1' (provisioned IOPS SSD). The default is 'io1' if iops is specified, 'gp2' if not. If you specify 'io1' or 'gp3' , you must also include a value for the 'iops' parameter
+  timeouts:
+    type: string
+    default: '{}'
+    description: Updated Terraform resource management timeouts. Applies to `aws_db_instance` in particular to permit resource management times
+  timezone:
+    type: string
+    default: 'null'
+    description: Time zone of the DB instance. timezone is currently only supported by Microsoft SQL Server. The timezone can only be set on creation. See MSSQL User Guide for more information.
+  use_identifier_prefix:
+    type: string
+    description: Determines whether to use `identifier` as is or create a unique identifier beginning with `identifier` as the specified prefix
+  username:
+    type: string
+    default: 'null'
+    description: Username for the master DB user
+  vpc_security_group_ids:
+    type: string
+    default: '[]'
+    description: List of VPC security groups to associate
+  agent:
+    type: agent
+outputs:
+  db_instance_db_instance_address:
+    value: '{{ .grains.db_instance.outputs.db_instance_address }}'
+    quick: true
+  db_instance_db_instance_arn:
+    value: '{{ .grains.db_instance.outputs.db_instance_arn }}'
+    quick: true
+  db_instance_db_instance_availability_zone:
+    value: '{{ .grains.db_instance.outputs.db_instance_availability_zone }}'
+    quick: true
+  db_instance_db_instance_ca_cert_identifier:
+    value: '{{ .grains.db_instance.outputs.db_instance_ca_cert_identifier }}'
+    quick: true
+  db_instance_db_instance_cloudwatch_log_groups:
+    value: '{{ .grains.db_instance.outputs.db_instance_cloudwatch_log_groups }}'
+    quick: true
+  db_instance_db_instance_domain:
+    value: '{{ .grains.db_instance.outputs.db_instance_domain }}'
+    quick: true
+  db_instance_db_instance_domain_auth_secret_arn:
+    value: '{{ .grains.db_instance.outputs.db_instance_domain_auth_secret_arn }}'
+    quick: true
+  db_instance_db_instance_domain_dns_ips:
+    value: '{{ .grains.db_instance.outputs.db_instance_domain_dns_ips }}'
+    quick: true
+  db_instance_db_instance_domain_fqdn:
+    value: '{{ .grains.db_instance.outputs.db_instance_domain_fqdn }}'
+    quick: true
+  db_instance_db_instance_domain_iam_role_name:
+    value: '{{ .grains.db_instance.outputs.db_instance_domain_iam_role_name }}'
+    quick: true
+  db_instance_db_instance_domain_ou:
+    value: '{{ .grains.db_instance.outputs.db_instance_domain_ou }}'
+    quick: true
+  db_instance_db_instance_endpoint:
+    value: '{{ .grains.db_instance.outputs.db_instance_endpoint }}'
+    quick: true
+  db_instance_db_instance_engine:
+    value: '{{ .grains.db_instance.outputs.db_instance_engine }}'
+    quick: true
+  db_instance_db_instance_engine_version_actual:
+    value: '{{ .grains.db_instance.outputs.db_instance_engine_version_actual }}'
+    quick: true
+  db_instance_db_instance_hosted_zone_id:
+    value: '{{ .grains.db_instance.outputs.db_instance_hosted_zone_id }}'
+    quick: true
+  db_instance_db_instance_identifier:
+    value: '{{ .grains.db_instance.outputs.db_instance_identifier }}'
+    quick: true
+  db_instance_db_instance_master_user_secret_arn:
+    value: '{{ .grains.db_instance.outputs.db_instance_master_user_secret_arn }}'
+    quick: true
+  db_instance_db_instance_name:
+    value: '{{ .grains.db_instance.outputs.db_instance_name }}'
+    quick: true
+  db_instance_db_instance_port:
+    value: '{{ .grains.db_instance.outputs.db_instance_port }}'
+    quick: true
+  db_instance_db_instance_resource_id:
+    value: '{{ .grains.db_instance.outputs.db_instance_resource_id }}'
+    quick: true
+  db_instance_db_instance_secretsmanager_secret_rotation_enabled:
+    value: '{{ .grains.db_instance.outputs.db_instance_secretsmanager_secret_rotation_enabled }}'
+    quick: true
+  db_instance_db_instance_status:
+    value: '{{ .grains.db_instance.outputs.db_instance_status }}'
+    quick: true
+  db_instance_db_instance_username:
+    value: '{{ .grains.db_instance.outputs.db_instance_username }}'
+    quick: true
+  db_instance_db_listener_endpoint:
+    value: '{{ .grains.db_instance.outputs.db_listener_endpoint }}'
+    quick: true
+  db_instance_enhanced_monitoring_iam_role_arn:
+    value: '{{ .grains.db_instance.outputs.enhanced_monitoring_iam_role_arn }}'
+    quick: true
+  db_instance_enhanced_monitoring_iam_role_name:
+    value: '{{ .grains.db_instance.outputs.enhanced_monitoring_iam_role_name }}'
+    quick: true
+grains:
+  db_instance:
+    kind: terraform
+    spec:
+      source:
+        path: AWS/assets/terraform-aws-rds-db-instance
+      agent:
+        name: '{{ .inputs.agent }}'
+      env-vars: []
+      version: 1.5.5
+      inputs:
+        - allocated_storage: '{{ .inputs.allocated_storage }}'
+        - allow_major_version_upgrade: '{{ .inputs.allow_major_version_upgrade }}'
+        - apply_immediately: '{{ .inputs.apply_immediately }}'
+        - auto_minor_version_upgrade: '{{ .inputs.auto_minor_version_upgrade }}'
+        - availability_zone: '{{ .inputs.availability_zone }}'
+        - backup_retention_period: '{{ .inputs.backup_retention_period }}'
+        - backup_window: '{{ .inputs.backup_window }}'
+        - blue_green_update: '{{ .inputs.blue_green_update }}'
+        - ca_cert_identifier: '{{ .inputs.ca_cert_identifier }}'
+        - character_set_name: '{{ .inputs.character_set_name }}'
+        - cloudwatch_log_group_class: '{{ .inputs.cloudwatch_log_group_class }}'
+        - cloudwatch_log_group_kms_key_id: '{{ .inputs.cloudwatch_log_group_kms_key_id }}'
+        - cloudwatch_log_group_retention_in_days: '{{ .inputs.cloudwatch_log_group_retention_in_days }}'
+        - cloudwatch_log_group_skip_destroy: '{{ .inputs.cloudwatch_log_group_skip_destroy }}'
+        - copy_tags_to_snapshot: '{{ .inputs.copy_tags_to_snapshot }}'
+        - create: '{{ .inputs.create }}'
+        - create_cloudwatch_log_group: '{{ .inputs.create_cloudwatch_log_group }}'
+        - create_monitoring_role: '{{ .inputs.create_monitoring_role }}'
+        - custom_iam_instance_profile: '{{ .inputs.custom_iam_instance_profile }}'
+        - db_instance_tags: '{{ .inputs.db_instance_tags }}'
+        - db_name: '{{ .inputs.db_name }}'
+        - db_subnet_group_name: '{{ .inputs.db_subnet_group_name }}'
+        - dedicated_log_volume: '{{ .inputs.dedicated_log_volume }}'
+        - delete_automated_backups: '{{ .inputs.delete_automated_backups }}'
+        - deletion_protection: '{{ .inputs.deletion_protection }}'
+        - domain: '{{ .inputs.domain }}'
+        - domain_auth_secret_arn: '{{ .inputs.domain_auth_secret_arn }}'
+        - domain_dns_ips: '{{ .inputs.domain_dns_ips }}'
+        - domain_fqdn: '{{ .inputs.domain_fqdn }}'
+        - domain_iam_role_name: '{{ .inputs.domain_iam_role_name }}'
+        - domain_ou: '{{ .inputs.domain_ou }}'
+        - enabled_cloudwatch_logs_exports: '{{ .inputs.enabled_cloudwatch_logs_exports }}'
+        - engine: '{{ .inputs.engine }}'
+        - engine_version: '{{ .inputs.engine_version }}'
+        - final_snapshot_identifier_prefix: '{{ .inputs.final_snapshot_identifier_prefix }}'
+        - iam_database_authentication_enabled: '{{ .inputs.iam_database_authentication_enabled }}'
+        - identifier: '{{ .inputs.identifier }}'
+        - instance_class: '{{ .inputs.instance_class }}'
+        - iops: '{{ .inputs.iops }}'
+        - kms_key_id: '{{ .inputs.kms_key_id }}'
+        - license_model: '{{ .inputs.license_model }}'
+        - maintenance_window: '{{ .inputs.maintenance_window }}'
+        - manage_master_user_password: '{{ .inputs.manage_master_user_password }}'
+        - manage_master_user_password_rotation: '{{ .inputs.manage_master_user_password_rotation }}'
+        - master_user_password_rotate_immediately: '{{ .inputs.master_user_password_rotate_immediately }}'
+        - master_user_password_rotation_automatically_after_days: '{{ .inputs.master_user_password_rotation_automatically_after_days }}'
+        - master_user_password_rotation_duration: '{{ .inputs.master_user_password_rotation_duration }}'
+        - master_user_password_rotation_schedule_expression: '{{ .inputs.master_user_password_rotation_schedule_expression }}'
+        - master_user_secret_kms_key_id: '{{ .inputs.master_user_secret_kms_key_id }}'
+        - max_allocated_storage: '{{ .inputs.max_allocated_storage }}'
+        - monitoring_interval: '{{ .inputs.monitoring_interval }}'
+        - monitoring_role_arn: '{{ .inputs.monitoring_role_arn }}'
+        - monitoring_role_description: '{{ .inputs.monitoring_role_description }}'
+        - monitoring_role_name: '{{ .inputs.monitoring_role_name }}'
+        - monitoring_role_permissions_boundary: '{{ .inputs.monitoring_role_permissions_boundary }}'
+        - monitoring_role_use_name_prefix: '{{ .inputs.monitoring_role_use_name_prefix }}'
+        - multi_az: '{{ .inputs.multi_az }}'
+        - nchar_character_set_name: '{{ .inputs.nchar_character_set_name }}'
+        - network_type: '{{ .inputs.network_type }}'
+        - option_group_name: '{{ .inputs.option_group_name }}'
+        - parameter_group_name: '{{ .inputs.parameter_group_name }}'
+        - password: '{{ .inputs.password }}'
+        - performance_insights_enabled: '{{ .inputs.performance_insights_enabled }}'
+        - performance_insights_kms_key_id: '{{ .inputs.performance_insights_kms_key_id }}'
+        - performance_insights_retention_period: '{{ .inputs.performance_insights_retention_period }}'
+        - port: '{{ .inputs.port }}'
+        - publicly_accessible: '{{ .inputs.publicly_accessible }}'
+        - replica_mode: '{{ .inputs.replica_mode }}'
+        - replicate_source_db: '{{ .inputs.replicate_source_db }}'
+        - restore_to_point_in_time: '{{ .inputs.restore_to_point_in_time }}'
+        - s3_import: '{{ .inputs.s3_import }}'
+        - skip_final_snapshot: '{{ .inputs.skip_final_snapshot }}'
+        - snapshot_identifier: '{{ .inputs.snapshot_identifier }}'
+        - storage_encrypted: '{{ .inputs.storage_encrypted }}'
+        - storage_throughput: '{{ .inputs.storage_throughput }}'
+        - storage_type: '{{ .inputs.storage_type }}'
+        - tags: '{}'
+        - timeouts: '{{ .inputs.timeouts }}'
+        - timezone: '{{ .inputs.timezone }}'
+        - use_identifier_prefix: '{{ .inputs.use_identifier_prefix }}'
+        - username: '{{ .inputs.username }}'
+        - vpc_security_group_ids: '{{ .inputs.vpc_security_group_ids }}'
+      outputs:
+        - db_instance_address
+        - db_instance_arn
+        - db_instance_availability_zone
+        - db_instance_ca_cert_identifier
+        - db_instance_cloudwatch_log_groups
+        - db_instance_domain
+        - db_instance_domain_auth_secret_arn
+        - db_instance_domain_dns_ips
+        - db_instance_domain_fqdn
+        - db_instance_domain_iam_role_name
+        - db_instance_domain_ou
+        - db_instance_endpoint
+        - db_instance_engine
+        - db_instance_engine_version_actual
+        - db_instance_hosted_zone_id
+        - db_instance_identifier
+        - db_instance_master_user_secret_arn
+        - db_instance_name
+        - db_instance_port
+        - db_instance_resource_id
+        - db_instance_secretsmanager_secret_rotation_enabled
+        - db_instance_status
+        - db_instance_username
+        - db_listener_endpoint
+        - enhanced_monitoring_iam_role_arn
+        - enhanced_monitoring_iam_role_name
