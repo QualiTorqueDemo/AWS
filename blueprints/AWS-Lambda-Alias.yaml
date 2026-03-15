@@ -3,6 +3,13 @@ description: |
   Terraform module, which creates Lambda alias as well as takes care of async event configuration and Lambda permissions for alias.
   Lambda Alias is required to do complex Lambda deployments, eg. using external tools like AWS CodeDeploy.
   This Terraform module is the part of serverless.tf framework, which aims to simplify all operations when working with the serverless in Terraform.
+metadata:
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+    - key: category
+      value: Cloud
+    - key: Terraform
 inputs:
   name:
     type: string

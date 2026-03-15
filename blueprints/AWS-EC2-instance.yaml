@@ -1,6 +1,15 @@
 spec_version: 2
 description: |
   This Blueprints creates an EC2 instance on AWS.
+metadata:
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+    - key: category
+      value: Cloud
+    - key: category
+      value: VMaaS
+    - key: Terraform
 inputs:
   name:
     type: string

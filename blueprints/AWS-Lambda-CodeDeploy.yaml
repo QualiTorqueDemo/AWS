@@ -8,6 +8,13 @@ description: |
   1. Create JSON object with required AppSpec configuration. Optionally, you can store deploy script for debug purposes by setting save_deploy_script = true.
   2. Run aws deploy create-deployment command if create_deployment = true and run_deployment = true was set.
   3. After deployment is created, it can wait for the completion if wait_deployment_completion = true. Be aware, that Terraform will lock the execution and it can fail if it runs for a long period of time. Set this flag for fast deployments (eg, deployment_config_name = "CodeDeployDefault.LambdaAllAtOnce").
+metadata:
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+    - key: category
+      value: Cloud
+    - key: Terraform
 inputs:
   app_name:
     type: string

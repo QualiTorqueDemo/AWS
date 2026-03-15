@@ -1,6 +1,13 @@
 spec_version: 2
 description: |
   Creates RDS DB instance.
+metadata:
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+    - key: category
+      value: Cloud
+    - key: Terraform
 inputs:
   identifier:
     type: string

@@ -1,6 +1,13 @@
 spec_version: 2
 description: |
   Terraform module which creates Amazon EKS (Kubernetes) resources
+metadata:
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+    - key: category
+      value: Cloud
+    - key: Terraform
 inputs:
   cluster_name:
     type: string

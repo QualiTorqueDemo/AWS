@@ -8,6 +8,13 @@ description: |
   - A Node IAM role that Karpenter will use to create an Instance Profile for the nodes to receive IAM permissions
   - An access entry for the Node IAM role to allow nodes to join the cluster
   - SQS queue and EventBridge event rules for Karpenter to utilize for spot termination handling, capacity re-balancing, etc.
+metadata:
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+    - key: category
+      value: Cloud
+    - key: Terraform
 inputs:
   access_entry_type:
     type: string

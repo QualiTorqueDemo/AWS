@@ -9,6 +9,13 @@ description: |
   - server-side encryption
   - object locking
   - grants (required for CloudFront logs)
+metadata:
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+    - key: category
+      value: Cloud
+    - key: Terraform
 inputs:
   agent:
     type: agent

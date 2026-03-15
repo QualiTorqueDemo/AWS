@@ -2,6 +2,13 @@ spec_version: 2
 description: |
   This blueprint manages the IAM account alias and password policy in AWS.
   The blueprint aims to configure and enforce specific password policies for IAM users within the AWS environment, ensuring security and compliance with set standards.
+metadata:
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+    - key: category
+      value: Cloud
+    - key: Terraform
 inputs:
   account_alias:
     type: string

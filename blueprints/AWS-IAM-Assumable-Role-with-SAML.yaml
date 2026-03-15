@@ -3,6 +3,13 @@ description: |
   Creates single IAM role which can be assumed by trusted resources using SAML Federated Users.
   Creating IAM SAML Identity Providers Enabling SAML 2.0 Federated Users to Access the AWS Management Console - 
   https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_saml.html
+metadata:
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+    - key: category
+      value: Cloud
+    - key: Terraform
 inputs:
   allow_self_assume_role:
     type: string
