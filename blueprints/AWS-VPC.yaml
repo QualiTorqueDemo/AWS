@@ -4,6 +4,8 @@ description: |
   There are public, private, database, ElastiCache, intra (private w/o Internet access) subnets, and NAT Gateways created in each availability zone.
 metadata:
   self-service: true
+  icon:
+    path: graphics/VPC.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

@@ -10,6 +10,8 @@ description: |
   3. After deployment is created, it can wait for the completion if wait_deployment_completion = true. Be aware, that Terraform will lock the execution and it can fail if it runs for a long period of time. Set this flag for fast deployments (eg, deployment_config_name = "CodeDeployDefault.LambdaAllAtOnce").
 metadata:
   self-service: true
+  icon:
+    path: graphics/AWS Lambda.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

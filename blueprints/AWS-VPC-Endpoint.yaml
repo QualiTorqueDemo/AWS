@@ -3,6 +3,8 @@ description: |
   Terraform sub-module which creates VPC endpoint resources on AWS.
 metadata:
   self-service: true
+  icon:
+    path: graphics/VPC.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

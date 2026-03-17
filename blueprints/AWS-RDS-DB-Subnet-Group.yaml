@@ -3,6 +3,8 @@ description: |
   Creates an AWS RDS DB subnet group.
 metadata:
   self-service: true
+  icon:
+    path: graphics/RDS DB.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

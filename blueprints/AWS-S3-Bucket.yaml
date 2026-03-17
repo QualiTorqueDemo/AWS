@@ -11,6 +11,8 @@ description: |
   - grants (required for CloudFront logs)
 metadata:
   self-service: true
+  icon:
+    path: graphics/S3 Bucket.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

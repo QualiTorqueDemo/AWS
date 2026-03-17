@@ -10,6 +10,8 @@ description: |
   - SQS queue and EventBridge event rules for Karpenter to utilize for spot termination handling, capacity re-balancing, etc.
 metadata:
   self-service: true
+  icon:
+    path: graphics/AWS EKS.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

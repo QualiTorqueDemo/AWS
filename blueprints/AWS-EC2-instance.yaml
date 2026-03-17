@@ -3,6 +3,8 @@ description: |
   This Blueprints creates an EC2 instance on AWS.
 metadata:
   self-service: true
+  icon:
+    path: graphics/aws_ec2.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

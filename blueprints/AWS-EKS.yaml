@@ -3,6 +3,8 @@ description: |
   Terraform module which creates Amazon EKS (Kubernetes) resources
 metadata:
   self-service: true
+  icon:
+    path: graphics/AWS EKS.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

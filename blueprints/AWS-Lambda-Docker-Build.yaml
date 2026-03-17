@@ -5,6 +5,8 @@ description: |
   This Terraform module is the part of serverless.tf framework, which aims to simplify all operations when working with the serverless in Terraform.
 metadata:
   self-service: true
+  icon:
+    path: graphics/AWS Lambda.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

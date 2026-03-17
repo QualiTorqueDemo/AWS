@@ -4,6 +4,8 @@ description: |
   The blueprint aims to configure and enforce specific password policies for IAM users within the AWS environment, ensuring security and compliance with set standards.
 metadata:
   self-service: true
+  icon:
+    path: graphics/AWS IAM.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

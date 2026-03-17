@@ -16,6 +16,8 @@ description: |
   - The key in the cluster_service_accounts is the exact name of the EKS cluster
 metadata:
   self-service: true
+  icon:
+    path: graphics/AWS IAM.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

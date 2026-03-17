@@ -11,6 +11,8 @@ description: |
   - Ingress and egress rules can be configured in a variety of ways.
 metadata:
   self-service: true
+  icon:
+    path: graphics/AWS Security Group.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

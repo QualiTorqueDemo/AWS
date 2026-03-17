@@ -3,6 +3,8 @@ description: |
   Creates RDS DB instance.
 metadata:
   self-service: true
+  icon:
+    path: graphics/AWS RDS.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS
