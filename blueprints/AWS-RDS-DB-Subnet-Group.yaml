@@ -42,6 +42,7 @@ grains:
     kind: terraform
     spec:
       source:
+        store: AWS
         path: assets/terraform-aws-rds-db-subnet-group
       agent:
         name: '{{ .inputs.agent }}'

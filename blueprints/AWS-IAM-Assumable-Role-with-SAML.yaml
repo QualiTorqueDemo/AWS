@@ -89,6 +89,7 @@ grains:
     kind: terraform
     spec:
       source:
+        store: AWS
         path: assets/terraform-aws-iam-assumable-role-with-saml
       agent:
         name: '{{ .inputs.agent }}'

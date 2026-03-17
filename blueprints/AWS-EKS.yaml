@@ -478,6 +478,7 @@ grains:
     kind: terraform
     spec:
       source:
+        store: AWS
         path: assets/terraform-aws-eks
       agent:
         name: '{{ .inputs.agent }}'

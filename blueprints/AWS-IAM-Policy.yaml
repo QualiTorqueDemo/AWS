@@ -62,6 +62,7 @@ grains:
     kind: terraform
     spec:
       source:
+        store: AWS
         path: assets/terraform-aws-iam-policy
       agent:
         name: '{{ .inputs.agent }}'

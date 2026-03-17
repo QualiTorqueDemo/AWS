@@ -119,6 +119,7 @@ grains:
     kind: terraform
     spec:
       source:
+        store: AWS
         path: assets/terraform-aws-lambda-alias
       agent:
         name: '{{ .inputs.agent }}'
