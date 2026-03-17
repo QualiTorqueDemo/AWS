@@ -3,6 +3,7 @@ description: |
   This Blueprints creates an EC2 instance on AWS.
 metadata:
   self-service: true
+  display-name: AWS EC2 Instance
   icon:
     path: graphics/aws_ec2.svg
   blueprint-labels:
@@ -368,7 +369,8 @@ grains:
         path: assets/terraform-aws-ec2-instance
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - ami: '{{ .inputs.ami }}'

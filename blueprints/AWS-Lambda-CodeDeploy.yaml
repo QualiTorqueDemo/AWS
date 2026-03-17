@@ -10,6 +10,7 @@ description: |
   3. After deployment is created, it can wait for the completion if wait_deployment_completion = true. Be aware, that Terraform will lock the execution and it can fail if it runs for a long period of time. Set this flag for fast deployments (eg, deployment_config_name = "CodeDeployDefault.LambdaAllAtOnce").
 metadata:
   self-service: true
+  display-name: AWS Lambda with CodeDeploy
   icon:
     path: graphics/AWS Lambda.svg
   blueprint-labels:
@@ -182,7 +183,8 @@ grains:
         path: assets/terraform-aws-lambda-deploy
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - after_allow_traffic_hook_arn: '{{ .inputs.after_allow_traffic_hook_arn }}'

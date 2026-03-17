@@ -3,6 +3,7 @@ description: |
   Terraform module which creates Amazon EKS (Kubernetes) resources
 metadata:
   self-service: true
+  display-name: AWS EKS Cluster
   icon:
     path: graphics/AWS EKS.svg
   blueprint-labels:
@@ -29,7 +30,12 @@ inputs:
   authentication_mode:
     type: string
     default: API_AND_CONFIG_MAP
-    description: The authentication mode for the cluster. Valid values are `CONFIG_MAP`, `API` or `API_AND_CONFIG_MAP`
+    style: radio
+    allowed-values:
+      - API_AND_CONFIG_MAP
+      - API
+      - CONFIG_MAP
+    description: The authentication mode for the cluster
   cloudwatch_log_group_class:
     type: string
     default: 'null'
@@ -485,7 +491,8 @@ grains:
         path: assets/terraform-aws-eks
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - access_entries: '{{ .inputs.access_entries }}'

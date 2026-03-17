@@ -4,6 +4,7 @@ description: |
   The blueprint connects the inputs provided by the user to the Terraform module for IAM policy creation, allowing for customization of the policy's name, description, path, and other attributes. The end goal is to automate the creation of IAM policies in AWS based on user-defined parameters.
 metadata:
   self-service: true
+  display-name: AWS IAM Policy
   icon:
     path: graphics/AWS IAM.svg
   blueprint-labels:
@@ -69,7 +70,8 @@ grains:
         path: assets/terraform-aws-iam-policy
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - create_policy: '{{ .inputs.create_policy }}'

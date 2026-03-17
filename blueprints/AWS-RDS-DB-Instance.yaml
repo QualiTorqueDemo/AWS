@@ -3,6 +3,7 @@ description: |
   Creates RDS DB instance.
 metadata:
   self-service: true
+  display-name: AWS RDS Database Instance
   icon:
     path: graphics/AWS RDS.svg
   blueprint-labels:
@@ -264,6 +265,7 @@ inputs:
   password:
     type: string
     default: 'null'
+    sensitive: true
     description: Password for the master DB user. Note that this may show up in logs, and it will be stored in the state file
   performance_insights_enabled:
     type: string
@@ -427,7 +429,8 @@ grains:
         path: assets/terraform-aws-rds-db-instance
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - allocated_storage: '{{ .inputs.allocated_storage }}'

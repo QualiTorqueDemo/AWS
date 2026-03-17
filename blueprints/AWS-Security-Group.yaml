@@ -11,6 +11,7 @@ description: |
   - Ingress and egress rules can be configured in a variety of ways.
 metadata:
   self-service: true
+  display-name: AWS Security Group
   icon:
     path: graphics/AWS Security Group.svg
   blueprint-labels:
@@ -89,7 +90,11 @@ inputs:
     default: cassandra
   create:
     type: string
-    default: true
+    default: "true"
+    style: radio
+    allowed-values:
+      - "true"
+      - "false"
     description: Whether to create security group and all rules
   auto_computed_egress_rules:
     type: string
@@ -367,7 +372,11 @@ inputs:
     description: A mapping of tags to assign to security group
   use_name_prefix:
     type: string
-    default: true
+    default: "true"
+    style: radio
+    allowed-values:
+      - "true"
+      - "false"
     description: Whether to use name_prefix or fixed name. Should be true to able to update security group name after initial creation
   agent:
     type: agent
@@ -394,6 +403,85 @@ outputs:
   security_group_vpc_id:
     value: '{{ .grains.security_group.outputs.security_group_vpc_id }}'
     quick: true
+launch-form:
+  categories:
+    - name: Basic Configuration
+      inputs:
+        - name: agent
+        - name: name
+        - name: description
+        - name: vpc_id
+        - name: type
+        - name: create
+        - name: use_name_prefix
+        - name: tags
+    - name: Ingress Rules
+      inputs:
+        - name: auto_ingress_rules
+        - name: auto_ingress_with_self
+        - name: ingress_rules
+        - name: ingress_cidr_blocks
+        - name: ingress_ipv6_cidr_blocks
+        - name: ingress_with_cidr_blocks
+        - name: ingress_with_ipv6_cidr_blocks
+        - name: ingress_with_self
+        - name: ingress_with_source_security_group_id
+        - name: ingress_prefix_list_ids
+    - name: Egress Rules
+      inputs:
+        - name: auto_egress_rules
+        - name: auto_egress_with_self
+        - name: egress_rules
+        - name: egress_cidr_blocks
+        - name: egress_ipv6_cidr_blocks
+        - name: egress_with_cidr_blocks
+        - name: egress_with_ipv6_cidr_blocks
+        - name: egress_with_self
+        - name: egress_with_source_security_group_id
+        - name: egress_prefix_list_ids
+        - name: revoke_rules_on_delete
+    - name: Advanced (Computed Rules)
+      inputs:
+        - name: auto_computed_ingress_rules
+        - name: auto_computed_ingress_with_self
+        - name: auto_number_of_computed_ingress_rules
+        - name: auto_number_of_computed_ingress_with_self
+        - name: computed_ingress_rules
+        - name: computed_ingress_cidr_blocks
+        - name: computed_ingress_ipv6_cidr_blocks
+        - name: computed_ingress_with_cidr_blocks
+        - name: computed_ingress_with_ipv6_cidr_blocks
+        - name: computed_ingress_with_self
+        - name: computed_ingress_with_source_security_group_id
+        - name: computed_ingress_prefix_list_ids
+        - name: number_of_computed_ingress_rules
+        - name: number_of_computed_ingress_cidr_blocks
+        - name: number_of_computed_ingress_ipv6_cidr_blocks
+        - name: number_of_computed_ingress_with_cidr_blocks
+        - name: number_of_computed_ingress_with_ipv6_cidr_blocks
+        - name: number_of_computed_ingress_with_self
+        - name: number_of_computed_ingress_with_source_security_group_id
+        - name: number_of_computed_ingress_prefix_list_ids
+        - name: auto_computed_egress_rules
+        - name: auto_computed_egress_with_self
+        - name: auto_number_of_computed_egress_rules
+        - name: auto_number_of_computed_egress_with_self
+        - name: computed_egress_rules
+        - name: computed_egress_cidr_blocks
+        - name: computed_egress_ipv6_cidr_blocks
+        - name: computed_egress_with_cidr_blocks
+        - name: computed_egress_with_ipv6_cidr_blocks
+        - name: computed_egress_with_self
+        - name: computed_egress_with_source_security_group_id
+        - name: computed_egress_prefix_list_ids
+        - name: number_of_computed_egress_rules
+        - name: number_of_computed_egress_cidr_blocks
+        - name: number_of_computed_egress_ipv6_cidr_blocks
+        - name: number_of_computed_egress_with_cidr_blocks
+        - name: number_of_computed_egress_with_ipv6_cidr_blocks
+        - name: number_of_computed_egress_with_self
+        - name: number_of_computed_egress_with_source_security_group_id
+        - name: number_of_computed_egress_prefix_list_ids
 grains:
   security_group:
     kind: terraform
@@ -403,7 +491,8 @@ grains:
         path: '{{ "assets/terraform-aws-security-group/modules/" | append:  .inputs.type }}'
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       inputs:
         - auto_computed_egress_rules: '{{ .inputs.auto_computed_egress_rules }}'
         - auto_computed_egress_with_self: '{{ .inputs.auto_computed_egress_with_self }}'

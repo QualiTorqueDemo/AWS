@@ -4,6 +4,7 @@ description: |
   There are public, private, database, ElastiCache, intra (private w/o Internet access) subnets, and NAT Gateways created in each availability zone.
 metadata:
   self-service: true
+  display-name: AWS VPC
   icon:
     path: graphics/VPC.svg
   blueprint-labels:
@@ -355,7 +356,8 @@ grains:
         path: assets/terraform-aws-vpc
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       inputs: []
       outputs:
         - cgw_arns

@@ -1,16 +1,14 @@
 spec_version: 2
 description: |
-  Configuration in this directory creates S3 bucket which demos such capabilities:
-   - static web-site hosting
-  - access logging (for S3, ELB and ALB/NLB)
-  - versioning
+  Provisions an AWS S3 bucket with the following capabilities:
+  - Static web-site hosting
+  - Versioning
+  - Server-side encryption
+  - Lifecycle rules
   - CORS
-  - lifecycle rules
-  - server-side encryption
-  - object locking
-  - grants (required for CloudFront logs)
 metadata:
   self-service: true
+  display-name: AWS S3 Bucket
   icon:
     path: graphics/S3 Bucket.svg
   blueprint-labels:
@@ -26,9 +24,11 @@ outputs:
   complete_s3_bucket_website_domain:
     value: https://{{ .grains.complete_s3_bucket.outputs.s3_bucket_website_domain }}
     quick: true
+    kind: link
   complete_s3_bucket_website_endpoint:
     value: https://{{ .grains.complete_s3_bucket.outputs.s3_bucket_website_endpoint }}
     quick: true
+    kind: link
   complete_s3_bucket_arn:
     value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_arn }}'
     quick: true
@@ -62,7 +62,8 @@ grains:
         path: assets/terraform-aws-s3-bucket
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       inputs: []
       outputs:
         - s3_bucket_arn

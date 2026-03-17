@@ -5,6 +5,7 @@ description: |
   * This module supports IAM Roles for kubernetes service accounts as described in the EKS documentation - https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
 metadata:
   self-service: true
+  display-name: AWS IAM Assumable Role with OIDC
   icon:
     path: graphics/AWS IAM.svg
   blueprint-labels:
@@ -99,7 +100,8 @@ grains:
         path: assets/terraform-aws-iam-assumable-role-with-oidc
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - allow_self_assume_role: '{{ .inputs.allow_self_assume_role }}'

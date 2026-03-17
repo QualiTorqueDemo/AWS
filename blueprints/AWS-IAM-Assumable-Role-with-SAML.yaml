@@ -5,6 +5,7 @@ description: |
   https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_saml.html
 metadata:
   self-service: true
+  display-name: AWS IAM Assumable Role with SAML
   icon:
     path: graphics/AWS IAM.svg
   blueprint-labels:
@@ -96,7 +97,8 @@ grains:
         path: assets/terraform-aws-iam-assumable-role-with-saml
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - allow_self_assume_role: '{{ .inputs.allow_self_assume_role }}'

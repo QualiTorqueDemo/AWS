@@ -5,6 +5,7 @@ description: |
   This Terraform module is the part of serverless.tf framework, which aims to simplify all operations when working with the serverless in Terraform.
 metadata:
   self-service: true
+  display-name: AWS Lambda Alias
   icon:
     path: graphics/AWS Lambda.svg
   blueprint-labels:
@@ -126,7 +127,8 @@ grains:
         path: assets/terraform-aws-lambda-alias
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - allowed_triggers: '{{ .inputs.allowed_triggers }}'

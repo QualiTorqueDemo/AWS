@@ -3,6 +3,7 @@ description: |
   Terraform sub-module which creates VPC endpoint resources on AWS.
 metadata:
   self-service: true
+  display-name: AWS EKS Managed Node Group
   icon:
     path: graphics/AWS EKS.svg
   blueprint-labels:
@@ -80,7 +81,8 @@ grains:
         path: assets/terraform-aws-vpc-endpoints
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - create: '{{ .inputs.create }}'

@@ -16,6 +16,7 @@ description: |
   - The key in the cluster_service_accounts is the exact name of the EKS cluster
 metadata:
   self-service: true
+  display-name: AWS IAM EKS Role
   icon:
     path: graphics/AWS IAM.svg
   blueprint-labels:
@@ -93,7 +94,8 @@ grains:
         path: assets/terraform-aws-iam-eks-role
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - allow_self_assume_role: '{{ .inputs.allow_self_assume_role }}'

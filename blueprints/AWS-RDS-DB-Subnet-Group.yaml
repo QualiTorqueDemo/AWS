@@ -3,6 +3,7 @@ description: |
   Creates an AWS RDS DB subnet group.
 metadata:
   self-service: true
+  display-name: AWS RDS DB Subnet Group
   icon:
     path: graphics/RDS DB.svg
   blueprint-labels:
@@ -49,7 +50,8 @@ grains:
         path: assets/terraform-aws-rds-db-subnet-group
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - create: '{{ .inputs.create }}'

@@ -4,6 +4,7 @@ description: |
   The blueprint aims to configure and enforce specific password policies for IAM users within the AWS environment, ensuring security and compliance with set standards.
 metadata:
   self-service: true
+  display-name: AWS IAM Account Alias
   icon:
     path: graphics/AWS IAM.svg
   blueprint-labels:
@@ -82,7 +83,8 @@ grains:
         path: assets/terraform-aws-iam-account
       agent:
         name: '{{ .inputs.agent }}'
-      env-vars: []
+      tags:
+        auto-tag: true
       version: 1.5.5
       inputs:
         - account_alias: '{{ .inputs.account_alias }}'
