@@ -175,7 +175,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-lambda-deploy
+        path: assets/terraform-aws-lambda-deploy
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

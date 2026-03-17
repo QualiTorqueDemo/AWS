@@ -119,7 +119,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-lambda-alias
+        path: assets/terraform-aws-lambda-alias
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

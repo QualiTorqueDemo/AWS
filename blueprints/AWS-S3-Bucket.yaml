@@ -55,7 +55,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-s3-bucket
+        path: assets/terraform-aws-s3-bucket
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

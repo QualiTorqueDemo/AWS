@@ -420,7 +420,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-rds-db-instance
+        path: assets/terraform-aws-rds-db-instance
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

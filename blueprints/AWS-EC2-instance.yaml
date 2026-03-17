@@ -363,7 +363,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-ec2-instance
+        path: assets/terraform-aws-ec2-instance
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

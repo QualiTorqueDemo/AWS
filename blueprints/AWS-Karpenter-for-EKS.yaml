@@ -253,7 +253,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-eks-karpenter
+        path: assets/terraform-aws-eks-karpenter
       namespace: '{{ .inputs.namespace }}'
       agent:
         name: '{{ .inputs.agent }}'

@@ -91,7 +91,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-lambda-docker-build
+        path: assets/terraform-aws-lambda-docker-build
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

@@ -350,7 +350,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-vpc
+        path: assets/terraform-aws-vpc
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

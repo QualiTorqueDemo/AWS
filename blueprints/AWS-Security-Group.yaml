@@ -398,7 +398,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: '{{ "AWS/assets/terraform-aws-security-group/modules/" | append:  .inputs.type }}'
+        path: '{{ "assets/terraform-aws-security-group/modules/" | append:  .inputs.type }}'
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

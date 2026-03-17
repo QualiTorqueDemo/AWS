@@ -86,7 +86,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-iam-eks-role
+        path: assets/terraform-aws-iam-eks-role
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

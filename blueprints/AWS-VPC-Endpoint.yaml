@@ -75,7 +75,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-vpc-endpoints
+        path: assets/terraform-aws-vpc-endpoints
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

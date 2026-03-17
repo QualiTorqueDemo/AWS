@@ -75,7 +75,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-iam-account
+        path: assets/terraform-aws-iam-account
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []

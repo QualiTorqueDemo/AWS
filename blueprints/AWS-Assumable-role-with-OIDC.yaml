@@ -92,7 +92,7 @@ grains:
     kind: terraform
     spec:
       source:
-        path: AWS/assets/terraform-aws-iam-assumable-role-with-oidc
+        path: assets/terraform-aws-iam-assumable-role-with-oidc
       agent:
         name: '{{ .inputs.agent }}'
       env-vars: []
