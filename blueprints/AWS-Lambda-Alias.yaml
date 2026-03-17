@@ -4,6 +4,7 @@ description: |
   Lambda Alias is required to do complex Lambda deployments, eg. using external tools like AWS CodeDeploy.
   This Terraform module is the part of serverless.tf framework, which aims to simplify all operations when working with the serverless in Terraform.
 metadata:
+  self-service: true
   blueprint-labels:
     - key: hypervisor
       value: AWS

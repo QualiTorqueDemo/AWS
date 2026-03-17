@@ -2,6 +2,7 @@ spec_version: 2
 description: |
   Creates RDS DB instance.
 metadata:
+  self-service: true
   blueprint-labels:
     - key: hypervisor
       value: AWS

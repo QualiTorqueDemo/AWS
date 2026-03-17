@@ -10,6 +10,7 @@ description: |
   - object locking
   - grants (required for CloudFront logs)
 metadata:
+  self-service: true
   blueprint-labels:
     - key: hypervisor
       value: AWS

@@ -15,6 +15,7 @@ description: |
   - The EKS cluster needs to exist first, in the current AWS account and region
   - The key in the cluster_service_accounts is the exact name of the EKS cluster
 metadata:
+  self-service: true
   blueprint-labels:
     - key: hypervisor
       value: AWS

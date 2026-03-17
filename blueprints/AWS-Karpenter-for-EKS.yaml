@@ -9,6 +9,7 @@ description: |
   - An access entry for the Node IAM role to allow nodes to join the cluster
   - SQS queue and EventBridge event rules for Karpenter to utilize for spot termination handling, capacity re-balancing, etc.
 metadata:
+  self-service: true
   blueprint-labels:
     - key: hypervisor
       value: AWS

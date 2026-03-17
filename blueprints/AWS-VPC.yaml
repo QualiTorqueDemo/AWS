@@ -3,13 +3,12 @@ description: |
   Creates set of VPC resources which may be sufficient for staging or production environment.
   There are public, private, database, ElastiCache, intra (private w/o Internet access) subnets, and NAT Gateways created in each availability zone.
 metadata:
+  self-service: true
   blueprint-labels:
     - key: hypervisor
       value: AWS
     - key: category
       value: Cloud
-    - key: category
-      value: VMaaS
     - key: Terraform
 inputs:
   agent:

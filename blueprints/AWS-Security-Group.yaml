@@ -10,13 +10,12 @@ description: |
   - Conditionally create security group and/or all required security group rules.
   - Ingress and egress rules can be configured in a variety of ways.
 metadata:
+  self-service: true
   blueprint-labels:
     - key: hypervisor
       value: AWS
     - key: category
       value: Cloud
-    - key: category
-      value: VMaaS
     - key: Terraform
 inputs:
   name:

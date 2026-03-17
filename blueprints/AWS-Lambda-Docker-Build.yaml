@@ -4,6 +4,7 @@ description: |
   If you need to create ECR resources in flexible way, you should use terraform-aws-ecr module. See examples/container-image for related examples.
   This Terraform module is the part of serverless.tf framework, which aims to simplify all operations when working with the serverless in Terraform.
 metadata:
+  self-service: true
   blueprint-labels:
     - key: hypervisor
       value: AWS

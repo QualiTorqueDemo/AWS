@@ -4,6 +4,7 @@ description: |
   Creating IAM SAML Identity Providers Enabling SAML 2.0 Federated Users to Access the AWS Management Console - 
   https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_saml.html
 metadata:
+  self-service: true
   blueprint-labels:
     - key: hypervisor
       value: AWS

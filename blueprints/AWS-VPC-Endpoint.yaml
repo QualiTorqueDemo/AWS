@@ -2,13 +2,12 @@ spec_version: 2
 description: |
   Terraform sub-module which creates VPC endpoint resources on AWS.
 metadata:
+  self-service: true
   blueprint-labels:
     - key: hypervisor
       value: AWS
     - key: category
       value: Cloud
-    - key: category
-      value: VMaaS
     - key: Terraform
 inputs:
   create:
