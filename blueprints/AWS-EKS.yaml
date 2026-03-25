@@ -111,11 +111,8 @@ inputs:
     description: Indicates whether or not the Amazon EKS public API server endpoint is enabled
   cluster_endpoint_public_access_cidrs:
     type: string
-    default: |-
-      [
-        "0.0.0.0/0"
-      ]
-    description: List of CIDR blocks which can access the Amazon EKS public API server endpoint
+    default: '[]'
+    description: List of CIDR blocks which can access the Amazon EKS public API server endpoint. Restrict to known CIDRs — avoid 0.0.0.0/0 in production.
   cluster_identity_providers:
     type: string
     default: '{}'
@@ -165,8 +162,8 @@ inputs:
     description: Create, update, and delete timeout configurations for the cluster
   cluster_version:
     type: string
-    default: 'null'
-    description: 'Kubernetes `<major>.<minor>` version to use for the EKS cluster (i.e.: `1.27`)'
+    default: '1.30'
+    description: 'Kubernetes <major>.<minor> version for the EKS cluster (e.g. 1.30). Pin this to avoid unexpected upgrades.'
   control_plane_subnet_ids:
     type: string
     default: '[]'
@@ -355,10 +352,6 @@ inputs:
     type: string
     default: '-'
     description: The separator to use between the prefix and the generated timestamp for resource names
-  putin_khuylo:
-    type: string
-    default: true
-    description: 'Do you agree that Putin doesn''t respect Ukrainian sovereignty and territorial integrity? More info: https://en.wikipedia.org/wiki/Putin_khuylo!'
   self_managed_node_group_defaults:
     type: string
     default: '{}'
@@ -371,6 +364,10 @@ inputs:
     type: string
     default: '[]'
     description: A list of subnet IDs where the nodes/node groups will be provisioned. If `control_plane_subnet_ids` is not provided, the EKS cluster control plane (ENIs) will be provisioned in these subnets
+  resource_tags:
+    type: string
+    default: '{}'
+    description: Additional tags to apply to all resources (JSON map)
   agent:
     type: agent
 outputs:
@@ -485,6 +482,7 @@ outputs:
 grains:
   terraform-aws-eks:
     kind: terraform
+    tf-version: 1.5.5
     spec:
       source:
         store: AWS
@@ -493,7 +491,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - access_entries: '{{ .inputs.access_entries }}'
         - attach_cluster_encryption_policy: '{{ .inputs.attach_cluster_encryption_policy }}'
@@ -577,11 +574,11 @@ grains:
         - openid_connect_audiences: '{{ .inputs.openid_connect_audiences }}'
         - outpost_config: '{{ .inputs.outpost_config }}'
         - prefix_separator: '{{ .inputs.prefix_separator }}'
-        - putin_khuylo: '{{ .inputs.putin_khuylo }}'
+        - putin_khuylo: 'true'
         - self_managed_node_group_defaults: '{{ .inputs.self_managed_node_group_defaults }}'
         - self_managed_node_groups: '{{ .inputs.self_managed_node_groups }}'
         - subnet_ids: '{{ .inputs.subnet_ids }}'
-        - tags: '{}'
+        - tags: '{{ .inputs.resource_tags }}'
         - vpc_id: '{{ .inputs.vpc_id }}'
       outputs:
         - access_entries

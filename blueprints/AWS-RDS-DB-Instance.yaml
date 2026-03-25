@@ -61,8 +61,8 @@ inputs:
     description: The Availability Zone of the RDS instance
   backup_retention_period:
     type: string
-    default: 'null'
-    description: The days to retain backups for
+    default: '7'
+    description: Days to retain automated backups (0 = disabled). Minimum 7 recommended for production.
   backup_window:
     type: string
     default: 'null'
@@ -133,7 +133,8 @@ inputs:
     description: Specifies whether to remove automated backups immediately after the DB instance is deleted
   deletion_protection:
     type: string
-    description: The database can't be deleted when this value is set to true.
+    default: 'true'
+    description: Prevent the DB from being accidentally deleted. Disable only when decommissioning.
   domain:
     type: string
     default: 'null'
@@ -339,6 +340,10 @@ inputs:
     type: string
     default: '[]'
     description: List of VPC security groups to associate
+  resource_tags:
+    type: string
+    default: '{}'
+    description: Additional tags to apply to the DB instance (JSON map)
   agent:
     type: agent
 outputs:
@@ -423,6 +428,7 @@ outputs:
 grains:
   db_instance:
     kind: terraform
+    tf-version: 1.5.5
     spec:
       source:
         store: AWS
@@ -431,7 +437,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - allocated_storage: '{{ .inputs.allocated_storage }}'
         - allow_major_version_upgrade: '{{ .inputs.allow_major_version_upgrade }}'
@@ -509,7 +514,7 @@ grains:
         - storage_encrypted: '{{ .inputs.storage_encrypted }}'
         - storage_throughput: '{{ .inputs.storage_throughput }}'
         - storage_type: '{{ .inputs.storage_type }}'
-        - tags: '{}'
+        - tags: '{{ .inputs.resource_tags }}'
         - timeouts: '{{ .inputs.timeouts }}'
         - timezone: '{{ .inputs.timezone }}'
         - use_identifier_prefix: '{{ .inputs.use_identifier_prefix }}'

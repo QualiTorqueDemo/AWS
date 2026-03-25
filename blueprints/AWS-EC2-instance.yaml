@@ -177,7 +177,7 @@ inputs:
       {
         "http_endpoint": "enabled",
         "http_put_response_hop_limit": 1,
-        "http_tokens": "optional"
+        "http_tokens": "required"
       }
     description: Customize the metadata options of the instance
   monitoring:
@@ -200,10 +200,6 @@ inputs:
     type: string
     default: 'null'
     description: Private IP address to associate with the instance in a VPC
-  putin_khuylo:
-    type: string
-    default: true
-    description: 'Do you agree that Putin doesn''t respect Ukrainian sovereignty and territorial integrity? More info: https://en.wikipedia.org/wiki/Putin_khuylo!'
   root_block_device:
     type: string
     default: '[]'
@@ -275,7 +271,11 @@ inputs:
   vpc_security_group_ids:
     type: string
     default: 'null'
-    description: A list of security group IDs to associate with
+    description: A list of security group IDs to associate with (JSON list). If omitted, the instance uses the default VPC security group — review its rules before deploying.
+  resource_tags:
+    type: string
+    default: '{}'
+    description: Additional tags to apply to the instance and volumes (JSON map)
   agent:
     type: agent
 outputs:
@@ -363,6 +363,7 @@ outputs:
 grains:
   terraform-aws-ec2-instance:
     kind: terraform
+    tf-version: 1.5.5
     spec:
       source:
         store: AWS
@@ -371,7 +372,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - ami: '{{ .inputs.ami }}'
         - ami_ssm_parameter: '{{ .inputs.ami_ssm_parameter }}'
@@ -419,7 +419,7 @@ grains:
         - placement_group: '{{ .inputs.placement_group }}'
         - private_dns_name_options: '{{ .inputs.private_dns_name_options }}'
         - private_ip: '{{ .inputs.private_ip }}'
-        - putin_khuylo: '{{ .inputs.putin_khuylo }}'
+        - putin_khuylo: 'true'
         - root_block_device: '{{ .inputs.root_block_device }}'
         - secondary_private_ips: '{{ .inputs.secondary_private_ips }}'
         - source_dest_check: '{{ .inputs.source_dest_check }}'
@@ -432,7 +432,7 @@ grains:
         - spot_valid_until: '{{ .inputs.spot_valid_until }}'
         - spot_wait_for_fulfillment: '{{ .inputs.spot_wait_for_fulfillment }}'
         - subnet_id: '{{ .inputs.subnet_id }}'
-        - tags: '{}'
+        - tags: '{{ .inputs.resource_tags }}'
         - tenancy: '{{ .inputs.tenancy }}'
         - timeouts: '{{ .inputs.timeouts }}'
         - user_data: '{{ .inputs.user_data }}'

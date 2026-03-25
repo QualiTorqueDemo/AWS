@@ -14,6 +14,61 @@ metadata:
       value: Cloud
     - key: Terraform
 inputs:
+  name:
+    type: string
+    description: Name to be used on all the resources as an identifier
+  cidr:
+    type: string
+    default: '10.0.0.0/16'
+    description: The IPv4 CIDR block for the VPC
+  azs:
+    type: string
+    default: '["us-east-1a","us-east-1b","us-east-1c"]'
+    description: Availability zones in the region (JSON list)
+  private_subnets:
+    type: string
+    default: '["10.0.1.0/24","10.0.2.0/24","10.0.3.0/24"]'
+    description: Private subnet CIDR blocks inside the VPC (JSON list)
+  public_subnets:
+    type: string
+    default: '["10.0.101.0/24","10.0.102.0/24","10.0.103.0/24"]'
+    description: Public subnet CIDR blocks inside the VPC (JSON list)
+  database_subnets:
+    type: string
+    default: '["10.0.201.0/24","10.0.202.0/24","10.0.203.0/24"]'
+    description: Database subnet CIDR blocks inside the VPC (JSON list)
+  enable_nat_gateway:
+    type: string
+    default: 'true'
+    description: Provision NAT Gateways for each private network
+    allowed-values:
+      - 'true'
+      - 'false'
+  single_nat_gateway:
+    type: string
+    default: 'false'
+    description: Provision a single shared NAT Gateway (reduces cost, reduces availability)
+    allowed-values:
+      - 'true'
+      - 'false'
+  enable_dns_hostnames:
+    type: string
+    default: 'true'
+    description: Enable DNS hostnames in the VPC
+    allowed-values:
+      - 'true'
+      - 'false'
+  enable_dns_support:
+    type: string
+    default: 'true'
+    description: Enable DNS support in the VPC
+    allowed-values:
+      - 'true'
+      - 'false'
+  resource_tags:
+    type: string
+    default: '{}'
+    description: Additional tags to apply to all resources (JSON map)
   agent:
     type: agent
 outputs:
@@ -358,7 +413,18 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      inputs: []
+      inputs:
+        - name: '{{ .inputs.name }}'
+        - cidr: '{{ .inputs.cidr }}'
+        - azs: '{{ .inputs.azs }}'
+        - private_subnets: '{{ .inputs.private_subnets }}'
+        - public_subnets: '{{ .inputs.public_subnets }}'
+        - database_subnets: '{{ .inputs.database_subnets }}'
+        - enable_nat_gateway: '{{ .inputs.enable_nat_gateway }}'
+        - single_nat_gateway: '{{ .inputs.single_nat_gateway }}'
+        - enable_dns_hostnames: '{{ .inputs.enable_dns_hostnames }}'
+        - enable_dns_support: '{{ .inputs.enable_dns_support }}'
+        - tags: '{{ .inputs.resource_tags }}'
       outputs:
         - cgw_arns
         - cgw_ids
