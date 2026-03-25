@@ -72,7 +72,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - create_policy: '{{ .inputs.create_policy }}'
         - description: '{{ .inputs.description }}'
@@ -88,3 +87,4 @@ grains:
         - name
         - path
         - policy
+    tf-version: 1.5.5

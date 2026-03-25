@@ -129,7 +129,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - allowed_triggers: '{{ .inputs.allowed_triggers }}'
         - create: '{{ .inputs.create }}'
@@ -160,3 +159,4 @@ grains:
         - lambda_alias_function_version
         - lambda_alias_invoke_arn
         - lambda_alias_name
+    tf-version: 1.5.5

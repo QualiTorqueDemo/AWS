@@ -43,7 +43,7 @@ inputs:
     description: Path to Dockerfile in source package
   ecr_force_delete:
     type: string
-    default: true
+    default: false
     description: If true, will delete the repository even if it contains images.
   ecr_repo_lifecycle_policy:
     type: string
@@ -58,7 +58,7 @@ inputs:
     description: Whether to remove image forcibly when the resource is destroyed.
   image_tag_mutability:
     type: string
-    default: MUTABLE
+    default: IMMUTABLE
     description: 'The tag mutability setting for the repository. Must be one of: `MUTABLE` or `IMMUTABLE`'
   keep_locally:
     type: string
@@ -72,6 +72,7 @@ inputs:
     description: The target architecture platform to build the image for.
   scan_on_push:
     type: string
+    default: true
     description: Indicates whether images are scanned after being pushed to the repository
   triggers:
     type: string
@@ -101,7 +102,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - build_args: '{{ .inputs.build_args }}'
         - create_ecr_repo: '{{ .inputs.create_ecr_repo }}'
@@ -125,3 +125,4 @@ grains:
       outputs:
         - image_id
         - image_uri
+    tf-version: 1.5.5

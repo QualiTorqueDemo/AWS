@@ -60,6 +60,10 @@ inputs:
     type: string
     default: 'null'
     description: The ID of the VPC in which the endpoint will be used
+  tags:
+    type: string
+    default: '{}'
+    description: A map of tags to add to all resources
   agent:
     type: agent
 outputs:
@@ -83,7 +87,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - create: '{{ .inputs.create }}'
         - create_security_group: '{{ .inputs.create_security_group }}'
@@ -95,10 +98,11 @@ grains:
         - security_group_rules: '{{ .inputs.security_group_rules }}'
         - security_group_tags: '{{ .inputs.security_group_tags }}'
         - subnet_ids: '{{ .inputs.subnet_ids }}'
-        - tags: '{}'
+        - tags: '{{ .inputs.tags }}'
         - timeouts: '{{ .inputs.timeouts }}'
         - vpc_id: '{{ .inputs.vpc_id }}'
       outputs:
         - endpoints
         - security_group_arn
         - security_group_id
+    tf-version: 1.5.5

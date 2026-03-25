@@ -141,6 +141,10 @@ inputs:
   wait_deployment_completion:
     type: string
     description: Wait until deployment completes. It can take a lot of time and your terraform process may lock execution for long time.
+  tags:
+    type: string
+    default: '{}'
+    description: A map of tags to add to all resources
   agent:
     type: agent
   description:
@@ -185,7 +189,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - after_allow_traffic_hook_arn: '{{ .inputs.after_allow_traffic_hook_arn }}'
         - alarm_enabled: '{{ .inputs.alarm_enabled }}'
@@ -232,3 +235,4 @@ grains:
         - codedeploy_iam_role_name
         - deploy_script
         - script
+    tf-version: 1.5.5

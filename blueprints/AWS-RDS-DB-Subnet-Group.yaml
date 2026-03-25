@@ -28,6 +28,10 @@ inputs:
     type: string
     default: true
     description: Determines whether to use `name` as is or create a unique name beginning with `name` as the specified prefix
+  tags:
+    type: string
+    default: '{}'
+    description: A map of tags to add to all resources
   agent:
     type: agent
   description:
@@ -52,14 +56,14 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - create: '{{ .inputs.create }}'
         - description: '{{ .inputs.description }}'
         - name: '{{ .inputs.name }}'
         - subnet_ids: '{{ .inputs.subnet_ids }}'
-        - tags: '{}'
+        - tags: '{{ .inputs.tags }}'
         - use_name_prefix: '{{ .inputs.use_name_prefix }}'
       outputs:
         - db_subnet_group_arn
         - db_subnet_group_id
+    tf-version: 1.5.5

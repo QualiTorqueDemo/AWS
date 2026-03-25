@@ -76,6 +76,10 @@ inputs:
     type: string
     default: '[]'
     description: List of ARNs of IAM policies to attach to IAM role
+  tags:
+    type: string
+    default: '{}'
+    description: A map of tags to add to all resources
   agent:
     type: agent
 outputs:
@@ -102,7 +106,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - allow_self_assume_role: '{{ .inputs.allow_self_assume_role }}'
         - aws_account_id: '{{ .inputs.aws_account_id }}'
@@ -121,9 +124,10 @@ grains:
         - role_path: '{{ .inputs.role_path }}'
         - role_permissions_boundary_arn: '{{ .inputs.role_permissions_boundary_arn }}'
         - role_policy_arns: '{{ .inputs.role_policy_arns }}'
-        - tags: '{}'
+        - tags: '{{ .inputs.tags }}'
       outputs:
         - iam_role_arn
         - iam_role_name
         - iam_role_path
         - iam_role_unique_id
+    tf-version: 1.5.5

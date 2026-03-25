@@ -198,6 +198,10 @@ inputs:
     type: string
     default: karpenter
     description: Service account to associate with the Karpenter Pod Identity
+  tags:
+    type: string
+    default: '{}'
+    description: A map of tags to add to all resources
   agent:
     type: agent
 outputs:
@@ -264,7 +268,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - access_entry_type: '{{ .inputs.access_entry_type }}'
         - ami_id_ssm_parameter_arns: '{{ .inputs.ami_id_ssm_parameter_arns }}'
@@ -311,7 +314,7 @@ grains:
         - queue_name: '{{ .inputs.queue_name }}'
         - rule_name_prefix: '{{ .inputs.rule_name_prefix }}'
         - service_account: '{{ .inputs.service_account }}'
-        - tags: '{}'
+        - tags: '{{ .inputs.tags }}'
       outputs:
         - event_rules
         - iam_role_arn
@@ -330,3 +333,4 @@ grains:
         - queue_name
         - queue_url
         - service_account
+    tf-version: 1.5.5

@@ -34,14 +34,15 @@ inputs:
     description: Whether users are prevented from setting a new password after their password has expired (i.e. require administrator reset)
   max_password_age:
     type: string
+    default: '90'
     description: The number of days that an user password is valid.
   minimum_password_length:
     type: string
-    default: 8
+    default: 14
     description: Minimum length to require for user passwords
   password_reuse_prevention:
     type: string
-    default: 'null'
+    default: '24'
     description: The number of previous passwords that users are prevented from reusing
   require_lowercase_characters:
     type: string
@@ -85,7 +86,6 @@ grains:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
-      version: 1.5.5
       inputs:
         - account_alias: '{{ .inputs.account_alias }}'
         - allow_users_to_change_password: '{{ .inputs.allow_users_to_change_password }}'
@@ -104,3 +104,4 @@ grains:
         - caller_identity_arn
         - caller_identity_user_id
         - iam_account_password_policy_expire_passwords
+    tf-version: 1.5.5
