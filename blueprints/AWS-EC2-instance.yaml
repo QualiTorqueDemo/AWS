@@ -39,10 +39,7 @@ inputs:
   instance_type:
     type: string
     default: t3.micro
-    description: |
-      EC2 instance type. Curated list across burstable (t3), general purpose (m6i),
-      compute optimized (c6i) and memory optimized (r6i). Fork the blueprint to expose
-      additional families (e.g. g5 / inf2 for GPU/ML, x2idn for high memory).
+    description: 'EC2 instance type. t3 = burstable, m6i = general purpose, c6i = compute optimized, r6i = memory optimized.'
     allowed-values:
       - t3.micro
       - t3.small
@@ -70,8 +67,9 @@ inputs:
     type: string
     default: 'null'
     description: |
-      JSON array of security group IDs to attach, e.g. ["sg-abc","sg-def"].
-      Leave as 'null' to use the VPC's default security group.
+      Security groups to attach. JSON array, e.g. ["sg-abc","sg-def"].
+      The instance's VPC is determined by subnet_id; the security groups you list
+      must belong to that same VPC. Leave as 'null' to use the VPC's default SG.
 
   user_data:
     type: string
