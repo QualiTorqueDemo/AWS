@@ -22,24 +22,19 @@ inputs:
     type: string
     description: The VPC subnet ID to launch the instance in.
 
-  ami_ssm_parameter:
+  operating_system:
     type: string
-    default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+    default: Amazon Linux 2023
     description: |
-      SSM parameter that resolves to the AMI ID. Pick the OS image you want:
-        - /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64   -> Amazon Linux 2023 (default, recommended)
-        - /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2           -> Amazon Linux 2 (legacy, supported)
-        - /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp2/ami-id -> Ubuntu 24.04 LTS
-        - /aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id -> Ubuntu 22.04 LTS
-        - /aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base   -> Windows Server 2022
-      For more public AMI SSM parameters see:
-      https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-public-parameters-ami.html
+      Operating system to install. Maps to the matching public AWS SSM parameter; the
+      Terraform module resolves it at deploy time, so you always get the latest patched
+      AMI for the chosen OS.
     allowed-values:
-      - /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
-      - /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
-      - /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp2/ami-id
-      - /aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id
-      - /aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base
+      - Amazon Linux 2023
+      - Amazon Linux 2
+      - Ubuntu 24.04 LTS
+      - Ubuntu 22.04 LTS
+      - Windows Server 2022
 
   instance_type:
     type: string
@@ -190,7 +185,7 @@ grains:
         # --- user-facing inputs ---
         - name: '{{ .inputs.name }}'
         - subnet_id: '{{ .inputs.subnet_id }}'
-        - ami_ssm_parameter: '{{ .inputs.ami_ssm_parameter }}'
+        - ami_ssm_parameter: '{% case inputs.operating_system %}{% when "Amazon Linux 2023" %}/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64{% when "Amazon Linux 2" %}/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2{% when "Ubuntu 24.04 LTS" %}/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp2/ami-id{% when "Ubuntu 22.04 LTS" %}/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id{% when "Windows Server 2022" %}/aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base{% endcase %}'
         - instance_type: '{{ .inputs.instance_type }}'
         - key_name: '{{ .inputs.key_name }}'
         - vpc_security_group_ids: '{{ .inputs.vpc_security_group_ids }}'
