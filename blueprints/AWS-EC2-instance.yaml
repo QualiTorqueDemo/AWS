@@ -24,16 +24,47 @@ inputs:
 
   ami_ssm_parameter:
     type: string
-    default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+    default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
     description: |
-      SSM parameter name that resolves to the AMI ID. Defaults to the latest Amazon Linux 2.
-      For a list of public AMI SSM parameters see the AWS docs:
+      SSM parameter that resolves to the AMI ID. Pick the OS image you want:
+        - /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64   -> Amazon Linux 2023 (default, recommended)
+        - /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2           -> Amazon Linux 2 (legacy, supported)
+        - /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp2/ami-id -> Ubuntu 24.04 LTS
+        - /aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id -> Ubuntu 22.04 LTS
+        - /aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base   -> Windows Server 2022
+      For more public AMI SSM parameters see:
       https://docs.aws.amazon.com/systems-manager/latest/userguide/parameter-store-public-parameters-ami.html
+    allowed-values:
+      - /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64
+      - /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+      - /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp2/ami-id
+      - /aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id
+      - /aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base
 
   instance_type:
     type: string
     default: t3.micro
-    description: EC2 instance type (e.g. t3.micro, m5.large).
+    description: |
+      EC2 instance type. Curated list across burstable (t3), general purpose (m6i),
+      compute optimized (c6i) and memory optimized (r6i). Fork the blueprint to expose
+      additional families (e.g. g5 / inf2 for GPU/ML, x2idn for high memory).
+    allowed-values:
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+      - m6i.large
+      - m6i.xlarge
+      - m6i.2xlarge
+      - m6i.4xlarge
+      - c6i.large
+      - c6i.xlarge
+      - c6i.2xlarge
+      - r6i.large
+      - r6i.xlarge
+      - r6i.2xlarge
 
   key_name:
     type: string
@@ -146,7 +177,7 @@ outputs:
 grains:
   terraform-aws-ec2-instance:
     kind: terraform
-    tf-version: 1.5.5
+    tf-version: 1.5.7
     spec:
       source:
         store: AWS
