@@ -20,7 +20,10 @@ inputs:
 
   subnet_id:
     type: string
-    description: The VPC subnet ID to launch the instance in.
+    description: |
+      VPC subnet ID to launch the instance in.
+      The VPC and Availability Zone are inherited from this subnet — you don't pick
+      them separately. Any security groups you attach must belong to the same VPC.
 
   operating_system:
     type: string
