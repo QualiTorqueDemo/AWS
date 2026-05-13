@@ -1,0 +1,173 @@
+spec_version: 2
+description: Delete an AWS RDS DB instance.
+metadata:
+  self-service: true
+  display-name: AWS RDS Delete
+  icon:
+    path: graphics/AWS RDS.svg
+
+workflow:
+  scope: env_resource
+  resource-types: aws_db_instance
+  labels-selector: hypervisor:AWS
+  triggers:
+    - type: manual
+  timeout: "60"
+
+inputs:
+  agent:
+    type: agent
+
+  confirm_delete:
+    type: string
+    description: Confirmation to delete the selected RDS DB instance.
+    default: "NO"
+    allowed-values:
+      - "NO"
+      - "YES"
+
+  skip_final_snapshot:
+    type: string
+    description: Skip creating a final snapshot before deleting the DB instance.
+    default: "false"
+    allowed-values:
+      - "true"
+      - "false"
+
+  final_snapshot_identifier:
+    type: string
+    description: Final snapshot identifier to create when skip_final_snapshot is false. Leave empty to auto-generate.
+    default: ""
+
+  delete_automated_backups:
+    type: string
+    description: Delete automated backups when deleting the DB instance.
+    default: "true"
+    allowed-values:
+      - "true"
+      - "false"
+
+  disable_deletion_protection:
+    type: string
+    description: If deletion protection is enabled, disable it before deletion.
+    default: "true"
+    allowed-values:
+      - "true"
+      - "false"
+
+outputs:
+  db_instance_identifier:
+    value: '{{ .grains.rds_delete.activities.deploy.commands.delete.outputs.db_instance_identifier }}'
+    quick: true
+  region:
+    value: '{{ .grains.rds_delete.activities.deploy.commands.delete.outputs.region }}'
+    quick: true
+  deletion_protection_before:
+    value: '{{ .grains.rds_delete.activities.deploy.commands.delete.outputs.deletion_protection_before }}'
+    quick: true
+  final_snapshot_used:
+    value: '{{ .grains.rds_delete.activities.deploy.commands.delete.outputs.final_snapshot_used }}'
+    quick: true
+  delete_started:
+    value: '{{ .grains.rds_delete.activities.deploy.commands.delete.outputs.delete_started }}'
+    quick: true
+
+grains:
+  rds_delete:
+    kind: shell
+    spec:
+      agent:
+        name: '{{ .inputs.agent }}'
+      activities:
+        deploy:
+          commands:
+            - name: delete
+              command: >
+                bash -lc '
+                  set -euo pipefail
+
+                  if [ "{{ .inputs.confirm_delete }}" != "YES" ]; then
+                    echo "Delete not confirmed (confirm_delete must be YES)."
+                    exit 1
+                  fi
+
+                  rid="{{ .bindings.resource_id }}"
+                  gpath="{{ .bindings.grain_path }}"
+                  contract="$CONTRACT_FILE_PATH"
+
+                  dbid=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                    ''.resources[]
+                      | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                      | (.attributes.db_instance_identifier
+                         // .attributes.db_identifier
+                         // .attributes.identifier
+                         // .attributes.id
+                         // .attributes.name
+                         // empty)'' \
+                    "$contract")
+
+                  region=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                    ''.resources[]
+                      | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                      | (.attributes.region // .attributes.aws_region // empty)'' \
+                    "$contract")
+
+                  if [ -z "${dbid:-}" ] || [ -z "${region:-}" ]; then
+                    echo "Failed to extract db instance identifier/region from contract.json (resource_id=$rid, grain_path=$gpath)"
+                    exit 1
+                  fi
+
+                  deletion_protection_before=$(aws rds describe-db-instances --region "$region" \
+                    --db-instance-identifier "$dbid" \
+                    --query "DBInstances[0].DeletionProtection" --output text)
+
+                  if [ "$deletion_protection_before" = "True" ] || [ "$deletion_protection_before" = "true" ]; then
+                    if [ "{{ .inputs.disable_deletion_protection }}" = "true" ]; then
+                      aws rds modify-db-instance --region "$region" \
+                        --db-instance-identifier "$dbid" \
+                        --no-deletion-protection \
+                        --apply-immediately >/dev/null
+                      aws rds wait db-instance-available --region "$region" --db-instance-identifier "$dbid"
+                    else
+                      echo "DeletionProtection is enabled and disable_deletion_protection is false. Aborting."
+                      exit 1
+                    fi
+                  fi
+
+                  skip="{{ .inputs.skip_final_snapshot }}"
+                  final_snapshot_used=""
+                  delete_started="false"
+
+                  if [ "$skip" = "true" ]; then
+                    aws rds delete-db-instance --region "$region" \
+                      --db-instance-identifier "$dbid" \
+                      --skip-final-snapshot \
+                      $( [ "{{ .inputs.delete_automated_backups }}" = "true" ] && echo "--delete-automated-backups" ) \
+                      >/dev/null
+                    delete_started="true"
+                  else
+                    snap="{{ .inputs.final_snapshot_identifier }}"
+                    if [ -z "${snap:-}" ]; then
+                      snap="${dbid}-final-$(date +%Y%m%d%H%M%S)"
+                    fi
+                    final_snapshot_used="$snap"
+                    aws rds delete-db-instance --region "$region" \
+                      --db-instance-identifier "$dbid" \
+                      --final-db-snapshot-identifier "$snap" \
+                      $( [ "{{ .inputs.delete_automated_backups }}" = "true" ] && echo "--delete-automated-backups" ) \
+                      >/dev/null
+                    delete_started="true"
+                  fi
+
+                  export db_instance_identifier="$dbid"
+                  export region="$region"
+                  export deletion_protection_before="$deletion_protection_before"
+                  export final_snapshot_used="$final_snapshot_used"
+                  export delete_started="$delete_started"
+                '
+              outputs:
+                - db_instance_identifier
+                - region
+                - deletion_protection_before
+                - final_snapshot_used
+                - delete_started

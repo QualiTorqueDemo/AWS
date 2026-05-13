@@ -1,0 +1,87 @@
+spec_version: 2
+description: Restart an AWS EC2 instance.
+metadata:
+  self-service: true
+  display-name: AWS EC2 Restart
+  icon:
+    path: graphics/aws_ec2.svg
+
+workflow:
+  scope: env_resource
+  resource-types: aws_instance
+  labels-selector: hypervisor:AWS
+  triggers:
+    - type: manual
+  timeout: "15"
+
+inputs:
+  agent:
+    type: agent
+
+outputs:
+  instance_id:
+    value: '{{ .grains.ec2_restart.activities.deploy.commands.restart.outputs.instance_id }}'
+    quick: true
+  region:
+    value: '{{ .grains.ec2_restart.activities.deploy.commands.restart.outputs.region }}'
+    quick: true
+  state_before:
+    value: '{{ .grains.ec2_restart.activities.deploy.commands.restart.outputs.state_before }}'
+    quick: true
+  state_after:
+    value: '{{ .grains.ec2_restart.activities.deploy.commands.restart.outputs.state_after }}'
+    quick: true
+
+grains:
+  ec2_restart:
+    kind: shell
+    spec:
+      agent:
+        name: '{{ .inputs.agent }}'
+      activities:
+        deploy:
+          commands:
+            - name: restart
+              command: >
+                bash -lc '
+                  set -euo pipefail
+
+                  rid="{{ .bindings.resource_id }}"
+                  gpath="{{ .bindings.grain_path }}"
+                  contract="$CONTRACT_FILE_PATH"
+
+                  instance_id=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                    ''.resources[]
+                      | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                      | (.attributes.id // .attributes.instance_id // .attributes.InstanceId // empty)'' \
+                    "$contract")
+
+                  region=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                    ''.resources[]
+                      | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                      | (.attributes.region // .attributes.aws_region // empty)'' \
+                    "$contract")
+
+                  if [ -z "${instance_id:-}" ] || [ -z "${region:-}" ]; then
+                    echo "Failed to extract instance_id/region from contract.json (resource_id=$rid, grain_path=$gpath)"
+                    exit 1
+                  fi
+
+                  state_before=$(aws ec2 describe-instances --region "$region" --instance-ids "$instance_id" \
+                    --query "Reservations[0].Instances[0].State.Name" --output text)
+
+                  aws ec2 reboot-instances --region "$region" --instance-ids "$instance_id" >/dev/null
+
+                  state_after=$(aws ec2 describe-instances --region "$region" --instance-ids "$instance_id" \
+                    --query "Reservations[0].Instances[0].State.Name" --output text)
+
+                  export instance_id="$instance_id"
+                  export region="$region"
+                  export state_before="$state_before"
+                  export state_after="$state_after"
+                '
+              outputs:
+                - instance_id
+                - region
+                - state_before
+                - state_after
