@@ -68,10 +68,6 @@ customization:
             icon: list
             inputs:
               - name: associate_public_ip_address
-          - name: Instance metadata (IMDS)
-            icon: list
-            inputs:
-              - name: metadata_options
       - name: Storage
         icon: layer
         sections:
@@ -89,9 +85,6 @@ customization:
             inputs:
               - name: iam_instance_profile
               - name: create_iam_instance_profile
-          - name: IAM Role
-            icon: list
-            inputs:
               - name: iam_role_name
                 visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
               - name: iam_role_policies
@@ -117,7 +110,8 @@ inputs:
       \ to the same VPC.\n"
   ami:
     type: string
-    description: ID of AMI to use for the instance
+    description: Override the operating_system selection by specifying a literal AMI ID, e.g. ami-0abc1234567890abc. Leave as 'null' to use the AMI resolved from the operating_system dropdown. The Terraform
+      module uses this value only when it is not null.
     default: 'null'
   operating_system:
     type: string
@@ -204,10 +198,6 @@ inputs:
     type: string
     default: 'null'
     description: Key name of the Key Pair to use for the instance; which can be managed using the `aws_key_pair` resource
-  metadata_options:
-    type: string
-    default: "{\n  \"http_endpoint\": \"enabled\",\n  \"http_put_response_hop_limit\": 1,\n  \"http_tokens\": \"required\"\n}"
-    description: Customize the metadata options of the instance
   monitoring:
     type: string
     default: 'null'
@@ -380,7 +370,7 @@ grains:
         - key_name: '{{ .inputs.key_name }}'
         - launch_template: '{}'
         - maintenance_options: '{}'
-        - metadata_options: '{{ .inputs.metadata_options }}'
+        - metadata_options: "{\n  \"http_endpoint\": \"enabled\",\n  \"http_put_response_hop_limit\": 1,\n  \"http_tokens\": \"required\"\n}\n"
         - monitoring: '{{ .inputs.monitoring }}'
         - name: '{{ .inputs.name }}'
         - network_interface: '[]'
