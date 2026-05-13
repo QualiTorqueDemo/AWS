@@ -41,42 +41,13 @@ customization:
               - name: resource_tags
       - name: Compute
         icon: layer
-        sections:
-          - name: Boot & user-data
-            icon: list
-            inputs:
-              - name: user_data
-              - name: instance_initiated_shutdown_behavior
-          - name: Placement
-            icon: list
-            inputs:
-              - name: availability_zone
-          - name: Lifecycle
-            icon: list
-            inputs:
-              - name: disable_api_termination
-              - name: monitoring
-              - name: ebs_optimized
-          - name: AMI overrides
-            icon: list
-            inputs:
-              - name: ami
-      - name: Networking
-        icon: layer
-        sections:
-          - name: IP addressing
-            icon: list
-            inputs:
-              - name: associate_public_ip_address
+        inputs:
+          - name: user_data
+          - name: ami
       - name: Storage
         icon: layer
-        sections:
-          - name: Volumes
-            icon: list
-            default_open: true
-            inputs:
-              - name: root_block_device
-              - name: ebs_block_device
+        inputs:
+          - name: root_block_device
       - name: IAM
         icon: layer
         sections:
@@ -89,17 +60,6 @@ customization:
                 visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
               - name: iam_role_policies
                 visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
-      - name: Spot Instance
-        icon: layer
-        sections:
-          - name: Spot configuration
-            icon: list
-            inputs:
-              - name: create_spot_instance
-              - name: spot_price
-                visible: '{% if inputs.create_spot_instance == "true" %} true {% else %} false {% endif %}'
-              - name: spot_type
-                visible: '{% if inputs.create_spot_instance == "true" %} true {% else %} false {% endif %}'
 inputs:
   name:
     type: string
@@ -129,34 +89,10 @@ inputs:
       - Ubuntu 24.04 LTS
       - Ubuntu 22.04 LTS
       - Windows Server 2022
-  associate_public_ip_address:
-    type: string
-    default: 'null'
-    description: Whether to associate a public IP address with an instance in a VPC
-  availability_zone:
-    type: string
-    default: 'null'
-    description: AZ to start the instance in
   create_iam_instance_profile:
     type: string
     description: Determines whether an IAM instance profile is created or to use an existing IAM instance profile
     default: 'false'
-  create_spot_instance:
-    type: string
-    description: Depicts if the instance is a spot instance
-    default: 'false'
-  disable_api_termination:
-    type: string
-    default: 'null'
-    description: If true, enables EC2 Instance Termination Protection
-  ebs_block_device:
-    type: string
-    default: '[]'
-    description: Additional EBS block devices to attach to the instance
-  ebs_optimized:
-    type: string
-    default: 'null'
-    description: If true, the launched EC2 instance will be EBS-optimized
   iam_instance_profile:
     type: string
     default: 'null'
@@ -169,10 +105,6 @@ inputs:
     type: string
     default: '{}'
     description: Policies attached to the IAM role
-  instance_initiated_shutdown_behavior:
-    type: string
-    default: 'null'
-    description: Shutdown behavior for the instance. Amazon defaults this to stop for EBS-backed instances and terminate for instance-store instances. Cannot be set on instance-store instance
   instance_type:
     type: string
     default: t3.micro
@@ -198,22 +130,10 @@ inputs:
     type: string
     default: 'null'
     description: Key name of the Key Pair to use for the instance; which can be managed using the `aws_key_pair` resource
-  monitoring:
-    type: string
-    default: 'null'
-    description: If true, the launched EC2 instance will have detailed monitoring enabled
   root_block_device:
     type: string
     default: '[]'
     description: Customize details about the root block device of the instance. See Block Devices below for details
-  spot_price:
-    type: string
-    default: 'null'
-    description: The maximum price to request on the spot market. Defaults to on-demand price
-  spot_type:
-    type: string
-    default: 'null'
-    description: If set to one-time, after the instance is terminated, the spot request will be closed. Default `persistent`
   user_data:
     type: string
     default: 'null'
@@ -333,8 +253,8 @@ grains:
         - ami_ssm_parameter: '{% case inputs.operating_system %}{% when "Amazon Linux 2023" %}/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64{% when "Amazon Linux 2" %}/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2{%
             when "Ubuntu 24.04 LTS" %}/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp2/ami-id{% when "Ubuntu 22.04 LTS" %}/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id{%
             when "Windows Server 2022" %}/aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base{% endcase %}'
-        - associate_public_ip_address: '{{ .inputs.associate_public_ip_address }}'
-        - availability_zone: '{{ .inputs.availability_zone }}'
+        - associate_public_ip_address: 'null'
+        - availability_zone: 'null'
         - capacity_reservation_specification: '{}'
         - cpu_core_count: 'null'
         - cpu_credits: 'null'
@@ -342,11 +262,11 @@ grains:
         - cpu_threads_per_core: 'null'
         - create: 'true'
         - create_iam_instance_profile: '{{ .inputs.create_iam_instance_profile }}'
-        - create_spot_instance: '{{ .inputs.create_spot_instance }}'
+        - create_spot_instance: 'false'
         - disable_api_stop: 'null'
-        - disable_api_termination: '{{ .inputs.disable_api_termination }}'
-        - ebs_block_device: '{{ .inputs.ebs_block_device }}'
-        - ebs_optimized: '{{ .inputs.ebs_optimized }}'
+        - disable_api_termination: 'null'
+        - ebs_block_device: '[]'
+        - ebs_optimized: 'null'
         - enable_volume_tags: 'true'
         - enclave_options_enabled: 'null'
         - ephemeral_block_device: '[]'
@@ -362,7 +282,7 @@ grains:
         - iam_role_tags: '{}'
         - iam_role_use_name_prefix: 'true'
         - ignore_ami_changes: 'false'
-        - instance_initiated_shutdown_behavior: '{{ .inputs.instance_initiated_shutdown_behavior }}'
+        - instance_initiated_shutdown_behavior: 'null'
         - instance_tags: '{}'
         - instance_type: '{{ .inputs.instance_type }}'
         - ipv6_address_count: 'null'
@@ -371,7 +291,7 @@ grains:
         - launch_template: '{}'
         - maintenance_options: '{}'
         - metadata_options: "{\n  \"http_endpoint\": \"enabled\",\n  \"http_put_response_hop_limit\": 1,\n  \"http_tokens\": \"required\"\n}\n"
-        - monitoring: '{{ .inputs.monitoring }}'
+        - monitoring: 'null'
         - name: '{{ .inputs.name }}'
         - network_interface: '[]'
         - placement_group: 'null'
@@ -384,8 +304,8 @@ grains:
         - spot_block_duration_minutes: 'null'
         - spot_instance_interruption_behavior: 'null'
         - spot_launch_group: 'null'
-        - spot_price: '{{ .inputs.spot_price }}'
-        - spot_type: '{{ .inputs.spot_type }}'
+        - spot_price: 'null'
+        - spot_type: 'null'
         - spot_valid_from: 'null'
         - spot_valid_until: 'null'
         - spot_wait_for_fulfillment: 'null'
