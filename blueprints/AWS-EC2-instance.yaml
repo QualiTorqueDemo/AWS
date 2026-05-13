@@ -1,6 +1,7 @@
 spec_version: 2
-description: |
-  This Blueprints creates an EC2 instance on AWS.
+description: 'This Blueprints creates an EC2 instance on AWS.
+
+  '
 metadata:
   self-service: true
   display-name: AWS EC2 Instance
@@ -38,7 +39,6 @@ customization:
             default_open: true
             inputs:
               - name: resource_tags
-
       - name: Compute
         icon: layer
         sections:
@@ -46,41 +46,21 @@ customization:
             icon: list
             inputs:
               - name: user_data
-              - name: user_data_base64
-              - name: user_data_replace_on_change
               - name: instance_initiated_shutdown_behavior
-          - name: CPU
-            icon: list
-            inputs:
-              - name: cpu_core_count
-              - name: cpu_threads_per_core
-              - name: cpu_credits
-              - name: cpu_options
           - name: Placement
             icon: list
             inputs:
               - name: availability_zone
-              - name: placement_group
-              - name: tenancy
-              - name: host_id
-              - name: capacity_reservation_specification
           - name: Lifecycle
             icon: list
             inputs:
-              - name: disable_api_stop
               - name: disable_api_termination
               - name: monitoring
-              - name: maintenance_options
-              - name: enclave_options_enabled
-              - name: get_password_data
-              - name: hibernation
               - name: ebs_optimized
           - name: AMI overrides
             icon: list
             inputs:
               - name: ami
-              - name: ignore_ami_changes
-
       - name: Networking
         icon: layer
         sections:
@@ -88,21 +68,10 @@ customization:
             icon: list
             inputs:
               - name: associate_public_ip_address
-              - name: private_ip
-              - name: secondary_private_ips
-              - name: ipv6_address_count
-              - name: ipv6_addresses
-              - name: private_dns_name_options
-              - name: source_dest_check
-          - name: Network interfaces
-            icon: list
-            inputs:
-              - name: network_interface
           - name: Instance metadata (IMDS)
             icon: list
             inputs:
               - name: metadata_options
-
       - name: Storage
         icon: layer
         sections:
@@ -112,14 +81,6 @@ customization:
             inputs:
               - name: root_block_device
               - name: ebs_block_device
-              - name: ephemeral_block_device
-          - name: Volume & instance tags
-            icon: tags
-            inputs:
-              - name: volume_tags
-              - name: enable_volume_tags
-              - name: instance_tags
-
       - name: IAM
         icon: layer
         sections:
@@ -133,19 +94,8 @@ customization:
             inputs:
               - name: iam_role_name
                 visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
-              - name: iam_role_use_name_prefix
-                visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
-              - name: iam_role_description
-                visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
-              - name: iam_role_path
-                visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
-              - name: iam_role_permissions_boundary
-                visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
               - name: iam_role_policies
                 visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
-              - name: iam_role_tags
-                visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
-
       - name: Spot Instance
         icon: layer
         sections:
@@ -157,49 +107,28 @@ customization:
                 visible: '{% if inputs.create_spot_instance == "true" %} true {% else %} false {% endif %}'
               - name: spot_type
                 visible: '{% if inputs.create_spot_instance == "true" %} true {% else %} false {% endif %}'
-              - name: spot_block_duration_minutes
-                visible: '{% if inputs.create_spot_instance == "true" %} true {% else %} false {% endif %}'
-              - name: spot_instance_interruption_behavior
-                visible: '{% if inputs.create_spot_instance == "true" %} true {% else %} false {% endif %}'
-              - name: spot_launch_group
-                visible: '{% if inputs.create_spot_instance == "true" %} true {% else %} false {% endif %}'
-              - name: spot_valid_from
-                visible: '{% if inputs.create_spot_instance == "true" %} true {% else %} false {% endif %}'
-              - name: spot_valid_until
-                visible: '{% if inputs.create_spot_instance == "true" %} true {% else %} false {% endif %}'
-              - name: spot_wait_for_fulfillment
-                visible: '{% if inputs.create_spot_instance == "true" %} true {% else %} false {% endif %}'
-
-      - name: Advanced
-        icon: layer
-        sections:
-          - name: Module-level
-            icon: list
-            inputs:
-              - name: create
-              - name: launch_template
-              - name: timeouts
-
 inputs:
   name:
     type: string
     description: Name to be used on EC2 instance created
   subnet_id:
     type: string
-    description: |
-      VPC subnet ID to launch the instance in.
-      The VPC and Availability Zone are inherited from this subnet — you don't pick
-      them separately. Any security groups you attach must belong to the same VPC.
+    description: "VPC subnet ID to launch the instance in.\nThe VPC and Availability Zone are inherited from this subnet \u2014 you don't pick\nthem separately. Any security groups you attach must belong\
+      \ to the same VPC.\n"
   ami:
     type: string
     description: ID of AMI to use for the instance
+    default: 'null'
   operating_system:
     type: string
     default: Amazon Linux 2023
-    description: |
-      Operating system to install. Maps to the matching public AWS SSM parameter; the
+    description: 'Operating system to install. Maps to the matching public AWS SSM parameter; the
+
       Terraform module resolves it at deploy time, so you always get the latest patched
+
       AMI for the chosen OS.
+
+      '
     allowed-values:
       - Amazon Linux 2023
       - Amazon Linux 2
@@ -214,40 +143,14 @@ inputs:
     type: string
     default: 'null'
     description: AZ to start the instance in
-  capacity_reservation_specification:
-    type: string
-    default: '{}'
-    description: Describes an instance's Capacity Reservation targeting option
-  cpu_core_count:
-    type: string
-    default: 'null'
-    description: Sets the number of CPU cores for an instance
-  cpu_credits:
-    type: string
-    default: 'null'
-    description: The credit option for CPU usage (unlimited or standard)
-  cpu_options:
-    type: string
-    default: '{}'
-    description: Defines CPU options to apply to the instance at launch time.
-  cpu_threads_per_core:
-    type: string
-    default: 'null'
-    description: Sets the number of CPU threads per core for an instance (has no effect unless cpu_core_count is also set)
-  create:
-    type: string
-    default: true
-    description: Whether to create an instance
   create_iam_instance_profile:
     type: string
     description: Determines whether an IAM instance profile is created or to use an existing IAM instance profile
+    default: 'false'
   create_spot_instance:
     type: string
     description: Depicts if the instance is a spot instance
-  disable_api_stop:
-    type: string
-    default: 'null'
-    description: If true, enables EC2 Instance Stop Protection
+    default: 'false'
   disable_api_termination:
     type: string
     default: 'null'
@@ -260,77 +163,26 @@ inputs:
     type: string
     default: 'null'
     description: If true, the launched EC2 instance will be EBS-optimized
-  enable_volume_tags:
-    type: string
-    default: true
-    description: Whether to enable volume tags (if enabled it conflicts with root_block_device tags)
-  enclave_options_enabled:
-    type: string
-    default: 'null'
-    description: Whether Nitro Enclaves will be enabled on the instance. Defaults to `false`
-  ephemeral_block_device:
-    type: string
-    default: '[]'
-    description: Customize Ephemeral (also known as Instance Store) volumes on the instance
-  get_password_data:
-    type: string
-    default: 'null'
-    description: If true, wait for password data to become available and retrieve it
-  hibernation:
-    type: string
-    default: 'null'
-    description: If true, the launched EC2 instance will support hibernation
-  host_id:
-    type: string
-    default: 'null'
-    description: ID of a dedicated host that the instance will be assigned to. Use when an instance is to be launched on a specific dedicated host
   iam_instance_profile:
     type: string
     default: 'null'
     description: IAM Instance Profile to launch the instance with. Specified as the name of the Instance Profile
-  iam_role_description:
-    type: string
-    default: 'null'
-    description: Description of the role
   iam_role_name:
     type: string
     default: 'null'
     description: Name to use on IAM role created
-  iam_role_path:
-    type: string
-    default: 'null'
-    description: IAM role path
-  iam_role_permissions_boundary:
-    type: string
-    default: 'null'
-    description: ARN of the policy that is used to set the permissions boundary for the IAM role
   iam_role_policies:
     type: string
     default: '{}'
     description: Policies attached to the IAM role
-  iam_role_tags:
-    type: string
-    default: '{}'
-    description: A map of additional tags to add to the IAM role/profile created
-  iam_role_use_name_prefix:
-    type: string
-    default: true
-    description: Determines whether the IAM role name (`iam_role_name` or `name`) is used as a prefix
-  ignore_ami_changes:
-    type: string
-    description: Whether changes to the AMI ID changes should be ignored by Terraform. Note - changing this value will result in the replacement of the instance
   instance_initiated_shutdown_behavior:
     type: string
     default: 'null'
     description: Shutdown behavior for the instance. Amazon defaults this to stop for EBS-backed instances and terminate for instance-store instances. Cannot be set on instance-store instance
-  instance_tags:
-    type: string
-    default: '{}'
-    description: Additional tags for the instance
   instance_type:
     type: string
     default: t3.micro
-    description: 'EC2 instance type. t3 = burstable, m6i = general purpose, c6i = compute optimized, r6i = memory optimized.'
+    description: EC2 instance type. t3 = burstable, m6i = general purpose, c6i = compute optimized, r6i = memory optimized.
     allowed-values:
       - t3.micro
       - t3.small
@@ -348,79 +200,22 @@ inputs:
       - r6i.large
       - r6i.xlarge
       - r6i.2xlarge
-  ipv6_address_count:
-    type: string
-    default: 'null'
-    description: A number of IPv6 addresses to associate with the primary network interface. Amazon EC2 chooses the IPv6 addresses from the range of your subnet
-  ipv6_addresses:
-    type: string
-    default: 'null'
-    description: Specify one or more IPv6 addresses from the range of the subnet to associate with the primary network interface
   key_name:
     type: string
     default: 'null'
     description: Key name of the Key Pair to use for the instance; which can be managed using the `aws_key_pair` resource
-  launch_template:
-    type: string
-    default: '{}'
-    description: Specifies a Launch Template to configure the instance. Parameters configured on this resource will override the corresponding parameters in the Launch Template
-  maintenance_options:
-    type: string
-    default: '{}'
-    description: The maintenance options for the instance
   metadata_options:
     type: string
-    default: |-
-      {
-        "http_endpoint": "enabled",
-        "http_put_response_hop_limit": 1,
-        "http_tokens": "required"
-      }
+    default: "{\n  \"http_endpoint\": \"enabled\",\n  \"http_put_response_hop_limit\": 1,\n  \"http_tokens\": \"required\"\n}"
     description: Customize the metadata options of the instance
   monitoring:
     type: string
     default: 'null'
     description: If true, the launched EC2 instance will have detailed monitoring enabled
-  network_interface:
-    type: string
-    default: '[]'
-    description: Customize network interfaces to be attached at instance boot time
-  placement_group:
-    type: string
-    default: 'null'
-    description: The Placement Group to start the instance in
-  private_dns_name_options:
-    type: string
-    default: '{}'
-    description: Customize the private DNS name options of the instance
-  private_ip:
-    type: string
-    default: 'null'
-    description: Private IP address to associate with the instance in a VPC
   root_block_device:
     type: string
     default: '[]'
     description: Customize details about the root block device of the instance. See Block Devices below for details
-  secondary_private_ips:
-    type: string
-    default: 'null'
-    description: A list of secondary private IPv4 addresses to assign to the instance's primary network interface (eth0) in a VPC. Can only be assigned to the primary network interface (eth0) attached at instance creation, not a pre-existing network interface i.e. referenced in a `network_interface block`
-  source_dest_check:
-    type: string
-    default: 'null'
-    description: Controls if traffic is routed to the instance when the destination address does not match the instance. Used for NAT or VPNs
-  spot_block_duration_minutes:
-    type: string
-    default: 'null'
-    description: The required duration for the Spot instances, in minutes. This value must be a multiple of 60 (60, 120, 180, 240, 300, or 360)
-  spot_instance_interruption_behavior:
-    type: string
-    default: 'null'
-    description: Indicates Spot instance behavior when it is interrupted. Valid values are `terminate`, `stop`, or `hibernate`
-  spot_launch_group:
-    type: string
-    default: 'null'
-    description: A launch group is a group of spot instances that launch together and terminate together. If left empty instances are launched and terminated individually
   spot_price:
     type: string
     default: 'null'
@@ -429,49 +224,20 @@ inputs:
     type: string
     default: 'null'
     description: If set to one-time, after the instance is terminated, the spot request will be closed. Default `persistent`
-  spot_valid_from:
-    type: string
-    default: 'null'
-    description: The start date and time of the request, in UTC RFC3339 format(for example, YYYY-MM-DDTHH:MM:SSZ)
-  spot_valid_until:
-    type: string
-    default: 'null'
-    description: The end date and time of the request, in UTC RFC3339 format(for example, YYYY-MM-DDTHH:MM:SSZ)
-  spot_wait_for_fulfillment:
-    type: string
-    default: 'null'
-    description: If set, Terraform will wait for the Spot Request to be fulfilled, and will throw an error if the timeout of 10m is reached
-  tenancy:
-    type: string
-    default: 'null'
-    description: 'The tenancy of the instance (if the instance is running in a VPC). Available values: default, dedicated, host'
-  timeouts:
-    type: string
-    default: '{}'
-    description: Define maximum timeout for creating, updating, and deleting EC2 instance resources
   user_data:
     type: string
     default: 'null'
     description: The user data to provide when launching the instance. Do not pass gzip-compressed data via this argument; see user_data_base64 instead
-  user_data_base64:
-    type: string
-    default: 'null'
-    description: Can be used instead of user_data to pass base64-encoded binary data directly. Use this instead of user_data whenever the value is not a valid UTF-8 string. For example, gzip-encoded user data must be base64-encoded and passed via this argument to avoid corruption
-  user_data_replace_on_change:
-    type: string
-    default: 'null'
-    description: When used in combination with user_data or user_data_base64 will trigger a destroy and recreate when set to true. Defaults to false if not set
-  volume_tags:
-    type: string
-    default: '{}'
-    description: A mapping of tags to assign to the devices created by the instance at launch time
   vpc_security_group_ids:
     type: string
     default: 'null'
-    description: |
-      Security groups to attach. JSON array, e.g. ["sg-abc","sg-def"].
-      The instance's VPC is determined by subnet_id; the security groups you list
-      must belong to that same VPC. Leave as 'null' to use the VPC's default SG.
+    description: 'Security groups to attach. JSON array, e.g. ["sg-abc","sg-def"].
+
+      The instance''s VPC is determined by subnet_id; the security groups you list
+
+      must belong to that same VPC. Leave as ''null'' to use the VPC''s default SG.
+
+      '
   resource_tags:
     type: string
     default: '{}'
@@ -574,71 +340,73 @@ grains:
         auto-tag: true
       inputs:
         - ami: '{{ .inputs.ami }}'
-        - ami_ssm_parameter: '{% case inputs.operating_system %}{% when "Amazon Linux 2023" %}/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64{% when "Amazon Linux 2" %}/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2{% when "Ubuntu 24.04 LTS" %}/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp2/ami-id{% when "Ubuntu 22.04 LTS" %}/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id{% when "Windows Server 2022" %}/aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base{% endcase %}'
+        - ami_ssm_parameter: '{% case inputs.operating_system %}{% when "Amazon Linux 2023" %}/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64{% when "Amazon Linux 2" %}/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2{%
+            when "Ubuntu 24.04 LTS" %}/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp2/ami-id{% when "Ubuntu 22.04 LTS" %}/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id{%
+            when "Windows Server 2022" %}/aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base{% endcase %}'
         - associate_public_ip_address: '{{ .inputs.associate_public_ip_address }}'
         - availability_zone: '{{ .inputs.availability_zone }}'
-        - capacity_reservation_specification: '{{ .inputs.capacity_reservation_specification }}'
-        - cpu_core_count: '{{ .inputs.cpu_core_count }}'
-        - cpu_credits: '{{ .inputs.cpu_credits }}'
-        - cpu_options: '{{ .inputs.cpu_options }}'
-        - cpu_threads_per_core: '{{ .inputs.cpu_threads_per_core }}'
-        - create: '{{ .inputs.create }}'
+        - capacity_reservation_specification: '{}'
+        - cpu_core_count: 'null'
+        - cpu_credits: 'null'
+        - cpu_options: '{}'
+        - cpu_threads_per_core: 'null'
+        - create: 'true'
         - create_iam_instance_profile: '{{ .inputs.create_iam_instance_profile }}'
         - create_spot_instance: '{{ .inputs.create_spot_instance }}'
-        - disable_api_stop: '{{ .inputs.disable_api_stop }}'
+        - disable_api_stop: 'null'
         - disable_api_termination: '{{ .inputs.disable_api_termination }}'
         - ebs_block_device: '{{ .inputs.ebs_block_device }}'
         - ebs_optimized: '{{ .inputs.ebs_optimized }}'
-        - enable_volume_tags: '{{ .inputs.enable_volume_tags }}'
-        - enclave_options_enabled: '{{ .inputs.enclave_options_enabled }}'
-        - ephemeral_block_device: '{{ .inputs.ephemeral_block_device }}'
-        - get_password_data: '{{ .inputs.get_password_data }}'
-        - hibernation: '{{ .inputs.hibernation }}'
-        - host_id: '{{ .inputs.host_id }}'
+        - enable_volume_tags: 'true'
+        - enclave_options_enabled: 'null'
+        - ephemeral_block_device: '[]'
+        - get_password_data: 'null'
+        - hibernation: 'null'
+        - host_id: 'null'
         - iam_instance_profile: '{{ .inputs.iam_instance_profile }}'
-        - iam_role_description: '{{ .inputs.iam_role_description }}'
+        - iam_role_description: 'null'
         - iam_role_name: '{{ .inputs.iam_role_name }}'
-        - iam_role_path: '{{ .inputs.iam_role_path }}'
-        - iam_role_permissions_boundary: '{{ .inputs.iam_role_permissions_boundary }}'
+        - iam_role_path: 'null'
+        - iam_role_permissions_boundary: 'null'
         - iam_role_policies: '{{ .inputs.iam_role_policies }}'
-        - iam_role_tags: '{{ .inputs.iam_role_tags }}'
-        - iam_role_use_name_prefix: '{{ .inputs.iam_role_use_name_prefix }}'
-        - ignore_ami_changes: '{{ .inputs.ignore_ami_changes }}'
+        - iam_role_tags: '{}'
+        - iam_role_use_name_prefix: 'true'
+        - ignore_ami_changes: 'false'
         - instance_initiated_shutdown_behavior: '{{ .inputs.instance_initiated_shutdown_behavior }}'
-        - instance_tags: '{{ .inputs.instance_tags }}'
+        - instance_tags: '{}'
         - instance_type: '{{ .inputs.instance_type }}'
-        - ipv6_address_count: '{{ .inputs.ipv6_address_count }}'
-        - ipv6_addresses: '{{ .inputs.ipv6_addresses }}'
+        - ipv6_address_count: 'null'
+        - ipv6_addresses: 'null'
         - key_name: '{{ .inputs.key_name }}'
-        - launch_template: '{{ .inputs.launch_template }}'
-        - maintenance_options: '{{ .inputs.maintenance_options }}'
+        - launch_template: '{}'
+        - maintenance_options: '{}'
         - metadata_options: '{{ .inputs.metadata_options }}'
         - monitoring: '{{ .inputs.monitoring }}'
         - name: '{{ .inputs.name }}'
-        - network_interface: '{{ .inputs.network_interface }}'
-        - placement_group: '{{ .inputs.placement_group }}'
-        - private_dns_name_options: '{{ .inputs.private_dns_name_options }}'
-        - private_ip: '{{ .inputs.private_ip }}'
+        - network_interface: '[]'
+        - placement_group: 'null'
+        - private_dns_name_options: '{}'
+        - private_ip: 'null'
         - putin_khuylo: 'true'
         - root_block_device: '{{ .inputs.root_block_device }}'
-        - secondary_private_ips: '{{ .inputs.secondary_private_ips }}'
-        - source_dest_check: '{{ .inputs.source_dest_check }}'
-        - spot_block_duration_minutes: '{{ .inputs.spot_block_duration_minutes }}'
-        - spot_instance_interruption_behavior: '{{ .inputs.spot_instance_interruption_behavior }}'
-        - spot_launch_group: '{{ .inputs.spot_launch_group }}'
+        - secondary_private_ips: 'null'
+        - source_dest_check: 'null'
+        - spot_block_duration_minutes: 'null'
+        - spot_instance_interruption_behavior: 'null'
+        - spot_launch_group: 'null'
         - spot_price: '{{ .inputs.spot_price }}'
         - spot_type: '{{ .inputs.spot_type }}'
-        - spot_valid_from: '{{ .inputs.spot_valid_from }}'
-        - spot_valid_until: '{{ .inputs.spot_valid_until }}'
-        - spot_wait_for_fulfillment: '{{ .inputs.spot_wait_for_fulfillment }}'
+        - spot_valid_from: 'null'
+        - spot_valid_until: 'null'
+        - spot_wait_for_fulfillment: 'null'
         - subnet_id: '{{ .inputs.subnet_id }}'
         - tags: '{{ .inputs.resource_tags }}'
-        - tenancy: '{{ .inputs.tenancy }}'
-        - timeouts: '{{ .inputs.timeouts }}'
+        - tenancy: 'null'
+        - timeouts: '{}'
         - user_data: '{{ .inputs.user_data }}'
-        - user_data_base64: '{{ .inputs.user_data_base64 }}'
-        - user_data_replace_on_change: '{{ .inputs.user_data_replace_on_change }}'
-        - volume_tags: '{{ .inputs.volume_tags }}'
+        - user_data_base64: 'null'
+        - user_data_replace_on_change: 'null'
+        - volume_tags: '{}'
         - vpc_security_group_ids: '{{ .inputs.vpc_security_group_ids }}'
       outputs:
         - ami
