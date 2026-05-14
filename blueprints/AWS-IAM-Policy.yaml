@@ -1,7 +1,5 @@
 spec_version: 2
-description: |
-  This blueprint creates an IAM policy in AWS based on the provided inputs and deploys it using Terraform.
-  The blueprint connects the inputs provided by the user to the Terraform module for IAM policy creation, allowing for customization of the policy's name, description, path, and other attributes. The end goal is to automate the creation of IAM policies in AWS based on user-defined parameters.
+description: Creates an AWS IAM managed policy from a JSON document.
 metadata:
   self-service: true
   display-name: AWS IAM Policy
@@ -14,53 +12,35 @@ metadata:
       value: Cloud
     - key: Terraform
 inputs:
-  create_policy:
-    type: string
-    default: true
-    description: Whether to create the IAM policy
   name:
     type: string
-    description: The name of the policy
-  name_prefix:
-    type: string
-    default: 'null'
-    description: IAM policy name prefix
-  path:
-    type: string
-    default: /
-    description: The path of the policy in IAM
+    description: Policy name (1-128 chars).
   policy:
     type: string
-    description: The path of the policy in IAM (tpl file)
-  tags:
-    type: string
-    default: '{}'
-    description: A map of tags to add to all resources.
-  agent:
-    type: agent
+    description: 'IAM policy JSON document, e.g. {"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": "s3:Get*", "Resource": "*"}]}.'
   description:
     type: string
-    default: IAM Policy
-    description: The description of the policy
+    default: IAM policy managed by Torque
+    description: Free-text description.
+  resource_tags:
+    type: string
+    default: '{}'
+    description: JSON map of tags applied to the policy.
+  agent:
+    type: agent
 outputs:
-  iam-policy_arn:
+  arn:
     value: '{{ .grains.iam-policy.outputs.arn }}'
     quick: true
-  iam-policy_description:
-    value: '{{ .grains.iam-policy.outputs.description }}'
-    quick: true
-  iam-policy_id:
+  id:
     value: '{{ .grains.iam-policy.outputs.id }}'
-    quick: true
-  iam-policy_name:
+    quick: false
+  name:
     value: '{{ .grains.iam-policy.outputs.name }}'
-    quick: true
-  iam-policy_path:
+    quick: false
+  path:
     value: '{{ .grains.iam-policy.outputs.path }}'
-    quick: true
-  iam-policy_policy:
-    value: '{{ .grains.iam-policy.outputs.policy }}'
-    quick: true
+    quick: false
 grains:
   iam-policy:
     kind: terraform
@@ -73,18 +53,16 @@ grains:
       tags:
         auto-tag: true
       inputs:
-        - create_policy: '{{ .inputs.create_policy }}'
-        - description: '{{ .inputs.description }}'
         - name: '{{ .inputs.name }}'
-        - name_prefix: '{{ .inputs.name_prefix }}'
-        - path: '{{ .inputs.path }}'
         - policy: '{{ .inputs.policy }}'
-        - tags: '{{ .inputs.tags }}'
+        - description: '{{ .inputs.description }}'
+        - tags: '{{ .inputs.resource_tags }}'
+        - create_policy: 'true'
+        - name_prefix: 'null'
+        - path: /
       outputs:
         - arn
-        - description
         - id
         - name
         - path
-        - policy
-    tf-version: 1.5.5
+    tf-version: 1.5.7

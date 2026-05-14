@@ -1,19 +1,5 @@
 spec_version: 2
-description: |
-  Creates an IAM role that can be assumed by one or more EKS ServiceAccount in one or more EKS clusters. 
-  Unlike iam-assumable-role-with-oidc, this module:
-
-  - Does not require any knowledge of cluster OIDC information as data resources are used
-  - Supports assuming the role from multiple EKS clusters, for example used in DR or when a workload is spread across clusters
-  - Support multiple ServiceAccount in the same cluster, for example when a workload runs in multiple namespaces
-  - More suitable for non-cluster admins as implementation is simpler
-  - More suitable for when the IAM role and cluster resources are in separate Terraform configurations
-  - Does not support multiple regions, consider using iam-role-for-service-accounts-eks if role needs to support clusters in multiple regions
-  - This module is for use with AWS EKS. For details of how a ServiceAccount in EKS can assume an IAM role, see the EKS documentation.
-
-  Notes:
-  - The EKS cluster needs to exist first, in the current AWS account and region
-  - The key in the cluster_service_accounts is the exact name of the EKS cluster
+description: Creates an IAM role assumable by a Kubernetes ServiceAccount on an EKS cluster (IRSA). Pass the resulting role ARN as the eks.amazonaws.com/role-arn annotation on the SA.
 metadata:
   self-service: true
   display-name: AWS IAM EKS Role
@@ -26,69 +12,39 @@ metadata:
       value: Cloud
     - key: Terraform
 inputs:
-  allow_self_assume_role:
-    type: string
-    description: Determines whether to allow the role to be [assume itself](https://aws.amazon.com/blogs/security/announcing-an-update-to-iam-role-trust-policy-behavior/)
-  assume_role_condition_test:
-    type: string
-    default: StringEquals
-    description: Name of the [IAM condition operator](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition_operators.html) to evaluate when assuming the role
-  cluster_service_accounts:
-    type: string
-    default: '{}'
-    description: EKS cluster and k8s ServiceAccount pairs. Each EKS cluster can have multiple k8s ServiceAccount. See README for details
-  create_role:
-    type: string
-    default: true
-    description: Whether to create a role
-  force_detach_policies:
-    type: string
-    description: Whether policies should be detached from this role when destroying
-  max_session_duration:
-    type: string
-    default: 43200
-    description: Maximum CLI/API session duration in seconds between 3600 and 43200
-  role_description:
-    type: string
-    description: IAM Role description
   role_name:
     type: string
-    default: 'null'
-    description: Name of IAM role
-  role_name_prefix:
+    description: Name of the IAM role to create.
+  cluster_service_accounts:
     type: string
-    default: 'null'
-    description: IAM role name prefix
-  role_path:
-    type: string
-    default: /
-    description: Path of IAM role
-  role_permissions_boundary_arn:
-    type: string
-    description: Permissions boundary ARN to use for IAM role
+    description: 'JSON map of EKS cluster -> list of "namespace:serviceaccount" pairs allowed to assume this role, e.g. {"my-cluster": ["default:my-app","kube-system:external-dns"]}.'
   role_policy_arns:
     type: string
     default: '{}'
-    description: ARNs of any policies to attach to the IAM role
-  tags:
+    description: 'JSON map of key -> policy ARN attached to the role, e.g. {"s3": "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"}.'
+  role_description:
+    type: string
+    default: EKS service account role
+    description: Free-text description.
+  resource_tags:
     type: string
     default: '{}'
-    description: A map of tags to add to all resources
+    description: JSON map of tags applied to the IAM role.
   agent:
     type: agent
 outputs:
-  iam-eks-role_iam_role_arn:
+  iam_role_arn:
     value: '{{ .grains.iam-eks-role.outputs.iam_role_arn }}'
     quick: true
-  iam-eks-role_iam_role_name:
+  iam_role_name:
     value: '{{ .grains.iam-eks-role.outputs.iam_role_name }}'
-    quick: true
-  iam-eks-role_iam_role_path:
+    quick: false
+  iam_role_path:
     value: '{{ .grains.iam-eks-role.outputs.iam_role_path }}'
-    quick: true
-  iam-eks-role_iam_role_unique_id:
+    quick: false
+  iam_role_unique_id:
     value: '{{ .grains.iam-eks-role.outputs.iam_role_unique_id }}'
-    quick: true
+    quick: false
 grains:
   iam-eks-role:
     kind: terraform
@@ -101,22 +57,22 @@ grains:
       tags:
         auto-tag: true
       inputs:
-        - allow_self_assume_role: '{{ .inputs.allow_self_assume_role }}'
-        - assume_role_condition_test: '{{ .inputs.assume_role_condition_test }}'
-        - cluster_service_accounts: '{{ .inputs.cluster_service_accounts }}'
-        - create_role: '{{ .inputs.create_role }}'
-        - force_detach_policies: '{{ .inputs.force_detach_policies }}'
-        - max_session_duration: '{{ .inputs.max_session_duration }}'
-        - role_description: '{{ .inputs.role_description }}'
         - role_name: '{{ .inputs.role_name }}'
-        - role_name_prefix: '{{ .inputs.role_name_prefix }}'
-        - role_path: '{{ .inputs.role_path }}'
-        - role_permissions_boundary_arn: '{{ .inputs.role_permissions_boundary_arn }}'
+        - cluster_service_accounts: '{{ .inputs.cluster_service_accounts }}'
         - role_policy_arns: '{{ .inputs.role_policy_arns }}'
-        - tags: '{{ .inputs.tags }}'
+        - role_description: '{{ .inputs.role_description }}'
+        - tags: '{{ .inputs.resource_tags }}'
+        - allow_self_assume_role: 'false'
+        - assume_role_condition_test: StringEquals
+        - create_role: 'true'
+        - force_detach_policies: 'false'
+        - max_session_duration: '3600'
+        - role_name_prefix: 'null'
+        - role_path: /
+        - role_permissions_boundary_arn: 'null'
       outputs:
         - iam_role_arn
         - iam_role_name
         - iam_role_path
         - iam_role_unique_id
-    tf-version: 1.5.5
+    tf-version: 1.5.7

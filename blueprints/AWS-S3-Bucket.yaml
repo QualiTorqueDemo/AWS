@@ -1,11 +1,5 @@
 spec_version: 2
-description: |
-  Provisions an AWS S3 bucket with the following capabilities:
-  - Static web-site hosting
-  - Versioning
-  - Server-side encryption
-  - Lifecycle rules
-  - CORS
+description: Creates an Amazon S3 bucket with versioning enabled.
 metadata:
   self-service: true
   display-name: AWS S3 Bucket
@@ -21,64 +15,47 @@ inputs:
   bucket_name:
     type: string
     default: 'null'
-    description: Globally unique name for the S3 bucket. Leave empty to let Terraform generate one.
+    description: Globally-unique S3 bucket name. Leave as "null" to auto-generate one based on a random pet name.
   versioning_enabled:
     type: string
     default: 'true'
-    description: Enable S3 bucket versioning
+    description: Keep all versions of every object. Strongly recommended for production data.
     allowed-values:
       - 'true'
       - 'false'
   force_destroy:
     type: string
     default: 'false'
-    description: Allow the bucket to be destroyed even when it contains objects. Set to true only for non-production buckets.
+    description: If "true", terraform destroy deletes all objects in the bucket before deleting the bucket itself. Convenient for dev/test, dangerous for prod.
     allowed-values:
       - 'true'
       - 'false'
   resource_tags:
     type: string
     default: '{}'
-    description: Additional tags to apply to the bucket (JSON map, e.g. {"team":"platform","env":"prod"})
+    description: JSON map of tags applied to the bucket.
   agent:
     type: agent
 outputs:
-  complete_s3_bucket_website_domain:
-    value: 'http://{{ .grains.complete_s3_bucket.outputs.s3_bucket_website_domain }}'
-    quick: true
-    kind: link
-  complete_s3_bucket_website_endpoint:
-    value: 'http://{{ .grains.complete_s3_bucket.outputs.s3_bucket_website_endpoint }}'
-    quick: true
-    kind: link
-  complete_s3_bucket_arn:
-    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_arn }}'
-    quick: true
-  complete_s3_bucket_bucket_domain_name:
-    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_bucket_domain_name }}'
-    quick: true
-  complete_s3_bucket_bucket_regional_domain_name:
-    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_bucket_regional_domain_name }}'
-    quick: true
-  complete_s3_bucket_hosted_zone_id:
-    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_hosted_zone_id }}'
-    quick: true
-  complete_s3_bucket_id:
+  id:
     value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_id }}'
     quick: true
-  complete_s3_bucket_lifecycle_configuration_rules:
-    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_lifecycle_configuration_rules }}'
-    quick: true
-  complete_s3_bucket_policy:
-    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_policy }}'
-    quick: true
-  complete_s3_bucket_region:
+  arn:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_arn }}'
+    quick: false
+  bucket_regional_domain_name:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_bucket_regional_domain_name }}'
+    quick: false
+  region:
     value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_region }}'
-    quick: true
+    quick: false
+  hosted_zone_id:
+    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_hosted_zone_id }}'
+    quick: false
 grains:
   complete_s3_bucket:
     kind: terraform
-    tf-version: 1.5.5
+    tf-version: 1.5.7
     spec:
       source:
         store: AWS
@@ -88,18 +65,13 @@ grains:
       tags:
         auto-tag: true
       inputs:
-        - bucket: '{{ .inputs.bucket_name }}'
-        - versioning: '{{ .inputs.versioning_enabled }}'
+        - bucket_name: '{{ .inputs.bucket_name }}'
+        - versioning_enabled: '{{ .inputs.versioning_enabled }}'
         - force_destroy: '{{ .inputs.force_destroy }}'
-        - tags: '{{ .inputs.resource_tags }}'
+        - resource_tags: '{{ .inputs.resource_tags }}'
       outputs:
-        - s3_bucket_arn
-        - s3_bucket_bucket_domain_name
-        - s3_bucket_bucket_regional_domain_name
-        - s3_bucket_hosted_zone_id
         - s3_bucket_id
-        - s3_bucket_lifecycle_configuration_rules
-        - s3_bucket_policy
+        - s3_bucket_arn
+        - s3_bucket_bucket_regional_domain_name
         - s3_bucket_region
-        - s3_bucket_website_domain
-        - s3_bucket_website_endpoint
+        - s3_bucket_hosted_zone_id

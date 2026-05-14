@@ -1,6 +1,5 @@
 spec_version: 2
-description: |
-  Terraform sub-module which creates VPC endpoint resources on AWS.
+description: Creates one or more VPC endpoints (Gateway or Interface) to AWS services from within a VPC, so traffic stays on the AWS backbone instead of going out via the IGW.
 metadata:
   self-service: true
   display-name: AWS VPC Endpoint
@@ -13,69 +12,37 @@ metadata:
       value: Cloud
     - key: Terraform
 inputs:
-  create:
+  vpc_id:
     type: string
-    default: true
-    description: Determines whether resources will be created
-  create_security_group:
-    type: string
-    description: Determines if a security group is created
+    description: VPC in which to create the endpoints.
   endpoints:
     type: string
-    default: '{}'
-    description: A map of interface and/or gateway endpoints containing their properties and configurations
-  security_group_description:
-    type: string
-    default: 'null'
-    description: Description of the security group created
-  security_group_ids:
-    type: string
-    default: '[]'
-    description: Default security group IDs to associate with the VPC endpoints
-  security_group_name:
-    type: string
-    default: 'null'
-    description: Name to use on security group created. Conflicts with `security_group_name_prefix`
-  security_group_name_prefix:
-    type: string
-    default: 'null'
-    description: Name prefix to use on security group created. Conflicts with `security_group_name`
-  security_group_rules:
-    type: string
-    default: '{}'
-    description: Security group rules to add to the security group created
-  security_group_tags:
-    type: string
-    default: '{}'
-    description: A map of additional tags to add to the security group created
+    description: 'JSON map of endpoint configurations, e.g. {"s3": {"service": "s3", "service_type": "Gateway"}, "ec2": {"service": "ec2", "private_dns_enabled": true}}. See terraform-aws-modules/vpc/aws//modules/vpc-endpoints
+      README for the full schema.'
   subnet_ids:
     type: string
     default: '[]'
-    description: Default subnets IDs to associate with the VPC endpoints
-  timeouts:
+    description: JSON array of subnet IDs for Interface endpoints (private endpoints in those subnets). Ignored for Gateway endpoints (S3, DynamoDB).
+  security_group_ids:
+    type: string
+    default: '[]'
+    description: JSON array of security group IDs to attach to Interface endpoints. Ignored for Gateway endpoints.
+  resource_tags:
     type: string
     default: '{}'
-    description: Define maximum timeout for creating, updating, and deleting VPC endpoint resources
-  vpc_id:
-    type: string
-    default: 'null'
-    description: The ID of the VPC in which the endpoint will be used
-  tags:
-    type: string
-    default: '{}'
-    description: A map of tags to add to all resources
+    description: JSON map of tags applied to all created endpoints.
   agent:
     type: agent
 outputs:
-  vpc-endpoints_endpoints:
+  endpoints:
     value: '{{ .grains.vpc-endpoints.outputs.endpoints }}'
-    quick: true
-  vpc-endpoints_security_group_arn:
-    value: '{{ .grains.vpc-endpoints.outputs.security_group_arn }}'
-    quick: true
-  vpc-endpoints_security_group_id:
+    quick: false
+  security_group_id:
     value: '{{ .grains.vpc-endpoints.outputs.security_group_id }}'
     quick: true
+  security_group_arn:
+    value: '{{ .grains.vpc-endpoints.outputs.security_group_arn }}'
+    quick: false
 grains:
   vpc-endpoints:
     kind: terraform
@@ -88,21 +55,21 @@ grains:
       tags:
         auto-tag: true
       inputs:
-        - create: '{{ .inputs.create }}'
-        - create_security_group: '{{ .inputs.create_security_group }}'
-        - endpoints: '{{ .inputs.endpoints }}'
-        - security_group_description: '{{ .inputs.security_group_description }}'
-        - security_group_ids: '{{ .inputs.security_group_ids }}'
-        - security_group_name: '{{ .inputs.security_group_name }}'
-        - security_group_name_prefix: '{{ .inputs.security_group_name_prefix }}'
-        - security_group_rules: '{{ .inputs.security_group_rules }}'
-        - security_group_tags: '{{ .inputs.security_group_tags }}'
-        - subnet_ids: '{{ .inputs.subnet_ids }}'
-        - tags: '{{ .inputs.tags }}'
-        - timeouts: '{{ .inputs.timeouts }}'
         - vpc_id: '{{ .inputs.vpc_id }}'
+        - endpoints: '{{ .inputs.endpoints }}'
+        - subnet_ids: '{{ .inputs.subnet_ids }}'
+        - security_group_ids: '{{ .inputs.security_group_ids }}'
+        - tags: '{{ .inputs.resource_tags }}'
+        - create: 'true'
+        - create_security_group: 'false'
+        - security_group_description: 'null'
+        - security_group_name: 'null'
+        - security_group_name_prefix: 'null'
+        - security_group_rules: '{}'
+        - security_group_tags: '{}'
+        - timeouts: '{}'
       outputs:
         - endpoints
-        - security_group_arn
         - security_group_id
-    tf-version: 1.5.5
+        - security_group_arn
+    tf-version: 1.5.7
