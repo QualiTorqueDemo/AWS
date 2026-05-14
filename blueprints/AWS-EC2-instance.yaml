@@ -91,10 +91,10 @@ outputs:
     quick: true
   arn:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.arn }}'
-    quick: true
+    quick: false
   instance_state:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.instance_state }}'
-    quick: true
+    quick: false
   public_ip:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.public_ip }}'
     quick: true
