@@ -62,6 +62,15 @@ output "node_group_taints" {
 }
 
 ################################################################################
+# Autoscaling Group Schedule
+################################################################################
+
+output "autoscaling_group_schedule_arns" {
+  description = "ARNs of autoscaling group schedules"
+  value       = { for k, v in aws_autoscaling_schedule.this : k => v.arn }
+}
+
+################################################################################
 # IAM Role
 ################################################################################
 
@@ -81,15 +90,10 @@ output "iam_role_unique_id" {
 }
 
 ################################################################################
-# Security Group
+# Additional
 ################################################################################
 
-output "security_group_arn" {
-  description = "Amazon Resource Name (ARN) of the security group"
-  value       = try(aws_security_group.this[0].arn, null)
-}
-
-output "security_group_id" {
-  description = "ID of the security group"
-  value       = try(aws_security_group.this[0].id, null)
+output "platform" {
+  description = "Identifies if the OS platform is `bottlerocket`, `linux`, or `windows` based"
+  value       = var.platform
 }
