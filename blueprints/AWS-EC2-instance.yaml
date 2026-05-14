@@ -153,7 +153,7 @@ grains:
         - enable_volume_tags: 'true'
         - enclave_options_enabled: 'null'
         - ephemeral_block_device: '[]'
-        - get_password_data: 'null'
+        - get_password_data: '{% if inputs.operating_system contains "Windows" %}true{% else %}null{% endif %}'
         - hibernation: 'null'
         - host_id: 'null'
         - iam_instance_profile: 'null'
