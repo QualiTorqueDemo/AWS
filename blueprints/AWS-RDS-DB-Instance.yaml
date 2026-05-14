@@ -205,7 +205,7 @@ grains:
         - cloudwatch_log_group_skip_destroy: 'false'
         - domain: 'null'
         - domain_auth_secret_arn: 'null'
-        - domain_dns_ips: '[]'
+        - domain_dns_ips: 'null'
         - domain_fqdn: 'null'
         - domain_iam_role_name: 'null'
         - domain_ou: 'null'
