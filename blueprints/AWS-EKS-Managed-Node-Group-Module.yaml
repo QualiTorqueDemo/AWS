@@ -1,6 +1,6 @@
 spec_version: 2
-description: |
-  Terraform sub-module which creates EKS Managed Node Group resources on AWS.
+description: "Creates an EKS Managed Node Group attached to an existing EKS cluster. Uses an AWS-managed AMI (AL2023 by default) so AWS handles node bootstrap \u2014 no need to supply cluster endpoint/CA\
+  \ data."
 metadata:
   self-service: true
   display-name: AWS EKS Managed Node Group
@@ -13,96 +13,178 @@ metadata:
       value: Cloud
     - key: Terraform
 inputs:
-  create:
+  cluster_name:
     type: string
-    default: true
-    description: Determines whether resources will be created
-  create_security_group:
+    description: Name of the existing EKS cluster to attach the node group to.
+  name:
     type: string
-    description: Determines if a security group is created
-  endpoints:
-    type: string
-    default: '{}'
-    description: A map of interface and/or gateway endpoints containing their properties and configurations
-  security_group_description:
-    type: string
-    default: 'null'
-    description: Description of the security group created
-  security_group_ids:
-    type: string
-    default: '[]'
-    description: Default security group IDs to associate with the VPC endpoints
-  security_group_name:
-    type: string
-    default: 'null'
-    description: Name to use on security group created. Conflicts with `security_group_name_prefix`
-  security_group_name_prefix:
-    type: string
-    default: 'null'
-    description: Name prefix to use on security group created. Conflicts with `security_group_name`
-  security_group_rules:
-    type: string
-    default: '{}'
-    description: Security group rules to add to the security group created
-  security_group_tags:
-    type: string
-    default: '{}'
-    description: A map of additional tags to add to the security group created
+    description: Node group name (1-63 chars). Appears in the EKS console alongside the cluster.
   subnet_ids:
     type: string
-    default: '[]'
-    description: Default subnets IDs to associate with the VPC endpoints
-  timeouts:
+    description: JSON array of subnet IDs where nodes will be placed, e.g. ["subnet-abc","subnet-def"]. Use the same subnets you passed to AWS-EKS for predictable AZ placement.
+  ami_type:
+    type: string
+    default: AL2023_x86_64_STANDARD
+    description: AWS-managed AMI family. AL2023 is the current recommended baseline; BOTTLEROCKET is container-optimized; ARM_64 variants run on Graviton instances.
+    allowed-values:
+      - AL2023_x86_64_STANDARD
+      - AL2023_ARM_64_STANDARD
+      - AL2023_x86_64_NVIDIA
+      - BOTTLEROCKET_x86_64
+      - BOTTLEROCKET_ARM_64
+  instance_types:
+    type: string
+    default: '["t3.medium"]'
+    description: JSON array of EC2 instance types to consider for nodes, e.g. ["t3.medium","t3.large"]. The first one that has capacity is used (especially relevant for SPOT).
+  capacity_type:
+    type: string
+    default: ON_DEMAND
+    description: Pricing model. SPOT is up to ~90% cheaper but can be reclaimed by AWS at any time (set up Karpenter or pod-disruption-budgets to handle gracefully).
+    allowed-values:
+      - ON_DEMAND
+      - SPOT
+  desired_size:
+    type: string
+    default: '2'
+    description: Target number of nodes. Must be between min_size and max_size.
+  min_size:
+    type: string
+    default: '1'
+    description: Minimum number of nodes the autoscaler will keep running.
+  max_size:
+    type: string
+    default: '3'
+    description: Maximum number of nodes the autoscaler can grow to.
+  disk_size:
+    type: string
+    default: '50'
+    description: Root EBS volume size per node, in GiB.
+  resource_tags:
     type: string
     default: '{}'
-    description: Define maximum timeout for creating, updating, and deleting VPC endpoint resources
-  vpc_id:
-    type: string
-    default: 'null'
-    description: The ID of the VPC in which the endpoint will be used
-  tags:
-    type: string
-    default: '{}'
-    description: A map of tags to add to all resources
+    description: JSON map of tags applied to the node group and its IAM role.
   agent:
     type: agent
 outputs:
-  vpc-endpoints_endpoints:
-    value: '{{ .grains.vpc-endpoints.outputs.endpoints }}'
+  node_group_id:
+    value: '{{ .grains.node_group.outputs.node_group_id }}'
     quick: true
-  vpc-endpoints_security_group_arn:
-    value: '{{ .grains.vpc-endpoints.outputs.security_group_arn }}'
-    quick: true
-  vpc-endpoints_security_group_id:
-    value: '{{ .grains.vpc-endpoints.outputs.security_group_id }}'
-    quick: true
+  node_group_arn:
+    value: '{{ .grains.node_group.outputs.node_group_arn }}'
+    quick: false
+  node_group_status:
+    value: '{{ .grains.node_group.outputs.node_group_status }}'
+    quick: false
+  iam_role_arn:
+    value: '{{ .grains.node_group.outputs.iam_role_arn }}'
+    quick: false
 grains:
-  vpc-endpoints:
+  node_group:
     kind: terraform
+    tf-version: 1.5.7
     spec:
       source:
         store: AWS
-        path: assets/terraform-aws-vpc-endpoints
+        path: assets/terraform-aws-eks-managed-node-group
       agent:
         name: '{{ .inputs.agent }}'
       tags:
         auto-tag: true
       inputs:
-        - create: '{{ .inputs.create }}'
-        - create_security_group: '{{ .inputs.create_security_group }}'
-        - endpoints: '{{ .inputs.endpoints }}'
-        - security_group_description: '{{ .inputs.security_group_description }}'
-        - security_group_ids: '{{ .inputs.security_group_ids }}'
-        - security_group_name: '{{ .inputs.security_group_name }}'
-        - security_group_name_prefix: '{{ .inputs.security_group_name_prefix }}'
-        - security_group_rules: '{{ .inputs.security_group_rules }}'
-        - security_group_tags: '{{ .inputs.security_group_tags }}'
+        - cluster_name: '{{ .inputs.cluster_name }}'
+        - name: '{{ .inputs.name }}'
         - subnet_ids: '{{ .inputs.subnet_ids }}'
-        - tags: '{{ .inputs.tags }}'
-        - timeouts: '{{ .inputs.timeouts }}'
-        - vpc_id: '{{ .inputs.vpc_id }}'
+        - ami_type: '{{ .inputs.ami_type }}'
+        - instance_types: '{{ .inputs.instance_types }}'
+        - capacity_type: '{{ .inputs.capacity_type }}'
+        - desired_size: '{{ .inputs.desired_size }}'
+        - min_size: '{{ .inputs.min_size }}'
+        - max_size: '{{ .inputs.max_size }}'
+        - disk_size: '{{ .inputs.disk_size }}'
+        - tags: '{{ .inputs.resource_tags }}'
+        - create: 'true'
+        - enable_bootstrap_user_data: 'false'
+        - cluster_endpoint: 'null'
+        - cluster_auth_base64: 'null'
+        - cluster_service_cidr: 'null'
+        - pre_bootstrap_user_data: ''
+        - post_bootstrap_user_data: ''
+        - bootstrap_extra_args: ''
+        - user_data_template_path: ''
+        - cloudinit_pre_nodeadm: 'null'
+        - cloudinit_post_nodeadm: 'null'
+        - region: 'null'
+        - partition: 'null'
+        - account_id: 'null'
+        - create_launch_template: 'true'
+        - use_custom_launch_template: 'true'
+        - launch_template_id: ''
+        - launch_template_name: ''
+        - launch_template_use_name_prefix: 'true'
+        - launch_template_description: 'null'
+        - launch_template_default_version: 'null'
+        - update_launch_template_default_version: 'true'
+        - launch_template_version: 'null'
+        - launch_template_tags: '{}'
+        - ami_id: ''
+        - ami_release_version: 'null'
+        - use_latest_ami_release_version: 'false'
+        - ebs_optimized: 'null'
+        - key_name: 'null'
+        - vpc_security_group_ids: '[]'
+        - cluster_primary_security_group_id: 'null'
+        - disable_api_termination: 'null'
+        - kernel_id: 'null'
+        - ram_disk_id: 'null'
+        - block_device_mappings: '{}'
+        - capacity_reservation_specification: 'null'
+        - cpu_options: 'null'
+        - credit_specification: 'null'
+        - enclave_options: 'null'
+        - instance_market_options: 'null'
+        - maintenance_options: 'null'
+        - license_specifications: 'null'
+        - metadata_options: 'null'
+        - enable_monitoring: 'true'
+        - enable_efa_support: 'false'
+        - enable_efa_only: 'false'
+        - efa_indices: '[0]'
+        - network_interfaces: '[]'
+        - placement: 'null'
+        - create_placement_group: 'false'
+        - private_dns_name_options: 'null'
+        - tag_specifications: '["instance","volume","network-interface"]'
+        - use_name_prefix: 'true'
+        - force_update_version: 'null'
+        - labels: '{}'
+        - kubernetes_version: 'null'
+        - remote_access: 'null'
+        - taints: '{}'
+        - update_config: '{"max_unavailable_percentage": 33}'
+        - node_repair_config: 'null'
+        - timeouts: 'null'
+        - create_iam_role: 'true'
+        - cluster_ip_family: ipv4
+        - iam_role_arn: 'null'
+        - iam_role_name: 'null'
+        - iam_role_use_name_prefix: 'true'
+        - iam_role_path: /
+        - iam_role_description: 'null'
+        - iam_role_permissions_boundary: 'null'
+        - iam_role_attach_cni_policy: 'true'
+        - iam_role_additional_policies: '{}'
+        - iam_role_tags: '{}'
+        - create_iam_role_policy: 'true'
+        - iam_role_policy_statements: '[]'
+        - create_security_group: 'false'
+        - security_group_name: 'null'
+        - security_group_use_name_prefix: 'true'
+        - security_group_description: 'null'
+        - security_group_ingress_rules: '{}'
+        - security_group_egress_rules: '{}'
+        - security_group_tags: '{}'
       outputs:
-        - endpoints
-        - security_group_arn
-        - security_group_id
-    tf-version: 1.5.5
+        - node_group_id
+        - node_group_arn
+        - node_group_status
+        - iam_role_arn
