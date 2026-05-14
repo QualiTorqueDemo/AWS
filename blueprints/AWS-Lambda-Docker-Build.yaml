@@ -1,8 +1,5 @@
 spec_version: 2
-description: |
-  Terraform module that builds Docker image from Dockerfile and pushes it to ECR repository. Lambda can deploy container images from private ECR.
-  If you need to create ECR resources in flexible way, you should use terraform-aws-ecr module. See examples/container-image for related examples.
-  This Terraform module is the part of serverless.tf framework, which aims to simplify all operations when working with the serverless in Terraform.
+description: Builds a Docker image locally and pushes it to ECR for use as a Lambda container image.
 metadata:
   self-service: true
   display-name: AWS Lambda Docker Build
@@ -15,82 +12,42 @@ metadata:
       value: Cloud
     - key: Terraform
 inputs:
-  image_tag:
-    type: string
-    description: Image tag to use. If not specified current timestamp in format 'YYYYMMDDhhmmss' will be used. This can lead to unnecessary rebuilds.
-  ecr_address:
-    type: string
-    description: Address of ECR repository for cross-account container image pulling (optional). Option `create_ecr_repo` must be `false`
   ecr_repo:
     type: string
-    description: Name of ECR repository to use or to create
+    description: ECR repository name (e.g. "my-app/lambda"). Created automatically when create_ecr_repo is true.
+  ecr_address:
+    type: string
+    description: ECR registry address, e.g. <account-id>.dkr.ecr.<region>.amazonaws.com.
+  image_tag:
+    type: string
+    default: latest
+    description: Image tag to push (e.g. "v1.2.3", "latest", a commit SHA).
   source_path:
     type: string
-    description: Path to folder containing application code
-  build_args:
-    type: string
-    default: '{}'
-    description: A map of Docker build arguments.
-  create_ecr_repo:
-    type: string
-    description: Controls whether ECR repository for Lambda image should be created
-  create_sam_metadata:
-    type: string
-    description: Controls whether the SAM metadata null resource should be created
-  docker_file_path:
-    type: string
-    default: Dockerfile
-    description: Path to Dockerfile in source package
-  ecr_force_delete:
-    type: string
-    default: false
-    description: If true, will delete the repository even if it contains images.
-  ecr_repo_lifecycle_policy:
-    type: string
-    default: 'null'
-    description: A JSON formatted ECR lifecycle policy to automate the cleaning up of unused images.
-  ecr_repo_tags:
-    type: string
-    default: '{}'
-    description: A map of tags to assign to ECR repository
-  force_remove:
-    type: string
-    description: Whether to remove image forcibly when the resource is destroyed.
-  image_tag_mutability:
-    type: string
-    default: IMMUTABLE
-    description: 'The tag mutability setting for the repository. Must be one of: `MUTABLE` or `IMMUTABLE`'
-  keep_locally:
-    type: string
-    description: Whether to delete the Docker image locally on destroy operation.
-  keep_remotely:
-    type: string
-    description: Whether to keep Docker image in the remote registry on destroy operation.
+    description: Path to the Docker build context (the folder with your Dockerfile).
   platform:
     type: string
-    default: 'null'
-    description: The target architecture platform to build the image for.
-  scan_on_push:
+    default: linux/amd64
+    description: Target CPU architecture for the image. Use linux/arm64 if you plan to run on Graviton Lambda.
+    allowed-values:
+      - linux/amd64
+      - linux/arm64
+  create_ecr_repo:
     type: string
-    default: true
-    description: Indicates whether images are scanned after being pushed to the repository
-  triggers:
-    type: string
-    default: '{}'
-    description: A map of arbitrary strings that, when changed, will force the docker_image resource to be replaced. This can be used to rebuild an image when contents of source code folders change
-  use_image_tag:
-    type: string
-    default: true
-    description: Controls whether to use image tag in ECR repository URI or not. Disable this to deploy latest image using ID (sha256:...)
+    default: 'true'
+    description: Create the ECR repository if it does not already exist.
+    allowed-values:
+      - 'true'
+      - 'false'
   agent:
     type: agent
 outputs:
-  docker-build_image_id:
-    value: '{{ .grains.docker-build.outputs.image_id }}'
-    quick: true
-  docker-build_image_uri:
+  image_uri:
     value: '{{ .grains.docker-build.outputs.image_uri }}'
     quick: true
+  image_id:
+    value: '{{ .grains.docker-build.outputs.image_id }}'
+    quick: false
 grains:
   docker-build:
     kind: terraform
@@ -103,26 +60,26 @@ grains:
       tags:
         auto-tag: true
       inputs:
-        - build_args: '{{ .inputs.build_args }}'
-        - create_ecr_repo: '{{ .inputs.create_ecr_repo }}'
-        - create_sam_metadata: '{{ .inputs.create_sam_metadata }}'
-        - docker_file_path: '{{ .inputs.docker_file_path }}'
-        - ecr_address: '{{ .inputs.ecr_address }}'
-        - ecr_force_delete: '{{ .inputs.ecr_force_delete }}'
         - ecr_repo: '{{ .inputs.ecr_repo }}'
-        - ecr_repo_lifecycle_policy: '{{ .inputs.ecr_repo_lifecycle_policy }}'
-        - ecr_repo_tags: '{{ .inputs.ecr_repo_tags }}'
-        - force_remove: '{{ .inputs.force_remove }}'
+        - ecr_address: '{{ .inputs.ecr_address }}'
         - image_tag: '{{ .inputs.image_tag }}'
-        - image_tag_mutability: '{{ .inputs.image_tag_mutability }}'
-        - keep_locally: '{{ .inputs.keep_locally }}'
-        - keep_remotely: '{{ .inputs.keep_remotely }}'
-        - platform: '{{ .inputs.platform }}'
-        - scan_on_push: '{{ .inputs.scan_on_push }}'
         - source_path: '{{ .inputs.source_path }}'
-        - triggers: '{{ .inputs.triggers }}'
-        - use_image_tag: '{{ .inputs.use_image_tag }}'
+        - platform: '{{ .inputs.platform }}'
+        - create_ecr_repo: '{{ .inputs.create_ecr_repo }}'
+        - build_args: '{}'
+        - create_sam_metadata: 'false'
+        - docker_file_path: Dockerfile
+        - ecr_force_delete: 'false'
+        - ecr_repo_lifecycle_policy: 'null'
+        - ecr_repo_tags: '{}'
+        - force_remove: 'false'
+        - image_tag_mutability: IMMUTABLE
+        - keep_locally: 'false'
+        - keep_remotely: 'true'
+        - scan_on_push: 'true'
+        - triggers: '{}'
+        - use_image_tag: 'true'
       outputs:
-        - image_id
         - image_uri
-    tf-version: 1.5.5
+        - image_id
+    tf-version: 1.5.7

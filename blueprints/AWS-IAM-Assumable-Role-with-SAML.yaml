@@ -1,8 +1,5 @@
 spec_version: 2
-description: |
-  Creates single IAM role which can be assumed by trusted resources using SAML Federated Users.
-  Creating IAM SAML Identity Providers Enabling SAML 2.0 Federated Users to Access the AWS Management Console - 
-  https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_saml.html
+description: Creates an IAM role that can be assumed via a SAML 2.0 identity provider (e.g. Okta, Azure AD, Google Workspace SSO into AWS).
 metadata:
   self-service: true
   display-name: AWS IAM Assumable Role with SAML
@@ -15,83 +12,35 @@ metadata:
       value: Cloud
     - key: Terraform
 inputs:
-  allow_self_assume_role:
-    type: string
-    description: Determines whether to allow the role to be [assume itself](https://aws.amazon.com/blogs/security/announcing-an-update-to-iam-role-trust-policy-behavior/)
-  aws_saml_endpoint:
-    type: string
-    default: https://signin.aws.amazon.com/saml
-    description: AWS SAML Endpoint
-  create_role:
-    type: string
-    description: Whether to create a role
-  force_detach_policies:
-    type: string
-    description: Whether policies should be detached from this role when destroying
-  max_session_duration:
-    type: string
-    default: 3600
-    description: Maximum CLI/API session duration in seconds between 3600 and 43200
-  number_of_role_policy_arns:
-    type: string
-    default: 'null'
-    description: Number of IAM policies to attach to IAM role
-  provider_id:
-    type: string
-    description: ID of the SAML Provider. Use provider_ids to specify several IDs.
-  provider_ids:
-    type: string
-    default: '[]'
-    description: List of SAML Provider IDs
-  role_description:
-    type: string
-    description: IAM Role description
   role_name:
     type: string
-    default: 'null'
-    description: IAM role name
-  role_name_prefix:
+    description: Name of the IAM role to create.
+  provider_id:
     type: string
-    default: 'null'
-    description: IAM role name prefix
-  role_path:
-    type: string
-    default: /
-    description: Path of IAM role
-  role_permissions_boundary_arn:
-    type: string
-    description: Permissions boundary ARN to use for IAM role
+    description: ARN of the existing SAML provider in IAM, e.g. arn:aws:iam::123456789012:saml-provider/Okta.
   role_policy_arns:
     type: string
     default: '[]'
-    description: List of ARNs of IAM policies to attach to IAM role
-  trusted_role_actions:
-    type: string
-    default: |-
-      [
-        "sts:AssumeRoleWithSAML",
-        "sts:TagSession"
-      ]
-    description: Additional role actions
-  tags:
+    description: JSON array of IAM policy ARNs to attach to the role.
+  resource_tags:
     type: string
     default: '{}'
-    description: A map of tags to add to all resources
+    description: JSON map of tags applied to the IAM role.
   agent:
     type: agent
 outputs:
-  iam-assumable-role-with-saml_iam_role_arn:
+  iam_role_arn:
     value: '{{ .grains.iam-assumable-role-with-saml.outputs.iam_role_arn }}'
     quick: true
-  iam-assumable-role-with-saml_iam_role_name:
+  iam_role_name:
     value: '{{ .grains.iam-assumable-role-with-saml.outputs.iam_role_name }}'
-    quick: true
-  iam-assumable-role-with-saml_iam_role_path:
+    quick: false
+  iam_role_path:
     value: '{{ .grains.iam-assumable-role-with-saml.outputs.iam_role_path }}'
-    quick: true
-  iam-assumable-role-with-saml_iam_role_unique_id:
+    quick: false
+  iam_role_unique_id:
     value: '{{ .grains.iam-assumable-role-with-saml.outputs.iam_role_unique_id }}'
-    quick: true
+    quick: false
 grains:
   iam-assumable-role-with-saml:
     kind: terraform
@@ -104,25 +53,25 @@ grains:
       tags:
         auto-tag: true
       inputs:
-        - allow_self_assume_role: '{{ .inputs.allow_self_assume_role }}'
-        - aws_saml_endpoint: '{{ .inputs.aws_saml_endpoint }}'
-        - create_role: '{{ .inputs.create_role }}'
-        - force_detach_policies: '{{ .inputs.force_detach_policies }}'
-        - max_session_duration: '{{ .inputs.max_session_duration }}'
-        - number_of_role_policy_arns: '{{ .inputs.number_of_role_policy_arns }}'
-        - provider_id: '{{ .inputs.provider_id }}'
-        - provider_ids: '{{ .inputs.provider_ids }}'
-        - role_description: '{{ .inputs.role_description }}'
         - role_name: '{{ .inputs.role_name }}'
-        - role_name_prefix: '{{ .inputs.role_name_prefix }}'
-        - role_path: '{{ .inputs.role_path }}'
-        - role_permissions_boundary_arn: '{{ .inputs.role_permissions_boundary_arn }}'
+        - provider_id: '{{ .inputs.provider_id }}'
         - role_policy_arns: '{{ .inputs.role_policy_arns }}'
-        - tags: '{{ .inputs.tags }}'
-        - trusted_role_actions: '{{ .inputs.trusted_role_actions }}'
+        - tags: '{{ .inputs.resource_tags }}'
+        - allow_self_assume_role: 'false'
+        - aws_saml_endpoint: https://signin.aws.amazon.com/saml
+        - create_role: 'true'
+        - force_detach_policies: 'false'
+        - max_session_duration: '3600'
+        - number_of_role_policy_arns: 'null'
+        - provider_ids: '[]'
+        - role_description: 'null'
+        - role_name_prefix: 'null'
+        - role_path: /
+        - role_permissions_boundary_arn: 'null'
+        - trusted_role_actions: '["sts:AssumeRoleWithSAML"]'
       outputs:
         - iam_role_arn
         - iam_role_name
         - iam_role_path
         - iam_role_unique_id
-    tf-version: 1.5.5
+    tf-version: 1.5.7
