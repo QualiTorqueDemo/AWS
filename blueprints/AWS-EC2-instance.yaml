@@ -92,20 +92,8 @@ outputs:
   arn:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.arn }}'
     quick: true
-  ami:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.ami }}'
-    quick: true
   instance_state:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.instance_state }}'
-    quick: true
-  availability_zone:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.availability_zone }}'
-    quick: true
-  private_ip:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.private_ip }}'
-    quick: true
-  private_dns:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.private_dns }}'
     quick: true
   public_ip:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.public_ip }}'
@@ -113,11 +101,11 @@ outputs:
   public_dns:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.public_dns }}'
     quick: true
-  primary_network_interface_id:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.primary_network_interface_id }}'
+  private_ip:
+    value: '{{ .grains.terraform-aws-ec2-instance.outputs.private_ip }}'
     quick: true
-  tags_all:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.tags_all }}'
+  private_dns:
+    value: '{{ .grains.terraform-aws-ec2-instance.outputs.private_dns }}'
     quick: true
 grains:
   terraform-aws-ec2-instance:
@@ -204,12 +192,8 @@ grains:
       outputs:
         - id
         - arn
-        - ami
         - instance_state
-        - availability_zone
-        - private_ip
-        - private_dns
         - public_ip
         - public_dns
-        - primary_network_interface_id
-        - tags_all
+        - private_ip
+        - private_dns
