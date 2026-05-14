@@ -32,13 +32,6 @@ inputs:
     allowed-values:
       - linux/amd64
       - linux/arm64
-  create_ecr_repo:
-    type: string
-    default: 'true'
-    description: Create the ECR repository if it does not already exist.
-    allowed-values:
-      - 'true'
-      - 'false'
   agent:
     type: agent
 outputs:
@@ -65,7 +58,7 @@ grains:
         - image_tag: '{{ .inputs.image_tag }}'
         - source_path: '{{ .inputs.source_path }}'
         - platform: '{{ .inputs.platform }}'
-        - create_ecr_repo: '{{ .inputs.create_ecr_repo }}'
+        - create_ecr_repo: 'true'
         - build_args: '{}'
         - create_sam_metadata: 'false'
         - docker_file_path: Dockerfile

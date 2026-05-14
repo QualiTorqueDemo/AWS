@@ -122,7 +122,7 @@ outputs:
     quick: false
   db_instance_status:
     value: '{{ .grains.db_instance.outputs.db_instance_status }}'
-    quick: true
+    quick: false
   db_instance_identifier:
     value: '{{ .grains.db_instance.outputs.db_instance_identifier }}'
     quick: false

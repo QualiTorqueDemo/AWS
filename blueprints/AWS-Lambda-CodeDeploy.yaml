@@ -39,13 +39,6 @@ inputs:
       - CodeDeployDefault.LambdaLinear10PercentEvery2Minutes
       - CodeDeployDefault.LambdaLinear10PercentEvery3Minutes
       - CodeDeployDefault.LambdaLinear10PercentEvery10Minutes
-  auto_rollback_enabled:
-    type: string
-    default: 'true'
-    description: Auto-rollback to the previous version if a CloudWatch alarm fires during the deployment.
-    allowed-values:
-      - 'true'
-      - 'false'
   resource_tags:
     type: string
     default: '{}'
@@ -82,7 +75,7 @@ grains:
         - current_version: '{{ .inputs.current_version }}'
         - target_version: '{{ .inputs.target_version }}'
         - deployment_config_name: '{{ .inputs.deployment_config_name }}'
-        - auto_rollback_enabled: '{{ .inputs.auto_rollback_enabled }}'
+        - auto_rollback_enabled: 'true'
         - tags: '{{ .inputs.resource_tags }}'
         - app_name: 'null'
         - after_allow_traffic_hook_arn: 'null'

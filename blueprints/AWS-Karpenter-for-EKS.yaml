@@ -32,11 +32,6 @@ inputs:
     allowed-values:
       - 'true'
       - 'false'
-  irsa_oidc_provider_arn:
-    type: string
-    default: 'null'
-    description: OIDC provider ARN of the EKS cluster (e.g. arn:aws:iam::123:oidc-provider/oidc.eks.<region>.amazonaws.com/id/<hash>). Only required when enable_pod_identity is "false" (IRSA mode). The
-      AWS-EKS blueprint exposes this as cluster_oidc_issuer_url - convert to a full provider ARN.
   resource_tags:
     type: string
     default: '{}'
@@ -85,7 +80,7 @@ grains:
         - namespace: '{{ .inputs.namespace }}'
         - service_account: '{{ .inputs.service_account }}'
         - enable_pod_identity: '{{ .inputs.enable_pod_identity }}'
-        - irsa_oidc_provider_arn: '{{ .inputs.irsa_oidc_provider_arn }}'
+        - irsa_oidc_provider_arn: 'null'
         - tags: '{{ .inputs.resource_tags }}'
         - create: 'true'
         - create_access_entry: 'true'

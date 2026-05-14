@@ -39,11 +39,6 @@ inputs:
     allowed-values:
       - 'true'
       - 'false'
-  cluster_endpoint_public_access_cidrs:
-    type: string
-    default: '[]'
-    description: JSON array of CIDRs allowed to reach the public API endpoint, e.g. ["1.2.3.4/32","5.6.7.0/24"]. Only used when cluster_endpoint_public_access is "true". Leave as "[]" to reject all public
-      access.
   enable_cluster_creator_admin_permissions:
     type: string
     default: 'true'
@@ -98,7 +93,7 @@ grains:
         - subnet_ids: '{{ .inputs.subnet_ids }}'
         - cluster_version: '{{ .inputs.cluster_version }}'
         - cluster_endpoint_public_access: '{{ .inputs.cluster_endpoint_public_access }}'
-        - cluster_endpoint_public_access_cidrs: '{{ .inputs.cluster_endpoint_public_access_cidrs }}'
+        - cluster_endpoint_public_access_cidrs: '[]'
         - enable_cluster_creator_admin_permissions: '{{ .inputs.enable_cluster_creator_admin_permissions }}'
         - tags: '{{ .inputs.resource_tags }}'
         - enable_irsa: 'true'
