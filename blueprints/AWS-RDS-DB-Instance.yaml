@@ -196,7 +196,7 @@ grains:
         - monitoring_role_description: 'null'
         - monitoring_role_name: 'null'
         - monitoring_role_permissions_boundary: 'null'
-        - monitoring_role_use_name_prefix: 'true'
+        - monitoring_role_use_name_prefix: 'false'
         - enabled_cloudwatch_logs_exports: '[]'
         - create_cloudwatch_log_group: 'false'
         - cloudwatch_log_group_class: STANDARD

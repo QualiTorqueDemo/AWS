@@ -96,7 +96,7 @@ grains:
         - iam_policy_description: 'null'
         - iam_policy_name: 'null'
         - iam_policy_path: /
-        - iam_policy_use_name_prefix: 'true'
+        - iam_policy_use_name_prefix: 'false'
         - iam_role_description: 'null'
         - iam_role_max_session_duration: 'null'
         - iam_role_name: 'null'
@@ -104,7 +104,7 @@ grains:
         - iam_role_permissions_boundary_arn: 'null'
         - iam_role_policies: '{}'
         - iam_role_tags: '{}'
-        - iam_role_use_name_prefix: 'true'
+        - iam_role_use_name_prefix: 'false'
         - irsa_assume_role_condition_test: StringEquals
         - irsa_namespace_service_accounts: '["kube-system:karpenter"]'
         - node_iam_role_additional_policies: '{}'
