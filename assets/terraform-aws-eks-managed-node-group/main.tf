@@ -15,7 +15,7 @@ locals {
 ################################################################################
 
 module "user_data" {
-  source = "../_user_data"
+  source = "./_user_data"
 
   create   = var.create
   ami_type = var.ami_type
