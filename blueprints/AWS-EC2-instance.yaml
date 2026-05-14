@@ -13,32 +13,6 @@ metadata:
     - key: category
       value: Cloud
     - key: Terraform
-customization:
-  launch-form:
-    categories:
-      - name: Basic
-        icon: layer
-        sections:
-          - name: Essentials
-            icon: list
-            default_open: true
-            inputs:
-              - name: name
-              - name: subnet_id
-              - name: operating_system
-              - name: instance_type
-              - name: agent
-          - name: Access
-            icon: list
-            default_open: true
-            inputs:
-              - name: key_name
-              - name: vpc_security_group_ids
-          - name: Tags
-            icon: tags
-            default_open: true
-            inputs:
-              - name: resource_tags
 inputs:
   name:
     type: string
