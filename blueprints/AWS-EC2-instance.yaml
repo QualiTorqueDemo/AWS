@@ -39,27 +39,6 @@ customization:
             default_open: true
             inputs:
               - name: resource_tags
-      - name: Compute
-        icon: layer
-        inputs:
-          - name: user_data
-          - name: ami
-      - name: Storage
-        icon: layer
-        inputs:
-          - name: root_block_device
-      - name: IAM
-        icon: layer
-        sections:
-          - name: Instance Profile
-            icon: list
-            inputs:
-              - name: iam_instance_profile
-              - name: create_iam_instance_profile
-              - name: iam_role_name
-                visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
-              - name: iam_role_policies
-                visible: '{% if inputs.create_iam_instance_profile == "true" %} true {% else %} false {% endif %}'
 inputs:
   name:
     type: string
@@ -68,11 +47,6 @@ inputs:
     type: string
     description: "VPC subnet ID to launch the instance in.\nThe VPC and Availability Zone are inherited from this subnet \u2014 you don't pick\nthem separately. Any security groups you attach must belong\
       \ to the same VPC.\n"
-  ami:
-    type: string
-    description: Override the operating_system selection by specifying a literal AMI ID, e.g. ami-0abc1234567890abc. Leave as 'null' to use the AMI resolved from the operating_system dropdown. The Terraform
-      module uses this value only when it is not null.
-    default: 'null'
   operating_system:
     type: string
     default: Amazon Linux 2023
@@ -89,22 +63,6 @@ inputs:
       - Ubuntu 24.04 LTS
       - Ubuntu 22.04 LTS
       - Windows Server 2022
-  create_iam_instance_profile:
-    type: string
-    description: Determines whether an IAM instance profile is created or to use an existing IAM instance profile
-    default: 'false'
-  iam_instance_profile:
-    type: string
-    default: 'null'
-    description: IAM Instance Profile to launch the instance with. Specified as the name of the Instance Profile
-  iam_role_name:
-    type: string
-    default: 'null'
-    description: Name to use on IAM role created
-  iam_role_policies:
-    type: string
-    default: '{}'
-    description: Policies attached to the IAM role
   instance_type:
     type: string
     default: t3.micro
@@ -129,15 +87,14 @@ inputs:
   key_name:
     type: string
     default: 'null'
-    description: Key name of the Key Pair to use for the instance; which can be managed using the `aws_key_pair` resource
-  root_block_device:
-    type: string
-    default: '[]'
-    description: Customize details about the root block device of the instance. See Block Devices below for details
-  user_data:
-    type: string
-    default: 'null'
-    description: The user data to provide when launching the instance. Do not pass gzip-compressed data via this argument; see user_data_base64 instead
+    description: 'Name of an existing EC2 key pair to associate with the instance.
+
+      - Linux: the key pair''s private key is used to SSH in (`ssh -i <key>.pem ec2-user@<ip>`).
+
+      - Windows: enables retrieval of the auto-generated administrator password via the AWS console / `aws ec2 get-password-data`.
+
+      Leave as ''null'' to skip. You can still reach the instance via AWS Systems Manager Session Manager (no SSH key needed) if the instance has an IAM role with `AmazonSSMManagedInstanceCore` attached
+      and the SSM Agent installed (Amazon Linux 2023, Amazon Linux 2, Ubuntu, and Windows Server AMIs ship with it preinstalled).'
   vpc_security_group_ids:
     type: string
     default: 'null'
@@ -249,7 +206,7 @@ grains:
       tags:
         auto-tag: true
       inputs:
-        - ami: '{{ .inputs.ami }}'
+        - ami: 'null'
         - ami_ssm_parameter: '{% case inputs.operating_system %}{% when "Amazon Linux 2023" %}/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64{% when "Amazon Linux 2" %}/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2{%
             when "Ubuntu 24.04 LTS" %}/aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp2/ami-id{% when "Ubuntu 22.04 LTS" %}/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id{%
             when "Windows Server 2022" %}/aws/service/ami-windows-latest/Windows_Server-2022-English-Full-Base{% endcase %}'
@@ -261,7 +218,7 @@ grains:
         - cpu_options: '{}'
         - cpu_threads_per_core: 'null'
         - create: 'true'
-        - create_iam_instance_profile: '{{ .inputs.create_iam_instance_profile }}'
+        - create_iam_instance_profile: 'false'
         - create_spot_instance: 'false'
         - disable_api_stop: 'null'
         - disable_api_termination: 'null'
@@ -273,12 +230,12 @@ grains:
         - get_password_data: 'null'
         - hibernation: 'null'
         - host_id: 'null'
-        - iam_instance_profile: '{{ .inputs.iam_instance_profile }}'
+        - iam_instance_profile: 'null'
         - iam_role_description: 'null'
-        - iam_role_name: '{{ .inputs.iam_role_name }}'
+        - iam_role_name: 'null'
         - iam_role_path: 'null'
         - iam_role_permissions_boundary: 'null'
-        - iam_role_policies: '{{ .inputs.iam_role_policies }}'
+        - iam_role_policies: '{}'
         - iam_role_tags: '{}'
         - iam_role_use_name_prefix: 'true'
         - ignore_ami_changes: 'false'
@@ -298,7 +255,7 @@ grains:
         - private_dns_name_options: '{}'
         - private_ip: 'null'
         - putin_khuylo: 'true'
-        - root_block_device: '{{ .inputs.root_block_device }}'
+        - root_block_device: '[]'
         - secondary_private_ips: 'null'
         - source_dest_check: 'null'
         - spot_block_duration_minutes: 'null'
@@ -313,7 +270,7 @@ grains:
         - tags: '{{ .inputs.resource_tags }}'
         - tenancy: 'null'
         - timeouts: '{}'
-        - user_data: '{{ .inputs.user_data }}'
+        - user_data: 'null'
         - user_data_base64: 'null'
         - user_data_replace_on_change: 'null'
         - volume_tags: '{}'
