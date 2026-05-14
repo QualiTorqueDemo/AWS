@@ -86,85 +86,37 @@ inputs:
   agent:
     type: agent
 outputs:
-  terraform-aws-ec2-instance_ami:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.ami }}'
-    quick: true
-  terraform-aws-ec2-instance_arn:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.arn }}'
-    quick: true
-  terraform-aws-ec2-instance_availability_zone:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.availability_zone }}'
-    quick: true
-  terraform-aws-ec2-instance_capacity_reservation_specification:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.capacity_reservation_specification }}'
-    quick: true
-  terraform-aws-ec2-instance_ebs_block_device:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.ebs_block_device }}'
-    quick: true
-  terraform-aws-ec2-instance_ephemeral_block_device:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.ephemeral_block_device }}'
-    quick: true
-  terraform-aws-ec2-instance_iam_instance_profile_arn:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.iam_instance_profile_arn }}'
-    quick: true
-  terraform-aws-ec2-instance_iam_instance_profile_id:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.iam_instance_profile_id }}'
-    quick: true
-  terraform-aws-ec2-instance_iam_instance_profile_unique:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.iam_instance_profile_unique }}'
-    quick: true
-  terraform-aws-ec2-instance_iam_role_arn:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.iam_role_arn }}'
-    quick: true
-  terraform-aws-ec2-instance_iam_role_name:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.iam_role_name }}'
-    quick: true
-  terraform-aws-ec2-instance_iam_role_unique_id:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.iam_role_unique_id }}'
-    quick: true
-  terraform-aws-ec2-instance_id:
+  id:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.id }}'
     quick: true
-  terraform-aws-ec2-instance_instance_state:
+  arn:
+    value: '{{ .grains.terraform-aws-ec2-instance.outputs.arn }}'
+    quick: true
+  ami:
+    value: '{{ .grains.terraform-aws-ec2-instance.outputs.ami }}'
+    quick: true
+  instance_state:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.instance_state }}'
     quick: true
-  terraform-aws-ec2-instance_ipv6_addresses:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.ipv6_addresses }}'
+  availability_zone:
+    value: '{{ .grains.terraform-aws-ec2-instance.outputs.availability_zone }}'
     quick: true
-  terraform-aws-ec2-instance_outpost_arn:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.outpost_arn }}'
-    quick: true
-  terraform-aws-ec2-instance_password_data:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.password_data }}'
-    quick: true
-  terraform-aws-ec2-instance_primary_network_interface_id:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.primary_network_interface_id }}'
-    quick: true
-  terraform-aws-ec2-instance_private_dns:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.private_dns }}'
-    quick: true
-  terraform-aws-ec2-instance_private_ip:
+  private_ip:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.private_ip }}'
     quick: true
-  terraform-aws-ec2-instance_public_dns:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.public_dns }}'
+  private_dns:
+    value: '{{ .grains.terraform-aws-ec2-instance.outputs.private_dns }}'
     quick: true
-  terraform-aws-ec2-instance_public_ip:
+  public_ip:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.public_ip }}'
     quick: true
-  terraform-aws-ec2-instance_root_block_device:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.root_block_device }}'
+  public_dns:
+    value: '{{ .grains.terraform-aws-ec2-instance.outputs.public_dns }}'
     quick: true
-  terraform-aws-ec2-instance_spot_bid_status:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.spot_bid_status }}'
+  primary_network_interface_id:
+    value: '{{ .grains.terraform-aws-ec2-instance.outputs.primary_network_interface_id }}'
     quick: true
-  terraform-aws-ec2-instance_spot_instance_id:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.spot_instance_id }}'
-    quick: true
-  terraform-aws-ec2-instance_spot_request_state:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.spot_request_state }}'
-    quick: true
-  terraform-aws-ec2-instance_tags_all:
+  tags_all:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.tags_all }}'
     quick: true
 grains:
@@ -250,30 +202,14 @@ grains:
         - volume_tags: '{}'
         - vpc_security_group_ids: '{{ .inputs.vpc_security_group_ids }}'
       outputs:
-        - ami
-        - arn
-        - availability_zone
-        - capacity_reservation_specification
-        - ebs_block_device
-        - ephemeral_block_device
-        - iam_instance_profile_arn
-        - iam_instance_profile_id
-        - iam_instance_profile_unique
-        - iam_role_arn
-        - iam_role_name
-        - iam_role_unique_id
         - id
+        - arn
+        - ami
         - instance_state
-        - ipv6_addresses
-        - outpost_arn
-        - password_data
-        - primary_network_interface_id
-        - private_dns
+        - availability_zone
         - private_ip
-        - public_dns
+        - private_dns
         - public_ip
-        - root_block_device
-        - spot_bid_status
-        - spot_instance_id
-        - spot_request_state
+        - public_dns
+        - primary_network_interface_id
         - tags_all
