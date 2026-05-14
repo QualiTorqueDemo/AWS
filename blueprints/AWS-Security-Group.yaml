@@ -1,14 +1,23 @@
 spec_version: 2
-description: |
-  This module aims to implement ALL combinations of arguments supported by AWS and latest stable version of Terraform:
+description: 'This module aims to implement ALL combinations of arguments supported by AWS and latest stable version of Terraform:
+
   - IPv4/IPv6 CIDR blocks
+
   - VPC endpoint prefix lists (use data source aws_prefix_list)
+
   - Access from source security groups
+
   - Access from self
+
   - Named rules
+
   - Named groups of rules with ingress (inbound) and egress (outbound) ports open for common scenarios (eg, ssh, http-80, mysql, etc.)
+
   - Conditionally create security group and/or all required security group rules.
+
   - Ingress and egress rules can be configured in a variety of ways.
+
+  '
 metadata:
   self-service: true
   display-name: AWS Security Group
@@ -90,11 +99,11 @@ inputs:
     default: cassandra
   create:
     type: string
-    default: "true"
+    default: 'true'
     style: radio
     allowed-values:
-      - "true"
-      - "false"
+      - 'true'
+      - 'false'
     description: Whether to create security group and all rules
   auto_computed_egress_rules:
     type: string
@@ -114,10 +123,7 @@ inputs:
     description: List of maps defining computed ingress rules with self to add automatically
   auto_egress_rules:
     type: string
-    default: |-
-      [
-        "all-all"
-      ]
+    default: "[\n  \"all-all\"\n]"
     description: List of egress rules to add automatically
   auto_egress_with_self:
     type: string
@@ -125,21 +131,11 @@ inputs:
     description: List of maps defining egress rules with self to add automatically
   auto_ingress_rules:
     type: string
-    default: |-
-      [
-        "cassandra-clients-tcp",
-        "cassandra-thrift-clients-tcp",
-        "cassandra-jmx-tcp"
-      ]
+    default: "[\n  \"cassandra-clients-tcp\",\n  \"cassandra-thrift-clients-tcp\",\n  \"cassandra-jmx-tcp\"\n]"
     description: List of ingress rules to add automatically
   auto_ingress_with_self:
     type: string
-    default: |-
-      [
-        {
-          "rule": "all-all"
-        }
-      ]
+    default: "[\n  {\n    \"rule\": \"all-all\"\n  }\n]"
     description: List of maps defining ingress rules with self to add automatically
   auto_number_of_computed_egress_rules:
     type: string
@@ -155,17 +151,11 @@ inputs:
     description: Number of computed ingress rules to create where 'self' is defined
   computed_egress_cidr_blocks:
     type: string
-    default: |-
-      [
-        "0.0.0.0/0"
-      ]
+    default: "[\n  \"0.0.0.0/0\"\n]"
     description: List of IPv4 CIDR ranges to use on all computed egress rules
   computed_egress_ipv6_cidr_blocks:
     type: string
-    default: |-
-      [
-        "::/0"
-      ]
+    default: "[\n  \"::/0\"\n]"
     description: List of IPv6 CIDR ranges to use on all computed egress rules
   computed_egress_prefix_list_ids:
     type: string
@@ -233,17 +223,11 @@ inputs:
     description: List of computed ingress rules to create where 'source_security_group_id' is used
   egress_cidr_blocks:
     type: string
-    default: |-
-      [
-        "0.0.0.0/0"
-      ]
+    default: "[\n  \"0.0.0.0/0\"\n]"
     description: List of IPv4 CIDR ranges to use on all egress rules
   egress_ipv6_cidr_blocks:
     type: string
-    default: |-
-      [
-        "::/0"
-      ]
+    default: "[\n  \"::/0\"\n]"
     description: List of IPv6 CIDR ranges to use on all egress rules
   egress_prefix_list_ids:
     type: string
@@ -372,11 +356,11 @@ inputs:
     description: A mapping of tags to assign to security group
   use_name_prefix:
     type: string
-    default: "true"
+    default: 'true'
     style: radio
     allowed-values:
-      - "true"
-      - "false"
+      - 'true'
+      - 'false'
     description: Whether to use name_prefix or fixed name. Should be true to able to update security group name after initial creation
   agent:
     type: agent
@@ -488,7 +472,9 @@ grains:
     spec:
       source:
         store: AWS
-        path: '{{ "assets/terraform-aws-security-group/modules/" | append:  .inputs.type }}'
+        path: '{% capture _sg_subdir %}{% case inputs.type %}{% when ''Custom'' %}_templates{% when ''SSH'' %}ssh{% when ''HTTP'' %}http-80{% when ''HTTPS'' %}https-443{% when ''MySQL'' %}mysql{% when ''PostgreSQL''
+          %}postgresql{% when ''Redis'' %}redis{% when ''MongoDB'' %}mongodb{% when ''Kubernetes API'' %}kubernetes-api{% when ''RDP'' %}rdp{% when ''WinRM'' %}winrm{% endcase %}{% endcapture %}assets/terraform-aws-security-group/modules/{{
+          _sg_subdir }}'
       agent:
         name: '{{ .inputs.agent }}'
       tags:
