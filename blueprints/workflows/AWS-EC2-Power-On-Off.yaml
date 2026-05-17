@@ -50,15 +50,15 @@ grains:
         deploy:
           commands:
             - name: power
-              command: "bash -lc '\n  set -euo pipefail\n\n  rid=\"{{ .bindings.resource_id }}\"\n  gpath=\"{{ .bindings.grain_path }}\"\n  contract=\"$CONTRACT_FILE_PATH\"\n  action=\"{{ .inputs.action\
-                \ }}\"\n\n  instance_id=$(jq -r --arg ResourceId \"$rid\" --arg GrainPath \"$gpath\" \\\n    ''.resources[]\n      | select(.identifier == $ResourceId and .grain_path == $GrainPath)\n  \
-                \    | (.attributes.id // .attributes.instance_id // .attributes.InstanceId // empty)'' \\\n    \"$contract\")\n\n  region=$(jq -r --arg ResourceId \"$rid\" --arg GrainPath \"$gpath\" \\\
-                \n    ''.resources[]\n      | select(.identifier == $ResourceId and .grain_path == $GrainPath)\n      | (.attributes.region // .attributes.aws_region // empty)'' \\\n    \"$contract\")\n\
-                \n  if [ -z \"${instance_id:-}\" ] || [ -z \"${region:-}\" ]; then\n    echo \"Failed to extract instance_id/region from contract.json (resource_id=$rid, grain_path=$gpath)\"\n    exit 1\n\
-                \  fi\n\n  state_before=$(aws ec2 describe-instances --region \"$region\" --instance-ids \"$instance_id\" \\\n    --query \"Reservations[0].Instances[0].State.Name\" --output text)\n\n \
-                \ if [ \"$action\" = \"power_on\" ]; then\n    aws ec2 start-instances --region \"$region\" --instance-ids \"$instance_id\" >/dev/null\n  else\n    aws ec2 stop-instances --region \"$region\"\
-                \ --instance-ids \"$instance_id\" >/dev/null\n  fi\n\n  state_after=$(aws ec2 describe-instances --region \"$region\" --instance-ids \"$instance_id\" \\\n    --query \"Reservations[0].Instances[0].State.Name\"\
-                \ --output text)\n\n  export instance_id=\"$instance_id\"\n  export region=\"$region\"\n  export state_before=\"$state_before\"\n  export state_after=\"$state_after\"\n'\n"
+              command: "set -euo pipefail\n\nrid=\"{{ .bindings.resource_id }}\"\ngpath=\"{{ .bindings.grain_path }}\"\ncontract=\"$CONTRACT_FILE_PATH\"\naction=\"{{ .inputs.action }}\"\n\ninstance_id=$(jq\
+                \ -r --arg ResourceId \"$rid\" --arg GrainPath \"$gpath\" \\\n  '.resources[]\n    | select(.identifier == $ResourceId and .grain_path == $GrainPath)\n    | (.attributes.id // .attributes.instance_id\
+                \ // .attributes.InstanceId // empty)' \\\n  \"$contract\")\n\nregion=$(jq -r --arg ResourceId \"$rid\" --arg GrainPath \"$gpath\" \\\n  '.resources[]\n    | select(.identifier == $ResourceId\
+                \ and .grain_path == $GrainPath)\n    | (.attributes.region // .attributes.aws_region // empty)' \\\n  \"$contract\")\n\nif [ -z \"${instance_id:-}\" ] || [ -z \"${region:-}\" ]; then\n\
+                \  echo \"Failed to extract instance_id/region from contract.json (resource_id=$rid, grain_path=$gpath)\"\n  exit 1\nfi\n\nstate_before=$(aws ec2 describe-instances --region \"$region\"\
+                \ --instance-ids \"$instance_id\" \\\n  --query \"Reservations[0].Instances[0].State.Name\" --output text)\n\nif [ \"$action\" = \"power_on\" ]; then\n  aws ec2 start-instances --region\
+                \ \"$region\" --instance-ids \"$instance_id\" >/dev/null\nelse\n  aws ec2 stop-instances --region \"$region\" --instance-ids \"$instance_id\" >/dev/null\nfi\n\nstate_after=$(aws ec2 describe-instances\
+                \ --region \"$region\" --instance-ids \"$instance_id\" \\\n  --query \"Reservations[0].Instances[0].State.Name\" --output text)\n\nexport instance_id=\"$instance_id\"\nexport region=\"$region\"\
+                \nexport state_before=\"$state_before\"\nexport state_after=\"$state_after\"\n"
               outputs:
                 - instance_id
                 - region
