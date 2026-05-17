@@ -36,7 +36,7 @@ customization:
             icon: list
             default_open: true
             inputs:
-              - name: db_subnet_group_name
+              - name: db_subnet_group
               - name: vpc_security_group_ids
               - name: multi_az
           - name: Tags
@@ -87,9 +87,12 @@ inputs:
     type: string
     default: '20'
     description: Initial GiB of storage. Minimum 20 for most engines, 100 for SQL Server. RDS storage auto-scaling is enabled with a 100 GiB ceiling by default.
-  db_subnet_group_name:
+  db_subnet_group:
     type: string
-    description: Name of an existing DB subnet group that maps the VPC subnets where this instance can be placed. Use the AWS-RDS-DB-Subnet-Group blueprint to create one if you don't have it.
+    description: "Name of an existing RDS DB Subnet Group (NOT a subnet ID). A DB Subnet Group is a separate AWS resource that groups multiple subnets for RDS \u2014 its name looks like 'my-rds-subnet-group',\
+      \ not 'subnet-0abc1234'. Create one via the AWS-RDS-DB-Subnet-Group blueprint if you don't have one yet."
+    pattern: ^(?!subnet-)[a-zA-Z][a-zA-Z0-9_.-]{0,254}$
+    validation-description: Must be the name of an RDS DB Subnet Group (e.g. 'rds-prod-subnet-group'), not a subnet ID. Subnet IDs starting with 'subnet-' are rejected.
   vpc_security_group_ids:
     type: string
     default: 'null'
@@ -154,7 +157,7 @@ grains:
         - username: '{{ .inputs.username }}'
         - instance_class: '{{ .inputs.instance_class }}'
         - allocated_storage: '{{ .inputs.allocated_storage }}'
-        - db_subnet_group_name: '{{ .inputs.db_subnet_group_name }}'
+        - db_subnet_group_name: '{{ .inputs.db_subnet_group }}'
         - vpc_security_group_ids: '{{ .inputs.vpc_security_group_ids }}'
         - multi_az: '{{ .inputs.multi_az }}'
         - tags: '{{ .inputs.resource_tags }}'
