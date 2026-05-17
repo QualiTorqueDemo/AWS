@@ -1,23 +1,29 @@
 spec_version: 2
 description: Start an AWS RDS DB instance.
 metadata:
-  self-service: true
+  self-service: false
   display-name: AWS RDS Start
   icon:
     path: graphics/AWS RDS.svg
-
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+    - key: category
+      value: Workflow
+    - key: resource
+      value: rds
+    - key: action
+      value: start
 workflow:
   scope: env_resource
   resource-types: aws_db_instance
   labels-selector: hypervisor:AWS
   triggers:
     - type: manual
-  timeout: "30"
-
+  timeout: '30'
 inputs:
   agent:
     type: agent
-
 outputs:
   db_instance_identifier:
     value: '{{ .grains.rds_start.activities.deploy.commands.start.outputs.db_instance_identifier }}'
@@ -31,7 +37,6 @@ outputs:
   status_after:
     value: '{{ .grains.rds_start.activities.deploy.commands.start.outputs.status_after }}'
     quick: true
-
 grains:
   rds_start:
     kind: shell
@@ -42,51 +47,15 @@ grains:
         deploy:
           commands:
             - name: start
-              command: >
-                bash -lc '
-                  set -euo pipefail
-
-                  rid="{{ .bindings.resource_id }}"
-                  gpath="{{ .bindings.grain_path }}"
-                  contract="$CONTRACT_FILE_PATH"
-
-                  dbid=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
-                    ''.resources[]
-                      | select(.identifier == $ResourceId and .grain_path == $GrainPath)
-                      | (.attributes.db_instance_identifier
-                         // .attributes.db_identifier
-                         // .attributes.identifier
-                         // .attributes.id
-                         // .attributes.name
-                         // empty)'' \
-                    "$contract")
-
-                  region=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
-                    ''.resources[]
-                      | select(.identifier == $ResourceId and .grain_path == $GrainPath)
-                      | (.attributes.region // .attributes.aws_region // empty)'' \
-                    "$contract")
-
-                  if [ -z "${dbid:-}" ] || [ -z "${region:-}" ]; then
-                    echo "Failed to extract db instance identifier/region from contract.json (resource_id=$rid, grain_path=$gpath)"
-                    exit 1
-                  fi
-
-                  status_before=$(aws rds describe-db-instances --region "$region" \
-                    --db-instance-identifier "$dbid" \
-                    --query "DBInstances[0].DBInstanceStatus" --output text)
-
-                  aws rds start-db-instance --region "$region" --db-instance-identifier "$dbid" >/dev/null
-
-                  status_after=$(aws rds describe-db-instances --region "$region" \
-                    --db-instance-identifier "$dbid" \
-                    --query "DBInstances[0].DBInstanceStatus" --output text)
-
-                  export db_instance_identifier="$dbid"
-                  export region="$region"
-                  export status_before="$status_before"
-                  export status_after="$status_after"
-                '
+              command: "bash -lc '\n  set -euo pipefail\n\n  rid=\"{{ .bindings.resource_id }}\"\n  gpath=\"{{ .bindings.grain_path }}\"\n  contract=\"$CONTRACT_FILE_PATH\"\n\n  dbid=$(jq -r --arg ResourceId\
+                \ \"$rid\" --arg GrainPath \"$gpath\" \\\n    ''.resources[]\n      | select(.identifier == $ResourceId and .grain_path == $GrainPath)\n      | (.attributes.db_instance_identifier\n    \
+                \     // .attributes.db_identifier\n         // .attributes.identifier\n         // .attributes.id\n         // .attributes.name\n         // empty)'' \\\n    \"$contract\")\n\n  region=$(jq\
+                \ -r --arg ResourceId \"$rid\" --arg GrainPath \"$gpath\" \\\n    ''.resources[]\n      | select(.identifier == $ResourceId and .grain_path == $GrainPath)\n      | (.attributes.region //\
+                \ .attributes.aws_region // empty)'' \\\n    \"$contract\")\n\n  if [ -z \"${dbid:-}\" ] || [ -z \"${region:-}\" ]; then\n    echo \"Failed to extract db instance identifier/region from\
+                \ contract.json (resource_id=$rid, grain_path=$gpath)\"\n    exit 1\n  fi\n\n  status_before=$(aws rds describe-db-instances --region \"$region\" \\\n    --db-instance-identifier \"$dbid\"\
+                \ \\\n    --query \"DBInstances[0].DBInstanceStatus\" --output text)\n\n  aws rds start-db-instance --region \"$region\" --db-instance-identifier \"$dbid\" >/dev/null\n\n  status_after=$(aws\
+                \ rds describe-db-instances --region \"$region\" \\\n    --db-instance-identifier \"$dbid\" \\\n    --query \"DBInstances[0].DBInstanceStatus\" --output text)\n\n  export db_instance_identifier=\"\
+                $dbid\"\n  export region=\"$region\"\n  export status_before=\"$status_before\"\n  export status_after=\"$status_after\"\n'\n"
               outputs:
                 - db_instance_identifier
                 - region
