@@ -9,11 +9,8 @@ metadata:
     - key: hypervisor
       value: AWS
     - key: category
-      value: Workflow
-    - key: resource
-      value: rds
-    - key: action
-      value: delete
+      value: Cloud
+    - key: Shell
 workflow:
   scope: env_resource
   resource-types: aws_db_instance

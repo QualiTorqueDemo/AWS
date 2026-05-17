@@ -9,11 +9,8 @@ metadata:
     - key: hypervisor
       value: AWS
     - key: category
-      value: Workflow
-    - key: resource
-      value: ec2
-    - key: action
-      value: restart
+      value: Cloud
+    - key: Shell
 workflow:
   scope: env_resource
   resource-types: aws_instance
