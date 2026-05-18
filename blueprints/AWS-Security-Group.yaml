@@ -123,6 +123,12 @@ grains:
         - number_of_computed_egress_with_cidr_blocks: '0'
         - number_of_computed_egress_with_ipv6_cidr_blocks: '0'
         - number_of_computed_egress_with_source_security_group_id: '0'
+        - computed_egress_with_prefix_list_ids: '[]'
+        - computed_ingress_with_prefix_list_ids: '[]'
+        - egress_with_prefix_list_ids: '[]'
+        - ingress_with_prefix_list_ids: '[]'
+        - number_of_computed_egress_with_prefix_list_ids: '0'
+        - number_of_computed_ingress_with_prefix_list_ids: '0'
       outputs:
         - security_group_id
     tf-version: 1.5.7
