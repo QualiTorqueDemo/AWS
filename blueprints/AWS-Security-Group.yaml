@@ -1,6 +1,6 @@
 spec_version: 2
-description: Creates an AWS VPC security group. Pick a 'type' to load preset rules (HTTPS, MySQL, SSH, etc.) and supply the CIDRs that should be allowed through, or pick 'Custom' and define your own ingress
-  rules.
+description: Creates an AWS VPC security group using the terraform-aws-modules/security-group v4 root module. Pick a preset (HTTPS, SSH, MySQL, etc.) to auto-open a known port, and/or supply custom port-range
+  rules. Egress allows all by default.
 metadata:
   self-service: true
   display-name: AWS Security Group
@@ -29,7 +29,7 @@ inputs:
   type:
     type: string
     default: Custom
-    description: Preset rule bundle. Picking a preset auto-adds the matching inbound port(s); set ingress_cidr_blocks to control who can use them. Pick Custom to define rules from scratch via ingress_with_cidr_blocks.
+    description: Preset rule bundle. Picking a preset auto-opens the matching inbound port; set ingress_cidr_blocks to control who can use it. Pick Custom to define inbound rules entirely via ingress_with_cidr_blocks.
     allowed-values:
       - Custom
       - SSH
@@ -45,12 +45,12 @@ inputs:
   ingress_cidr_blocks:
     type: string
     default: '[]'
-    description: JSON array of source CIDRs allowed by the preset rules, e.g. ["10.0.0.0/16","192.168.1.0/24"]. Ignored when type is "Custom".
+    description: JSON array of source CIDRs allowed by the preset rule, e.g. ["10.0.0.0/16","192.168.1.0/24"]. Ignored when type is "Custom".
   ingress_with_cidr_blocks:
     type: string
     default: '[]'
-    description: 'JSON array of custom inbound rules. Each item: {"from_port": 8080, "to_port": 8080, "protocol": "tcp", "cidr_blocks": "10.0.0.0/16", "description": "..."}. Use with Custom type or alongside
-      a preset.'
+    description: 'JSON array of custom inbound rules. Each item: {"from_port": 8080, "to_port": 8080, "protocol": "tcp", "cidr_blocks": "10.0.0.0/16", "description": "..."}. Use this with Custom, or alongside
+      a preset to open additional ports.'
   resource_tags:
     type: string
     default: '{}'
@@ -67,9 +67,7 @@ grains:
     spec:
       source:
         store: AWS
-        path: '{% capture _sg_subdir %}{% case inputs.type %}{% when ''Custom'' %}_templates{% when ''SSH'' %}ssh{% when ''HTTP'' %}http-80{% when ''HTTPS'' %}https-443{% when ''MySQL'' %}mysql{% when ''PostgreSQL''
-          %}postgresql{% when ''Redis'' %}redis{% when ''MongoDB'' %}mongodb{% when ''Kubernetes API'' %}kubernetes-api{% when ''RDP'' %}rdp{% when ''WinRM'' %}winrm{% endcase %}{% endcapture %}assets/terraform-aws-security-group/modules/{{
-          _sg_subdir }}'
+        path: assets/terraform-aws-security-group
       agent:
         name: '{{ .inputs.agent }}'
       tags:
@@ -78,72 +76,53 @@ grains:
         - name: '{{ .inputs.name }}'
         - description: '{{ .inputs.description }}'
         - vpc_id: '{{ .inputs.vpc_id }}'
+        - ingress_rules: '{% case inputs.type %}{% when ''Custom'' %}[]{% when ''SSH'' %}["ssh-tcp"]{% when ''HTTP'' %}["http-80-tcp"]{% when ''HTTPS'' %}["https-443-tcp"]{% when ''MySQL'' %}["mysql-tcp"]{%
+            when ''PostgreSQL'' %}["postgresql-tcp"]{% when ''Redis'' %}["redis-tcp"]{% when ''MongoDB'' %}["mongodb-27017-tcp"]{% when ''Kubernetes API'' %}["kubernetes-api-tcp"]{% when ''RDP'' %}["rdp-tcp"]{%
+            when ''WinRM'' %}["winrm-http-tcp","winrm-https-tcp"]{% endcase %}'
         - ingress_cidr_blocks: '{{ .inputs.ingress_cidr_blocks }}'
         - ingress_with_cidr_blocks: '{{ .inputs.ingress_with_cidr_blocks }}'
         - tags: '{{ .inputs.resource_tags }}'
         - create: 'true'
+        - create_sg: 'true'
+        - security_group_id: ''
         - use_name_prefix: 'true'
         - revoke_rules_on_delete: 'false'
-        - auto_computed_egress_rules: '[]'
-        - auto_computed_egress_with_self: '[]'
-        - auto_computed_ingress_rules: '[]'
-        - auto_computed_ingress_with_self: '[]'
-        - auto_number_of_computed_egress_rules: '0'
-        - auto_number_of_computed_egress_with_self: '0'
-        - auto_number_of_computed_ingress_rules: '0'
-        - auto_number_of_computed_ingress_with_self: '0'
-        - computed_egress_cidr_blocks: '[]'
-        - computed_egress_ipv6_cidr_blocks: '[]'
-        - computed_egress_prefix_list_ids: '[]'
-        - computed_egress_rules: '[]'
-        - computed_egress_with_cidr_blocks: '[]'
-        - computed_egress_with_ipv6_cidr_blocks: '[]'
-        - computed_egress_with_prefix_list_ids: '[]'
-        - computed_egress_with_self: '[]'
-        - computed_egress_with_source_security_group_id: '[]'
-        - computed_ingress_cidr_blocks: '[]'
-        - computed_ingress_ipv6_cidr_blocks: '[]'
-        - computed_ingress_prefix_list_ids: '[]'
-        - computed_ingress_rules: '[]'
-        - computed_ingress_with_cidr_blocks: '[]'
-        - computed_ingress_with_ipv6_cidr_blocks: '[]'
-        - computed_ingress_with_prefix_list_ids: '[]'
-        - computed_ingress_with_self: '[]'
-        - computed_ingress_with_source_security_group_id: '[]'
+        - create_timeout: 10m
+        - delete_timeout: 15m
+        - putin_khuylo: 'true'
+        - ingress_with_self: '[]'
+        - ingress_with_ipv6_cidr_blocks: '[]'
+        - ingress_with_source_security_group_id: '[]'
+        - ingress_ipv6_cidr_blocks: '[]'
+        - ingress_prefix_list_ids: '[]'
+        - egress_rules: '[]'
+        - egress_with_self: '[]'
+        - egress_with_cidr_blocks: '[{"rule":"all-all","cidr_blocks":"0.0.0.0/0"}]'
+        - egress_with_ipv6_cidr_blocks: '[]'
+        - egress_with_source_security_group_id: '[]'
         - egress_cidr_blocks: '[]'
         - egress_ipv6_cidr_blocks: '[]'
         - egress_prefix_list_ids: '[]'
-        - egress_rules: '[]'
-        - egress_with_cidr_blocks: '[{"from_port": 0, "to_port": 0, "protocol": "-1", "cidr_blocks": "0.0.0.0/0", "description": "allow-all-out"}]'
-        - egress_with_ipv6_cidr_blocks: '[]'
-        - egress_with_prefix_list_ids: '[]'
-        - egress_with_self: '[]'
-        - egress_with_source_security_group_id: '[]'
-        - ingress_ipv6_cidr_blocks: '[]'
-        - ingress_prefix_list_ids: '[]'
-        - ingress_rules: '[]'
-        - ingress_with_ipv6_cidr_blocks: '[]'
-        - ingress_with_prefix_list_ids: '[]'
-        - ingress_with_self: '[]'
-        - ingress_with_source_security_group_id: '[]'
-        - number_of_computed_egress_cidr_blocks: '0'
-        - number_of_computed_egress_ipv6_cidr_blocks: '0'
-        - number_of_computed_egress_prefix_list_ids: '0'
-        - number_of_computed_egress_rules: '0'
-        - number_of_computed_egress_with_cidr_blocks: '0'
-        - number_of_computed_egress_with_ipv6_cidr_blocks: '0'
-        - number_of_computed_egress_with_prefix_list_ids: '0'
-        - number_of_computed_egress_with_self: '0'
-        - number_of_computed_egress_with_source_security_group_id: '0'
-        - number_of_computed_ingress_cidr_blocks: '0'
-        - number_of_computed_ingress_ipv6_cidr_blocks: '0'
-        - number_of_computed_ingress_prefix_list_ids: '0'
+        - computed_ingress_rules: '[]'
+        - computed_ingress_with_self: '[]'
+        - computed_ingress_with_cidr_blocks: '[]'
+        - computed_ingress_with_ipv6_cidr_blocks: '[]'
+        - computed_ingress_with_source_security_group_id: '[]'
+        - computed_egress_rules: '[]'
+        - computed_egress_with_self: '[]'
+        - computed_egress_with_cidr_blocks: '[]'
+        - computed_egress_with_ipv6_cidr_blocks: '[]'
+        - computed_egress_with_source_security_group_id: '[]'
         - number_of_computed_ingress_rules: '0'
+        - number_of_computed_ingress_with_self: '0'
         - number_of_computed_ingress_with_cidr_blocks: '0'
         - number_of_computed_ingress_with_ipv6_cidr_blocks: '0'
-        - number_of_computed_ingress_with_prefix_list_ids: '0'
-        - number_of_computed_ingress_with_self: '0'
         - number_of_computed_ingress_with_source_security_group_id: '0'
+        - number_of_computed_egress_rules: '0'
+        - number_of_computed_egress_with_self: '0'
+        - number_of_computed_egress_with_cidr_blocks: '0'
+        - number_of_computed_egress_with_ipv6_cidr_blocks: '0'
+        - number_of_computed_egress_with_source_security_group_id: '0'
       outputs:
         - security_group_id
     tf-version: 1.5.7
