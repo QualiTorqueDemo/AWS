@@ -8,9 +8,12 @@ metadata:
   blueprint-labels:
     - key: hypervisor
       value: AWS
+      initial-color: '#FF9900'
     - key: category
       value: Cloud
+      initial-color: '#1E88E5'
     - key: Terraform
+      initial-color: '#7B42BC'
 inputs:
   role_name:
     type: string
