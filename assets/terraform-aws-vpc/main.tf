@@ -1,51 +1,26 @@
 provider "aws" {
-  region = "eu-west-1"
-
   skip_metadata_api_check     = true
   skip_region_validation      = true
   skip_credentials_validation = true
-}
-
-locals {
-  name     = "ex-vpc"
-  vpc_cidr = "10.0.0.0/16"
-  azs      = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
 }
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.0"
 
-  name = local.name
-  cidr = local.vpc_cidr
+  name = var.name
+  cidr = var.cidr
 
-  azs              = local.azs
-  private_subnets  = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k)]
-  public_subnets   = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k + 4)]
-  database_subnets = [for k, v in local.azs : cidrsubnet(local.vpc_cidr, 8, k + 8)]
+  azs              = var.azs
+  private_subnets  = var.private_subnets
+  public_subnets   = var.public_subnets
+  database_subnets = var.database_subnets
 
-  enable_dns_hostnames = true
-  enable_dns_support   = true
+  enable_dns_hostnames = var.enable_dns_hostnames
+  enable_dns_support   = var.enable_dns_support
 
-  enable_nat_gateway = true
-  single_nat_gateway = true
-}
+  enable_nat_gateway = var.enable_nat_gateway
+  single_nat_gateway = var.single_nat_gateway
 
-module "vpc_endpoints" {
-  source  = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
-  version = "~> 5.0"
-
-  vpc_id = module.vpc.vpc_id
-
-  endpoints = {
-    s3 = {
-      service      = "s3"
-      service_type = "Gateway"
-      route_table_ids = flatten([
-        module.vpc.private_route_table_ids,
-        module.vpc.public_route_table_ids,
-      ])
-      tags = { Name = "s3-vpc-endpoint" }
-    }
-  }
+  tags = var.tags
 }
