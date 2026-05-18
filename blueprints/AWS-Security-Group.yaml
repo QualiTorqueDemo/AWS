@@ -61,15 +61,6 @@ outputs:
   security_group_id:
     value: '{{ .grains.security_group.outputs.security_group_id }}'
     quick: true
-  security_group_arn:
-    value: '{{ .grains.security_group.outputs.security_group_arn }}'
-    quick: false
-  security_group_name:
-    value: '{{ .grains.security_group.outputs.security_group_name }}'
-    quick: false
-  security_group_vpc_id:
-    value: '{{ .grains.security_group.outputs.security_group_vpc_id }}'
-    quick: false
 grains:
   security_group:
     kind: terraform
@@ -155,9 +146,6 @@ grains:
         - number_of_computed_ingress_with_source_security_group_id: '0'
       outputs:
         - security_group_id
-        - security_group_arn
-        - security_group_name
-        - security_group_vpc_id
     tf-version: 1.5.7
 launch-form:
   categories:

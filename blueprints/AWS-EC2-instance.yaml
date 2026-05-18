@@ -92,23 +92,11 @@ outputs:
   id:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.id }}'
     quick: true
-  arn:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.arn }}'
-    quick: false
-  instance_state:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.instance_state }}'
-    quick: false
   public_ip:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.public_ip }}'
     quick: true
-  public_dns:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.public_dns }}'
-    quick: true
   private_ip:
     value: '{{ .grains.terraform-aws-ec2-instance.outputs.private_ip }}'
-    quick: true
-  private_dns:
-    value: '{{ .grains.terraform-aws-ec2-instance.outputs.private_dns }}'
     quick: true
 grains:
   terraform-aws-ec2-instance:
@@ -194,9 +182,5 @@ grains:
         - vpc_security_group_ids: '{{ .inputs.vpc_security_group_ids }}'
       outputs:
         - id
-        - arn
-        - instance_state
         - public_ip
-        - public_dns
         - private_ip
-        - private_dns

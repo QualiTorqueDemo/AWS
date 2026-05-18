@@ -63,9 +63,6 @@ outputs:
   cluster_id:
     value: '{{ .grains.terraform-aws-eks.outputs.cluster_id }}'
     quick: true
-  cluster_arn:
-    value: '{{ .grains.terraform-aws-eks.outputs.cluster_arn }}'
-    quick: false
   cluster_endpoint:
     value: '{{ .grains.terraform-aws-eks.outputs.cluster_endpoint }}'
     quick: true
@@ -74,12 +71,6 @@ outputs:
     quick: false
   cluster_oidc_issuer_url:
     value: '{{ .grains.terraform-aws-eks.outputs.cluster_oidc_issuer_url }}'
-    quick: true
-  cluster_security_group_id:
-    value: '{{ .grains.terraform-aws-eks.outputs.cluster_security_group_id }}'
-    quick: false
-  oidc_provider_arn:
-    value: '{{ .grains.terraform-aws-eks.outputs.oidc_provider_arn }}'
     quick: false
 grains:
   terraform-aws-eks:
@@ -184,9 +175,6 @@ grains:
         - putin_khuylo: 'true'
       outputs:
         - cluster_id
-        - cluster_arn
         - cluster_endpoint
         - cluster_certificate_authority_data
         - cluster_oidc_issuer_url
-        - cluster_security_group_id
-        - oidc_provider_arn

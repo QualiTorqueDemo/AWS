@@ -41,9 +41,6 @@ outputs:
   image_uri:
     value: '{{ .grains.docker-build.outputs.image_uri }}'
     quick: true
-  image_id:
-    value: '{{ .grains.docker-build.outputs.image_id }}'
-    quick: false
 grains:
   docker-build:
     kind: terraform
@@ -77,5 +74,4 @@ grains:
         - use_image_tag: 'true'
       outputs:
         - image_uri
-        - image_id
     tf-version: 1.5.7

@@ -51,10 +51,11 @@ grains:
                 \ --arg GrainPath \"$gpath\" \\\n  '.resources[]\n    | select(.identifier == $ResourceId and .grain_path == $GrainPath)\n    | (.attributes.id // .attributes.instance_id // .attributes.InstanceId\
                 \ // empty)' \\\n  \"$contract\")\n\nregion=$(jq -r --arg ResourceId \"$rid\" --arg GrainPath \"$gpath\" \\\n  '.resources[]\n    | select(.identifier == $ResourceId and .grain_path == $GrainPath)\n\
                 \    | (.attributes.region // .attributes.aws_region // empty)' \\\n  \"$contract\")\n\nif [ -z \"${instance_id:-}\" ] || [ -z \"${region:-}\" ]; then\n  echo \"Failed to extract instance_id/region\
-                \ from contract.json (resource_id=$rid, grain_path=$gpath)\"\n  exit 1\nfi\n\nstate_before=$(aws ec2 describe-instances --region \"$region\" --instance-ids \"$instance_id\" \\\n  --query\
-                \ \"Reservations[0].Instances[0].State.Name\" --output text)\n\naws ec2 reboot-instances --region \"$region\" --instance-ids \"$instance_id\" >/dev/null\n\nstate_after=$(aws ec2 describe-instances\
-                \ --region \"$region\" --instance-ids \"$instance_id\" \\\n  --query \"Reservations[0].Instances[0].State.Name\" --output text)\n\nexport instance_id=\"$instance_id\"\nexport region=\"$region\"\
-                \nexport state_before=\"$state_before\"\nexport state_after=\"$state_after\"\n"
+                \ from contract.json (resource_id=$rid, grain_path=$gpath)\"\n  exit 1\nfi\n\necho \"Target: instance_id=$instance_id region=$region\"\n\nstate_before=$(aws ec2 describe-instances --region\
+                \ \"$region\" --instance-ids \"$instance_id\" \\\n  --query \"Reservations[0].Instances[0].State.Name\" --output text)\necho \"state_before=$state_before\"\n\necho \"Calling aws ec2 reboot-instances...\"\
+                \naws ec2 reboot-instances --region \"$region\" --instance-ids \"$instance_id\" >/dev/null\n\nstate_after=$(aws ec2 describe-instances --region \"$region\" --instance-ids \"$instance_id\"\
+                \ \\\n  --query \"Reservations[0].Instances[0].State.Name\" --output text)\necho \"state_after=$state_after\"\n\nexport instance_id=\"$instance_id\"\nexport region=\"$region\"\nexport state_before=\"\
+                $state_before\"\nexport state_after=\"$state_after\"\n"
               outputs:
                 - instance_id
                 - region

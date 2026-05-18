@@ -54,12 +54,6 @@ outputs:
     quick: true
   codedeploy_deployment_group_name:
     value: '{{ .grains.deploy.outputs.codedeploy_deployment_group_name }}'
-    quick: true
-  codedeploy_iam_role_name:
-    value: '{{ .grains.deploy.outputs.codedeploy_iam_role_name }}'
-    quick: false
-  appspec_sha256:
-    value: '{{ .grains.deploy.outputs.appspec_sha256 }}'
     quick: false
 grains:
   deploy:
@@ -111,6 +105,4 @@ grains:
       outputs:
         - codedeploy_app_name
         - codedeploy_deployment_group_name
-        - codedeploy_iam_role_name
-        - appspec_sha256
     tf-version: 1.5.7

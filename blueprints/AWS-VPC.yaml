@@ -80,41 +80,17 @@ outputs:
   vpc_id:
     value: '{{ .grains.complete_vpc.outputs.vpc_id }}'
     quick: true
-  vpc_arn:
-    value: '{{ .grains.complete_vpc.outputs.vpc_arn }}'
-    quick: false
-  vpc_cidr_block:
-    value: '{{ .grains.complete_vpc.outputs.vpc_cidr_block }}'
-    quick: false
   private_subnets:
     value: '{{ .grains.complete_vpc.outputs.private_subnets }}'
-    quick: true
+    quick: false
   public_subnets:
     value: '{{ .grains.complete_vpc.outputs.public_subnets }}'
-    quick: true
+    quick: false
   database_subnets:
     value: '{{ .grains.complete_vpc.outputs.database_subnets }}'
     quick: false
-  database_subnet_group:
-    value: '{{ .grains.complete_vpc.outputs.database_subnet_group }}'
-    quick: false
   database_subnet_group_name:
     value: '{{ .grains.complete_vpc.outputs.database_subnet_group_name }}'
-    quick: false
-  private_route_table_ids:
-    value: '{{ .grains.complete_vpc.outputs.private_route_table_ids }}'
-    quick: false
-  public_route_table_ids:
-    value: '{{ .grains.complete_vpc.outputs.public_route_table_ids }}'
-    quick: false
-  nat_gateway_ids:
-    value: '{{ .grains.complete_vpc.outputs.natgw_ids }}'
-    quick: false
-  internet_gateway_id:
-    value: '{{ .grains.complete_vpc.outputs.igw_id }}'
-    quick: false
-  default_security_group_id:
-    value: '{{ .grains.complete_vpc.outputs.default_security_group_id }}'
     quick: false
 grains:
   complete_vpc:
@@ -141,16 +117,8 @@ grains:
         - tags: '{{ .inputs.resource_tags }}'
       outputs:
         - vpc_id
-        - vpc_arn
-        - vpc_cidr_block
         - private_subnets
         - public_subnets
         - database_subnets
-        - database_subnet_group
         - database_subnet_group_name
-        - private_route_table_ids
-        - public_route_table_ids
-        - natgw_ids
-        - igw_id
-        - default_security_group_id
     tf-version: 1.5.7

@@ -35,15 +35,6 @@ outputs:
   arn:
     value: '{{ .grains.iam-policy.outputs.arn }}'
     quick: true
-  id:
-    value: '{{ .grains.iam-policy.outputs.id }}'
-    quick: false
-  name:
-    value: '{{ .grains.iam-policy.outputs.name }}'
-    quick: false
-  path:
-    value: '{{ .grains.iam-policy.outputs.path }}'
-    quick: false
 grains:
   iam-policy:
     kind: terraform
@@ -65,7 +56,4 @@ grains:
         - path: /
       outputs:
         - arn
-        - id
-        - name
-        - path
     tf-version: 1.5.7

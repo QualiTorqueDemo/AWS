@@ -39,15 +39,9 @@ outputs:
   alias_arn:
     value: '{{ .grains.alias.outputs.lambda_alias_arn }}'
     quick: true
-  alias_name:
-    value: '{{ .grains.alias.outputs.lambda_alias_name }}'
-    quick: false
-  alias_function_version:
-    value: '{{ .grains.alias.outputs.lambda_alias_function_version }}'
-    quick: false
   alias_invoke_arn:
     value: '{{ .grains.alias.outputs.lambda_alias_invoke_arn }}'
-    quick: true
+    quick: false
 grains:
   alias:
     kind: terraform
@@ -81,7 +75,5 @@ grains:
         - use_existing_alias: 'false'
       outputs:
         - lambda_alias_arn
-        - lambda_alias_name
-        - lambda_alias_function_version
         - lambda_alias_invoke_arn
     tf-version: 1.5.7

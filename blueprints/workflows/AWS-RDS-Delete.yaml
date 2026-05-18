@@ -87,16 +87,18 @@ grains:
                 \ == $ResourceId and .grain_path == $GrainPath)\n    | (.attributes.db_instance_identifier\n       // .attributes.db_identifier\n       // .attributes.identifier\n       // .attributes.id\n\
                 \       // .attributes.name\n       // empty)' \\\n  \"$contract\")\n\nregion=$(jq -r --arg ResourceId \"$rid\" --arg GrainPath \"$gpath\" \\\n  '.resources[]\n    | select(.identifier ==\
                 \ $ResourceId and .grain_path == $GrainPath)\n    | (.attributes.region // .attributes.aws_region // empty)' \\\n  \"$contract\")\n\nif [ -z \"${dbid:-}\" ] || [ -z \"${region:-}\" ]; then\n\
-                \  echo \"Failed to extract db instance identifier/region from contract.json (resource_id=$rid, grain_path=$gpath)\"\n  exit 1\nfi\n\ndeletion_protection_before=$(aws rds describe-db-instances\
-                \ --region \"$region\" \\\n  --db-instance-identifier \"$dbid\" \\\n  --query \"DBInstances[0].DeletionProtection\" --output text)\n\nif [ \"$deletion_protection_before\" = \"True\" ] ||\
-                \ [ \"$deletion_protection_before\" = \"true\" ]; then\n  if [ \"{{ .inputs.disable_deletion_protection }}\" = \"true\" ]; then\n    aws rds modify-db-instance --region \"$region\" \\\n\
-                \      --db-instance-identifier \"$dbid\" \\\n      --no-deletion-protection \\\n      --apply-immediately >/dev/null\n    aws rds wait db-instance-available --region \"$region\" --db-instance-identifier\
-                \ \"$dbid\"\n  else\n    echo \"DeletionProtection is enabled and disable_deletion_protection is false. Aborting.\"\n    exit 1\n  fi\nfi\n\nskip=\"{{ .inputs.skip_final_snapshot }}\"\n\
-                final_snapshot_used=\"\"\ndelete_started=\"false\"\n\nif [ \"$skip\" = \"true\" ]; then\n  aws rds delete-db-instance --region \"$region\" \\\n    --db-instance-identifier \"$dbid\" \\\n\
-                \    --skip-final-snapshot \\\n    $( [ \"{{ .inputs.delete_automated_backups }}\" = \"true\" ] && echo \"--delete-automated-backups\" ) \\\n    >/dev/null\n  delete_started=\"true\"\nelse\n\
-                \  snap=\"{{ .inputs.final_snapshot_identifier }}\"\n  if [ -z \"${snap:-}\" ]; then\n    snap=\"${dbid}-final-$(date +%Y%m%d%H%M%S)\"\n  fi\n  final_snapshot_used=\"$snap\"\n  aws rds delete-db-instance\
-                \ --region \"$region\" \\\n    --db-instance-identifier \"$dbid\" \\\n    --final-db-snapshot-identifier \"$snap\" \\\n    $( [ \"{{ .inputs.delete_automated_backups }}\" = \"true\" ] &&\
-                \ echo \"--delete-automated-backups\" ) \\\n    >/dev/null\n  delete_started=\"true\"\nfi\n\nexport db_instance_identifier=\"$dbid\"\nexport region=\"$region\"\nexport deletion_protection_before=\"\
+                \  echo \"Failed to extract db instance identifier/region from contract.json (resource_id=$rid, grain_path=$gpath)\"\n  exit 1\nfi\n\necho \"Target: db_instance_identifier=$dbid region=$region\"\
+                \n\ndeletion_protection_before=$(aws rds describe-db-instances --region \"$region\" \\\n  --db-instance-identifier \"$dbid\" \\\n  --query \"DBInstances[0].DeletionProtection\" --output\
+                \ text)\necho \"deletion_protection_before=$deletion_protection_before\"\n\nif [ \"$deletion_protection_before\" = \"True\" ] || [ \"$deletion_protection_before\" = \"true\" ]; then\n  if\
+                \ [ \"{{ .inputs.disable_deletion_protection }}\" = \"true\" ]; then\n    echo \"Disabling deletion protection...\"\n    aws rds modify-db-instance --region \"$region\" \\\n      --db-instance-identifier\
+                \ \"$dbid\" \\\n      --no-deletion-protection \\\n      --apply-immediately >/dev/null\n    aws rds wait db-instance-available --region \"$region\" --db-instance-identifier \"$dbid\"\n\
+                \    echo \"Deletion protection disabled.\"\n  else\n    echo \"DeletionProtection is enabled and disable_deletion_protection is false. Aborting.\"\n    exit 1\n  fi\nfi\n\nskip=\"{{ .inputs.skip_final_snapshot\
+                \ }}\"\nfinal_snapshot_used=\"\"\ndelete_started=\"false\"\n\nif [ \"$skip\" = \"true\" ]; then\n  echo \"Deleting (no final snapshot)...\"\n  aws rds delete-db-instance --region \"$region\"\
+                \ \\\n    --db-instance-identifier \"$dbid\" \\\n    --skip-final-snapshot \\\n    $( [ \"{{ .inputs.delete_automated_backups }}\" = \"true\" ] && echo \"--delete-automated-backups\" ) \\\
+                \n    >/dev/null\n  delete_started=\"true\"\nelse\n  snap=\"{{ .inputs.final_snapshot_identifier }}\"\n  if [ -z \"${snap:-}\" ]; then\n    snap=\"${dbid}-final-$(date +%Y%m%d%H%M%S)\"\n\
+                \  fi\n  final_snapshot_used=\"$snap\"\n  echo \"Deleting (taking final snapshot: $snap)...\"\n  aws rds delete-db-instance --region \"$region\" \\\n    --db-instance-identifier \"$dbid\"\
+                \ \\\n    --final-db-snapshot-identifier \"$snap\" \\\n    $( [ \"{{ .inputs.delete_automated_backups }}\" = \"true\" ] && echo \"--delete-automated-backups\" ) \\\n    >/dev/null\n  delete_started=\"\
+                true\"\nfi\necho \"delete_started=$delete_started final_snapshot_used=$final_snapshot_used\"\n\nexport db_instance_identifier=\"$dbid\"\nexport region=\"$region\"\nexport deletion_protection_before=\"\
                 $deletion_protection_before\"\nexport final_snapshot_used=\"$final_snapshot_used\"\nexport delete_started=\"$delete_started\"\n"
               outputs:
                 - db_instance_identifier

@@ -72,12 +72,6 @@ outputs:
   node_group_id:
     value: '{{ .grains.node_group.outputs.node_group_id }}'
     quick: true
-  node_group_arn:
-    value: '{{ .grains.node_group.outputs.node_group_arn }}'
-    quick: false
-  node_group_status:
-    value: '{{ .grains.node_group.outputs.node_group_status }}'
-    quick: false
   iam_role_arn:
     value: '{{ .grains.node_group.outputs.iam_role_arn }}'
     quick: false
@@ -188,6 +182,4 @@ grains:
         - security_group_tags: '{}'
       outputs:
         - node_group_id
-        - node_group_arn
-        - node_group_status
         - iam_role_arn

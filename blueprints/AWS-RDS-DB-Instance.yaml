@@ -117,21 +117,6 @@ outputs:
   db_instance_endpoint:
     value: '{{ .grains.db_instance.outputs.db_instance_endpoint }}'
     quick: true
-  db_instance_address:
-    value: '{{ .grains.db_instance.outputs.db_instance_address }}'
-    quick: false
-  db_instance_port:
-    value: '{{ .grains.db_instance.outputs.db_instance_port }}'
-    quick: false
-  db_instance_arn:
-    value: '{{ .grains.db_instance.outputs.db_instance_arn }}'
-    quick: false
-  db_instance_status:
-    value: '{{ .grains.db_instance.outputs.db_instance_status }}'
-    quick: false
-  db_instance_identifier:
-    value: '{{ .grains.db_instance.outputs.db_instance_identifier }}'
-    quick: false
   db_instance_master_user_secret_arn:
     value: '{{ .grains.db_instance.outputs.db_instance_master_user_secret_arn }}'
     quick: true
@@ -235,9 +220,4 @@ grains:
         - timeouts: '{}'
       outputs:
         - db_instance_endpoint
-        - db_instance_address
-        - db_instance_port
-        - db_instance_arn
-        - db_instance_status
-        - db_instance_identifier
         - db_instance_master_user_secret_arn

@@ -48,23 +48,8 @@ outputs:
   node_iam_role_arn:
     value: '{{ .grains.karpenter.outputs.node_iam_role_arn }}'
     quick: true
-  node_iam_role_name:
-    value: '{{ .grains.karpenter.outputs.node_iam_role_name }}'
-    quick: false
-  instance_profile_name:
-    value: '{{ .grains.karpenter.outputs.instance_profile_name }}'
-    quick: false
   queue_name:
     value: '{{ .grains.karpenter.outputs.queue_name }}'
-    quick: true
-  queue_arn:
-    value: '{{ .grains.karpenter.outputs.queue_arn }}'
-    quick: false
-  service_account:
-    value: '{{ .grains.karpenter.outputs.service_account }}'
-    quick: false
-  namespace:
-    value: '{{ .grains.karpenter.outputs.namespace }}'
     quick: false
 grains:
   karpenter:
@@ -128,10 +113,5 @@ grains:
       outputs:
         - iam_role_arn
         - node_iam_role_arn
-        - node_iam_role_name
-        - instance_profile_name
         - queue_name
-        - queue_arn
-        - service_account
-        - namespace
     tf-version: 1.5.7

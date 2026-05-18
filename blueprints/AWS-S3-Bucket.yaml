@@ -43,17 +43,8 @@ outputs:
   id:
     value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_id }}'
     quick: true
-  arn:
-    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_arn }}'
-    quick: false
   bucket_regional_domain_name:
     value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_bucket_regional_domain_name }}'
-    quick: false
-  region:
-    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_region }}'
-    quick: false
-  hosted_zone_id:
-    value: '{{ .grains.complete_s3_bucket.outputs.s3_bucket_hosted_zone_id }}'
     quick: false
 grains:
   complete_s3_bucket:
@@ -74,7 +65,4 @@ grains:
         - resource_tags: '{{ .inputs.resource_tags }}'
       outputs:
         - s3_bucket_id
-        - s3_bucket_arn
         - s3_bucket_bucket_regional_domain_name
-        - s3_bucket_region
-        - s3_bucket_hosted_zone_id

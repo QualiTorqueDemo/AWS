@@ -39,15 +39,6 @@ outputs:
   iam_role_arn:
     value: '{{ .grains.iam-eks-role.outputs.iam_role_arn }}'
     quick: true
-  iam_role_name:
-    value: '{{ .grains.iam-eks-role.outputs.iam_role_name }}'
-    quick: false
-  iam_role_path:
-    value: '{{ .grains.iam-eks-role.outputs.iam_role_path }}'
-    quick: false
-  iam_role_unique_id:
-    value: '{{ .grains.iam-eks-role.outputs.iam_role_unique_id }}'
-    quick: false
 grains:
   iam-eks-role:
     kind: terraform
@@ -75,7 +66,4 @@ grains:
         - role_permissions_boundary_arn: 'null'
       outputs:
         - iam_role_arn
-        - iam_role_name
-        - iam_role_path
-        - iam_role_unique_id
     tf-version: 1.5.7

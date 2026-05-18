@@ -35,9 +35,6 @@ outputs:
   db_subnet_group_id:
     value: '{{ .grains.db_subnet_group.outputs.db_subnet_group_id }}'
     quick: true
-  db_subnet_group_arn:
-    value: '{{ .grains.db_subnet_group.outputs.db_subnet_group_arn }}'
-    quick: false
 grains:
   db_subnet_group:
     kind: terraform
@@ -58,5 +55,4 @@ grains:
         - use_name_prefix: 'false'
       outputs:
         - db_subnet_group_id
-        - db_subnet_group_arn
     tf-version: 1.5.7

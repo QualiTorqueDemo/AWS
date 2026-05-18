@@ -52,9 +52,10 @@ grains:
                 \       // .attributes.identifier\n       // .attributes.id\n       // .attributes.name\n       // empty)' \\\n  \"$contract\")\n\nregion=$(jq -r --arg ResourceId \"$rid\" --arg GrainPath\
                 \ \"$gpath\" \\\n  '.resources[]\n    | select(.identifier == $ResourceId and .grain_path == $GrainPath)\n    | (.attributes.region // .attributes.aws_region // empty)' \\\n  \"$contract\"\
                 )\n\nif [ -z \"${dbid:-}\" ] || [ -z \"${region:-}\" ]; then\n  echo \"Failed to extract db instance identifier/region from contract.json (resource_id=$rid, grain_path=$gpath)\"\n  exit\
-                \ 1\nfi\n\nstatus_before=$(aws rds describe-db-instances --region \"$region\" \\\n  --db-instance-identifier \"$dbid\" \\\n  --query \"DBInstances[0].DBInstanceStatus\" --output text)\n\n\
-                aws rds start-db-instance --region \"$region\" --db-instance-identifier \"$dbid\" >/dev/null\n\nstatus_after=$(aws rds describe-db-instances --region \"$region\" \\\n  --db-instance-identifier\
-                \ \"$dbid\" \\\n  --query \"DBInstances[0].DBInstanceStatus\" --output text)\n\nexport db_instance_identifier=\"$dbid\"\nexport region=\"$region\"\nexport status_before=\"$status_before\"\
+                \ 1\nfi\n\necho \"Target: db_instance_identifier=$dbid region=$region\"\n\nstatus_before=$(aws rds describe-db-instances --region \"$region\" \\\n  --db-instance-identifier \"$dbid\" \\\n\
+                \  --query \"DBInstances[0].DBInstanceStatus\" --output text)\necho \"status_before=$status_before\"\n\necho \"Calling aws rds start-db-instance...\"\naws rds start-db-instance --region\
+                \ \"$region\" --db-instance-identifier \"$dbid\" >/dev/null\n\nstatus_after=$(aws rds describe-db-instances --region \"$region\" \\\n  --db-instance-identifier \"$dbid\" \\\n  --query \"\
+                DBInstances[0].DBInstanceStatus\" --output text)\necho \"status_after=$status_after\"\n\nexport db_instance_identifier=\"$dbid\"\nexport region=\"$region\"\nexport status_before=\"$status_before\"\
                 \nexport status_after=\"$status_after\"\n"
               outputs:
                 - db_instance_identifier
