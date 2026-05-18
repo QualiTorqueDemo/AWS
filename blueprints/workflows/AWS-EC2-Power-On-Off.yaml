@@ -8,12 +8,12 @@ metadata:
   blueprint-labels:
     - key: hypervisor
       value: AWS
-      initial-color: '#FF9900'
+      initial-color: orange
     - key: category
       value: Cloud
-      initial-color: '#1E88E5'
+      initial-color: teal
     - key: Shell
-      initial-color: '#4EAA25'
+      initial-color: frogGreen
 workflow:
   scope: env_resource
   resource-types: aws_instance

@@ -9,12 +9,12 @@ metadata:
   blueprint-labels:
     - key: hypervisor
       value: AWS
-      initial-color: '#FF9900'
+      initial-color: orange
     - key: category
       value: Cloud
-      initial-color: '#1E88E5'
+      initial-color: teal
     - key: Terraform
-      initial-color: '#7B42BC'
+      initial-color: pink
 inputs:
   function_name:
     type: string
