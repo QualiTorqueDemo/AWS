@@ -1,5 +1,6 @@
 spec_version: 2
-description: Creates one or more VPC endpoints (Gateway or Interface) to AWS services from within a VPC, so traffic stays on the AWS backbone instead of going out via the IGW.
+description: Creates VPC endpoints to AWS services so internal traffic stays on the AWS backbone instead of going out via the Internet Gateway. Pick a preset for common bundles (S3, EKS, Lambda) or use
+  Custom to define endpoints inline.
 metadata:
   self-service: true
   display-name: AWS VPC Endpoint
@@ -18,18 +19,36 @@ inputs:
   vpc_id:
     type: string
     description: VPC in which to create the endpoints.
-  endpoints:
+  preset:
     type: string
-    description: 'JSON map of endpoint configurations, e.g. {"s3": {"service": "s3", "service_type": "Gateway"}, "ec2": {"service": "ec2", "private_dns_enabled": true}}. See terraform-aws-modules/vpc/aws//modules/vpc-endpoints
-      README for the full schema.'
+    default: S3 (Gateway)
+    description: "Bundle of endpoints to create.\n  - S3 (Gateway): free, single S3 Gateway endpoint (most common starting point).\n  - S3 + DynamoDB (Gateway): the two free Gateway-type services.\n  -\
+      \ EKS essentials (Interface): ec2, ecr.api, ecr.dkr, sts, logs, elasticloadbalancing \u2014 needed by EKS clusters/pods.\n  - Lambda essentials: sts, logs, kms (Interface) + s3 (Gateway).\n  - Custom:\
+      \ provide your own JSON via endpoints_custom."
+    allowed-values:
+      - S3 (Gateway)
+      - S3 + DynamoDB (Gateway)
+      - EKS essentials (Interface)
+      - Lambda essentials
+      - Custom
+  route_table_ids:
+    type: string
+    default: '[]'
+    description: JSON array of route table IDs to attach Gateway endpoints to, e.g. ["rtb-abc","rtb-def"]. REQUIRED for any preset that includes a Gateway endpoint (S3, DynamoDB). Use the AWS-VPC blueprint
+      outputs "private_route_table_ids" and/or "public_route_table_ids".
   subnet_ids:
     type: string
     default: '[]'
-    description: JSON array of subnet IDs for Interface endpoints (private endpoints in those subnets). Ignored for Gateway endpoints (S3, DynamoDB).
+    description: JSON array of subnet IDs where Interface endpoints place their ENIs. Use private subnets so traffic stays internal. Ignored by Gateway endpoints.
   security_group_ids:
     type: string
     default: '[]'
-    description: JSON array of security group IDs to attach to Interface endpoints. Ignored for Gateway endpoints.
+    description: JSON array of security group IDs to attach to Interface endpoints. Create via the AWS-Security-Group blueprint first. Ignored by Gateway endpoints.
+  endpoints_custom:
+    type: string
+    default: '{}'
+    description: 'Custom endpoints JSON (only used when preset=Custom). Format: {"<name>": {"service": "<aws-service>", "service_type": "Gateway|Interface", ...}, ...}. For Interface endpoints add "private_dns_enabled":
+      true. For Gateway endpoints add "route_table_ids": [...]. See terraform-aws-modules/vpc-endpoints README.'
   resource_tags:
     type: string
     default: '{}'
@@ -39,9 +58,6 @@ inputs:
 outputs:
   endpoints:
     value: '{{ .grains.vpc-endpoints.outputs.endpoints }}'
-    quick: false
-  security_group_id:
-    value: '{{ .grains.vpc-endpoints.outputs.security_group_id }}'
     quick: true
 grains:
   vpc-endpoints:
@@ -56,7 +72,11 @@ grains:
         auto-tag: true
       inputs:
         - vpc_id: '{{ .inputs.vpc_id }}'
-        - endpoints: '{{ .inputs.endpoints }}'
+        - endpoints: '{% case inputs.preset %}{% when ''S3 (Gateway)'' %}{"s3":{"service":"s3","service_type":"Gateway","route_table_ids":{{ inputs.route_table_ids }}}}{% when ''S3 + DynamoDB (Gateway)''
+            %}{"s3":{"service":"s3","service_type":"Gateway","route_table_ids":{{ inputs.route_table_ids }}},"dynamodb":{"service":"dynamodb","service_type":"Gateway","route_table_ids":{{ inputs.route_table_ids
+            }}}}{% when ''EKS essentials (Interface)'' %}{"ec2":{"service":"ec2","service_type":"Interface","private_dns_enabled":true},"ecr_api":{"service":"ecr.api","service_type":"Interface","private_dns_enabled":true},"ecr_dkr":{"service":"ecr.dkr","service_type":"Interface","private_dns_enabled":true},"sts":{"service":"sts","service_type":"Interface","private_dns_enabled":true},"logs":{"service":"logs","service_type":"Interface","private_dns_enabled":true},"elasticloadbalancing":{"service":"elasticloadbalancing","service_type":"Interface","private_dns_enabled":true}}{%
+            when ''Lambda essentials'' %}{"sts":{"service":"sts","service_type":"Interface","private_dns_enabled":true},"logs":{"service":"logs","service_type":"Interface","private_dns_enabled":true},"kms":{"service":"kms","service_type":"Interface","private_dns_enabled":true},"s3":{"service":"s3","service_type":"Gateway","route_table_ids":{{
+            inputs.route_table_ids }}}}{% when ''Custom'' %}{{ inputs.endpoints_custom }}{% endcase %}'
         - subnet_ids: '{{ .inputs.subnet_ids }}'
         - security_group_ids: '{{ .inputs.security_group_ids }}'
         - tags: '{{ .inputs.resource_tags }}'
@@ -70,5 +90,4 @@ grains:
         - timeouts: '{}'
       outputs:
         - endpoints
-        - security_group_id
     tf-version: 1.5.7
