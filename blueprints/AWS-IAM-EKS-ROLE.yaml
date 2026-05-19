@@ -66,4 +66,4 @@ grains:
         - role_permissions_boundary_arn: 'null'
       outputs:
         - iam_role_arn
-    tf-version: 1.5.7
+    tf-version: 1.15.1

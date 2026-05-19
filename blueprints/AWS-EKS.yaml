@@ -75,7 +75,7 @@ outputs:
 grains:
   terraform-aws-eks:
     kind: terraform
-    tf-version: 1.5.7
+    tf-version: 1.15.1
     spec:
       source:
         store: AWS

@@ -76,4 +76,4 @@ grains:
       outputs:
         - lambda_alias_arn
         - lambda_alias_invoke_arn
-    tf-version: 1.5.7
+    tf-version: 1.15.1

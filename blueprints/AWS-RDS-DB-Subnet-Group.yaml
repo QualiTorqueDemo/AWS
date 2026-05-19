@@ -55,4 +55,4 @@ grains:
         - use_name_prefix: 'false'
       outputs:
         - db_subnet_group_id
-    tf-version: 1.5.7
+    tf-version: 1.15.1

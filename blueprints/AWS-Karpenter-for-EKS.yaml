@@ -114,4 +114,4 @@ grains:
         - iam_role_arn
         - node_iam_role_arn
         - queue_name
-    tf-version: 1.5.7
+    tf-version: 1.15.1
