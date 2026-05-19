@@ -36,28 +36,28 @@ inputs:
     description: Container port your app listens on (App Runner routes inbound HTTPS to this).
   cpu:
     type: string
-    default: '1024'
-    description: vCPU allocation per instance. 256 = 0.25 vCPU, 512 = 0.5 vCPU, 1024 = 1 vCPU, 2048 = 2 vCPU, 4096 = 4 vCPU. Higher = more performance and cost.
+    default: 1 vCPU
+    description: vCPU allocation per instance. Higher = more compute and cost.
     allowed-values:
-      - '256'
-      - '512'
-      - '1024'
-      - '2048'
-      - '4096'
+      - 0.25 vCPU
+      - 0.5 vCPU
+      - 1 vCPU
+      - 2 vCPU
+      - 4 vCPU
   memory:
     type: string
-    default: '2048'
-    description: 'Memory per instance in MB. Must be compatible with CPU choice; AWS validates at apply time. Common: 512, 1024, 2048, 3072, 4096, 6144, 8192, 10240, 12288.'
+    default: 2 GB
+    description: "Memory per instance. Must be compatible with the CPU choice \u2014 AWS validates at apply time. (e.g. 4 vCPU needs at least 8 GB.)"
     allowed-values:
-      - '512'
-      - '1024'
-      - '2048'
-      - '3072'
-      - '4096'
-      - '6144'
-      - '8192'
-      - '10240'
-      - '12288'
+      - 0.5 GB
+      - 1 GB
+      - 2 GB
+      - 3 GB
+      - 4 GB
+      - 6 GB
+      - 8 GB
+      - 10 GB
+      - 12 GB
   resource_tags:
     type: string
     default: '{}'
