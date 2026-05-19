@@ -93,7 +93,7 @@ grains:
       inputs:
         - service_name: '{{ .inputs.service_name }}'
         - source_configuration: '{"image_repository":{"image_identifier":"{{ .inputs.image_identifier }}","image_repository_type":"{{ .inputs.image_repository_type }}","image_configuration":{"port":"{{
-            .inputs.port }}"}},"auto_deployments_enabled":false,"authentication_configuration":{"access_role_arn":"placeholder"}}'
+            .inputs.port }}"}},"auto_deployments_enabled":false}'
         - instance_configuration: '{"cpu":"{{ .inputs.cpu }}","memory":"{{ .inputs.memory }}"}'
         - tags: '{{ .inputs.resource_tags }}'
         - create: 'true'
@@ -103,7 +103,7 @@ grains:
         - health_check_configuration: '{}'
         - network_configuration: '{}'
         - observability_configuration: '{}'
-        - create_access_iam_role: 'true'
+        - create_access_iam_role: '{% if inputs.image_repository_type == "ECR" %}true{% else %}false{% endif %}'
         - access_iam_role_name: 'null'
         - access_iam_role_use_name_prefix: 'true'
         - access_iam_role_path: /

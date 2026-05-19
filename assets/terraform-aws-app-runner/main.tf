@@ -8,16 +8,22 @@ locals {
   create_service = var.create && var.create_service
 
   # Ensure instance role created is attached even if no values are provided via `var.instance_configuration`
-  instance_configuration = local.create_instance_iam_role ? merge(
+  instance_configuration = merge(
     var.instance_configuration,
-    { instance_role_arn = aws_iam_role.instance[0].arn }
-  ) : var.instance_configuration
+    local.create_instance_iam_role ? {
+      instance_role_arn = aws_iam_role.instance[0].arn
+    } : {}
+  )
 
   # Ensure access role created is attached even if no values are provided via `var.source_configuration`
-  source_configuration = local.create_access_iam_role ? merge(
+  # Using merge() with a conditional second argument keeps both branches dynamically typed,
+  # avoiding "Inconsistent conditional result types" when var.source_configuration lacks authentication_configuration.
+  source_configuration = merge(
     var.source_configuration,
-    { authentication_configuration = { access_role_arn = aws_iam_role.access[0].arn } }
-  ) : var.source_configuration
+    local.create_access_iam_role ? {
+      authentication_configuration = { access_role_arn = aws_iam_role.access[0].arn }
+    } : {}
+  )
 
   # Ensure VPC connector created is attached even if no values are provided via `var.network_configuration`
   network_configuration = local.create_vpc_connector ? merge(
