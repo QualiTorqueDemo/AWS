@@ -1,0 +1,92 @@
+spec_version: 2
+description: Creates an AWS CloudWatch Logs log group with configurable retention. Use for application logs, Lambda logs, EKS control-plane logs, etc.
+metadata:
+  self-service: true
+  display-name: AWS CloudWatch Logs
+  icon:
+    path: graphics/AWS-Light.svg
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+      initial-color: aws
+    - key: category
+      value: Cloud
+      initial-color: teal
+    - key: Terraform
+      initial-color: pink
+inputs:
+  name:
+    type: string
+    description: Log group name (e.g. /aws/lambda/my-function, /myapp/web). Forward slashes are conventional.
+  retention_in_days:
+    type: string
+    default: '30'
+    description: Days to retain log events. 0 = never expire. Valid AWS values only.
+    allowed-values:
+      - '0'
+      - '1'
+      - '3'
+      - '5'
+      - '7'
+      - '14'
+      - '30'
+      - '60'
+      - '90'
+      - '120'
+      - '150'
+      - '180'
+      - '365'
+      - '400'
+      - '545'
+      - '731'
+      - '1096'
+      - '1827'
+      - '2192'
+      - '2557'
+      - '2922'
+      - '3288'
+      - '3653'
+  log_group_class:
+    type: string
+    default: STANDARD
+    description: STANDARD = real-time access, full feature set. INFREQUENT_ACCESS = cheaper for rarely-queried logs (no metric filters, alarms, or subscriptions).
+    allowed-values:
+      - STANDARD
+      - INFREQUENT_ACCESS
+  resource_tags:
+    type: string
+    default: '{}'
+    description: JSON map of tags applied to the log group.
+  agent:
+    type: agent
+outputs:
+  log_group_arn:
+    value: '{{ .grains.log_group.outputs.cloudwatch_log_group_arn }}'
+    quick: true
+  log_group_name:
+    value: '{{ .grains.log_group.outputs.cloudwatch_log_group_name }}'
+    quick: false
+grains:
+  log_group:
+    kind: terraform
+    tf-version: 1.5.7
+    spec:
+      source:
+        store: AWS
+        path: assets/terraform-aws-cloudwatch-log-group
+      agent:
+        name: '{{ .inputs.agent }}'
+      tags:
+        auto-tag: true
+      inputs:
+        - name: '{{ .inputs.name }}'
+        - retention_in_days: '{{ .inputs.retention_in_days }}'
+        - log_group_class: '{{ .inputs.log_group_class }}'
+        - tags: '{{ .inputs.resource_tags }}'
+        - create: 'true'
+        - name_prefix: 'null'
+        - kms_key_id: 'null'
+        - skip_destroy: 'false'
+      outputs:
+        - cloudwatch_log_group_arn
+        - cloudwatch_log_group_name

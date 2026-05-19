@@ -1,0 +1,111 @@
+spec_version: 2
+description: Creates a private Amazon ECR repository for storing Docker container images. Immutable tags and scan-on-push enabled by default for production-style security defaults.
+metadata:
+  self-service: true
+  display-name: AWS ECR
+  icon:
+    path: graphics/AWS-Light.svg
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+      initial-color: aws
+    - key: category
+      value: Cloud
+      initial-color: teal
+    - key: Terraform
+      initial-color: pink
+inputs:
+  repository_name:
+    type: string
+    description: ECR repository name (e.g. "my-app", "team-a/api"). Lowercase letters, numbers, hyphens, periods, underscores, slashes.
+  repository_image_tag_mutability:
+    type: string
+    default: IMMUTABLE
+    description: "IMMUTABLE prevents tag overwrite (recommended \u2014 image:v1 always means the same image). MUTABLE allows overwriting tags (e.g. for floating tags like :latest)."
+    allowed-values:
+      - IMMUTABLE
+      - MUTABLE
+  repository_image_scan_on_push:
+    type: string
+    default: 'true'
+    description: Scan images for vulnerabilities automatically when they are pushed.
+    allowed-values:
+      - 'true'
+      - 'false'
+  repository_encryption_type:
+    type: string
+    default: AES256
+    description: AES256 = standard encryption with AWS-managed keys (free). KMS = customer-managed KMS keys (more control, additional cost).
+    allowed-values:
+      - AES256
+      - KMS
+  repository_force_delete:
+    type: string
+    default: 'false'
+    description: If true, terraform destroy deletes the repository even if it contains images. Convenient for dev/test, dangerous for prod.
+    allowed-values:
+      - 'true'
+      - 'false'
+  resource_tags:
+    type: string
+    default: '{}'
+    description: JSON map of tags applied to the repository.
+  agent:
+    type: agent
+outputs:
+  repository_arn:
+    value: '{{ .grains.ecr.outputs.repository_arn }}'
+    quick: true
+  repository_url:
+    value: '{{ .grains.ecr.outputs.repository_url }}'
+    quick: true
+  repository_name:
+    value: '{{ .grains.ecr.outputs.repository_name }}'
+    quick: false
+grains:
+  ecr:
+    kind: terraform
+    tf-version: 1.5.7
+    spec:
+      source:
+        store: AWS
+        path: assets/terraform-aws-ecr
+      agent:
+        name: '{{ .inputs.agent }}'
+      tags:
+        auto-tag: true
+      inputs:
+        - repository_name: '{{ .inputs.repository_name }}'
+        - repository_image_tag_mutability: '{{ .inputs.repository_image_tag_mutability }}'
+        - repository_image_scan_on_push: '{{ .inputs.repository_image_scan_on_push }}'
+        - repository_encryption_type: '{{ .inputs.repository_encryption_type }}'
+        - repository_force_delete: '{{ .inputs.repository_force_delete }}'
+        - tags: '{{ .inputs.resource_tags }}'
+        - create: 'true'
+        - repository_type: private
+        - region: 'null'
+        - create_repository: 'true'
+        - repository_kms_key: 'null'
+        - repository_policy: 'null'
+        - repository_image_tag_mutability_exclusion_filter: '[]'
+        - attach_repository_policy: 'false'
+        - create_repository_policy: 'false'
+        - repository_read_access_arns: '[]'
+        - repository_lambda_read_access_arns: '[]'
+        - repository_read_write_access_arns: '[]'
+        - repository_policy_statements: '[]'
+        - create_lifecycle_policy: 'false'
+        - repository_lifecycle_policy: 'null'
+        - public_repository_catalog_data: '{}'
+        - create_registry_policy: 'false'
+        - registry_policy: 'null'
+        - registry_pull_through_cache_rules: '{}'
+        - manage_registry_scanning_configuration: 'false'
+        - registry_scan_type: ENHANCED
+        - registry_scan_rules: '[]'
+        - create_registry_replication_configuration: 'false'
+        - registry_replication_rules: '[]'
+      outputs:
+        - repository_arn
+        - repository_url
+        - repository_name

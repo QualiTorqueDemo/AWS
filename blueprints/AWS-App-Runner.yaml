@@ -1,0 +1,138 @@
+spec_version: 2
+description: "Creates an AWS App Runner service from a Docker container image. App Runner is a fully managed service for running containerized web apps and APIs \u2014 no infrastructure to manage. Supports\
+  \ auto-scaling, HTTPS, and observability out of the box."
+metadata:
+  self-service: true
+  display-name: AWS App Runner
+  icon:
+    path: graphics/AWS-Light.svg
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+      initial-color: aws
+    - key: category
+      value: Cloud
+      initial-color: teal
+    - key: Terraform
+      initial-color: pink
+inputs:
+  service_name:
+    type: string
+    description: App Runner service name (1-40 chars, letters/numbers/hyphens/underscores). Becomes part of the public URL.
+  image_identifier:
+    type: string
+    default: public.ecr.aws/aws-containers/hello-app-runner:latest
+    description: 'Container image reference. Examples: "public.ecr.aws/aws-containers/hello-app-runner:latest" for ECR Public, "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app:v1" for private ECR.'
+  image_repository_type:
+    type: string
+    default: ECR_PUBLIC
+    description: ECR_PUBLIC = image from ECR Public Gallery (no auth required). ECR = image from private ECR repository in your account (App Runner accesses via IAM role).
+    allowed-values:
+      - ECR_PUBLIC
+      - ECR
+  port:
+    type: string
+    default: '8000'
+    description: Container port your app listens on (App Runner routes inbound HTTPS to this).
+  cpu:
+    type: string
+    default: '1024'
+    description: vCPU allocation per instance. 256 = 0.25 vCPU, 512 = 0.5 vCPU, 1024 = 1 vCPU, 2048 = 2 vCPU, 4096 = 4 vCPU. Higher = more performance and cost.
+    allowed-values:
+      - '256'
+      - '512'
+      - '1024'
+      - '2048'
+      - '4096'
+  memory:
+    type: string
+    default: '2048'
+    description: 'Memory per instance in MB. Must be compatible with CPU choice; AWS validates at apply time. Common: 512, 1024, 2048, 3072, 4096, 6144, 8192, 10240, 12288.'
+    allowed-values:
+      - '512'
+      - '1024'
+      - '2048'
+      - '3072'
+      - '4096'
+      - '6144'
+      - '8192'
+      - '10240'
+      - '12288'
+  resource_tags:
+    type: string
+    default: '{}'
+    description: JSON map of tags applied to the service.
+  agent:
+    type: agent
+outputs:
+  service_arn:
+    value: '{{ .grains.app_runner.outputs.service_arn }}'
+    quick: true
+  service_url:
+    value: '{{ .grains.app_runner.outputs.service_url }}'
+    quick: true
+  service_id:
+    value: '{{ .grains.app_runner.outputs.service_id }}'
+    quick: false
+  service_status:
+    value: '{{ .grains.app_runner.outputs.service_status }}'
+    quick: false
+grains:
+  app_runner:
+    kind: terraform
+    tf-version: 1.5.7
+    spec:
+      source:
+        store: AWS
+        path: assets/terraform-aws-app-runner
+      agent:
+        name: '{{ .inputs.agent }}'
+      tags:
+        auto-tag: true
+      inputs:
+        - service_name: '{{ .inputs.service_name }}'
+        - source_configuration: '{"image_repository":{"image_identifier":"{{ .inputs.image_identifier }}","image_repository_type":"{{ .inputs.image_repository_type }}","image_configuration":{"port":"{{
+            .inputs.port }}"}},"auto_deployments_enabled":false}'
+        - instance_configuration: '{"cpu":"{{ .inputs.cpu }}","memory":"{{ .inputs.memory }}"}'
+        - tags: '{{ .inputs.resource_tags }}'
+        - create: 'true'
+        - create_service: 'true'
+        - auto_scaling_configuration_arn: 'null'
+        - encryption_configuration: '{}'
+        - health_check_configuration: '{}'
+        - network_configuration: '{}'
+        - observability_configuration: '{}'
+        - create_access_iam_role: 'true'
+        - access_iam_role_name: 'null'
+        - access_iam_role_use_name_prefix: 'true'
+        - access_iam_role_path: /
+        - access_iam_role_description: 'null'
+        - access_iam_role_permissions_boundary: 'null'
+        - private_ecr_arn: 'null'
+        - access_iam_role_policies: '{}'
+        - create_instance_iam_role: 'true'
+        - instance_iam_role_name: 'null'
+        - instance_iam_role_use_name_prefix: 'true'
+        - instance_iam_role_path: /
+        - instance_iam_role_description: 'null'
+        - instance_iam_role_permissions_boundary: 'null'
+        - instance_iam_role_policies: '{}'
+        - instance_policy_statements: '[]'
+        - create_ingress_vpc_connection: 'false'
+        - ingress_vpc_id: 'null'
+        - ingress_vpc_endpoint_id: 'null'
+        - create_custom_domain_association: 'false'
+        - domain_name: 'null'
+        - enable_www_subdomain: 'false'
+        - create_vpc_connector: 'false'
+        - vpc_connector_name: 'null'
+        - vpc_connector_subnets: '[]'
+        - vpc_connector_security_groups: '[]'
+        - connections: '{}'
+        - auto_scaling_configurations: '{}'
+        - enable_observability_configuration: 'false'
+      outputs:
+        - service_arn
+        - service_url
+        - service_id
+        - service_status
