@@ -5,7 +5,7 @@ metadata:
   self-service: true
   display-name: AWS App Runner
   icon:
-    path: graphics/AWS-Light.svg
+    path: graphics/App Runner.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS
