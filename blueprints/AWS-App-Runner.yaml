@@ -69,8 +69,9 @@ outputs:
     value: '{{ .grains.app_runner.outputs.service_arn }}'
     quick: true
   service_url:
-    value: '{{ .grains.app_runner.outputs.service_url }}'
+    value: https://{{ .grains.app_runner.outputs.service_url }}
     quick: true
+    kind: link
   service_id:
     value: '{{ .grains.app_runner.outputs.service_id }}'
     quick: false

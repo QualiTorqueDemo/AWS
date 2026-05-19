@@ -57,8 +57,9 @@ outputs:
     value: '{{ .grains.ecr.outputs.repository_arn }}'
     quick: true
   repository_url:
-    value: '{{ .grains.ecr.outputs.repository_url }}'
+    value: https://{{ .grains.ecr.outputs.repository_url }}
     quick: true
+    kind: link
   repository_name:
     value: '{{ .grains.ecr.outputs.repository_name }}'
     quick: false
@@ -96,7 +97,7 @@ grains:
         - repository_policy_statements: '{}'
         - create_lifecycle_policy: 'false'
         - repository_lifecycle_policy: 'null'
-        - public_repository_catalog_data: '{}'
+        - public_repository_catalog_data: 'null'
         - create_registry_policy: 'false'
         - registry_policy: 'null'
         - registry_pull_through_cache_rules: '{}'
