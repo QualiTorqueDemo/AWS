@@ -74,4 +74,4 @@ grains:
         - use_image_tag: 'true'
       outputs:
         - image_uri
-    tf-version: 1.15.1
+    tf-version: 1.5.7

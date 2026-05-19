@@ -121,4 +121,4 @@ grains:
         - public_subnets
         - database_subnets
         - database_subnet_group_name
-    tf-version: 1.15.1
+    tf-version: 1.5.7

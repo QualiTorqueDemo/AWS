@@ -49,7 +49,7 @@ outputs:
 grains:
   complete_s3_bucket:
     kind: terraform
-    tf-version: 1.15.1
+    tf-version: 1.5.7
     spec:
       source:
         store: AWS

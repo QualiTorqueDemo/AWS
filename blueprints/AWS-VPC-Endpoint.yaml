@@ -90,4 +90,4 @@ grains:
         - timeouts: '{}'
       outputs:
         - endpoints
-    tf-version: 1.15.1
+    tf-version: 1.5.7

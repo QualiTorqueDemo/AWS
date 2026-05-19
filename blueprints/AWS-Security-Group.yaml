@@ -66,7 +66,7 @@ grains:
         - tags: '{{ .inputs.resource_tags }}'
       outputs:
         - security_group_id
-    tf-version: 1.15.1
+    tf-version: 1.5.7
 launch-form:
   categories:
     - name: Basic Configuration

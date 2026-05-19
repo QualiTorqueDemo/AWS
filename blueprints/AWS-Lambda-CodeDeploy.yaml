@@ -105,4 +105,4 @@ grains:
       outputs:
         - codedeploy_app_name
         - codedeploy_deployment_group_name
-    tf-version: 1.15.1
+    tf-version: 1.5.7
