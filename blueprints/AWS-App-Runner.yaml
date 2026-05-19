@@ -93,7 +93,7 @@ grains:
       inputs:
         - service_name: '{{ .inputs.service_name }}'
         - source_configuration: '{"image_repository":{"image_identifier":"{{ .inputs.image_identifier }}","image_repository_type":"{{ .inputs.image_repository_type }}","image_configuration":{"port":"{{
-            .inputs.port }}"}},"auto_deployments_enabled":false}'
+            .inputs.port }}"}},"auto_deployments_enabled":false,"authentication_configuration":{"access_role_arn":"placeholder"}}'
         - instance_configuration: '{"cpu":"{{ .inputs.cpu }}","memory":"{{ .inputs.memory }}"}'
         - tags: '{{ .inputs.resource_tags }}'
         - create: 'true'
