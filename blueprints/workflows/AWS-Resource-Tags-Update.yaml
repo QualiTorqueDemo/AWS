@@ -1,0 +1,141 @@
+spec_version: 2
+description: Add or remove AWS resource tags on a selected resource. Works across any AWS resource that exposes an ARN (EC2, RDS, S3, EKS, Lambda, ECR, Secrets Manager, CloudWatch, App Runner) using the unified Resource Groups Tagging API.
+metadata:
+  self-service: false
+  display-name: AWS Resource Tags Update (Shell)
+  icon:
+    path: graphics/AWS-Dark.svg
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+      initial-color: aws
+    - key: category
+      value: Cloud
+      initial-color: teal
+    - key: Shell
+      initial-color: frogGreen
+workflow:
+  scope: env_resource
+  resource-types: aws_instance,aws_db_instance,aws_rds_cluster,aws_s3_bucket,aws_eks_cluster,aws_lambda_function,aws_ecr_repository,aws_secretsmanager_secret,aws_cloudwatch_log_group,aws_apprunner_service,aws_security_group
+  labels-selector: hypervisor:AWS
+  triggers:
+    - type: manual
+  timeout: '10'
+inputs:
+  agent:
+    type: agent
+  action:
+    type: string
+    default: add_tags
+    description: add_tags merges the provided tags into the resource (existing keys are overwritten). remove_tags strips the listed keys from the resource.
+    allowed-values:
+      - add_tags
+      - remove_tags
+  tags:
+    type: string
+    default: '{}'
+    description: 'For add_tags: a JSON map of tag keys to values, e.g. {"Owner":"alice","Env":"prod"}. For remove_tags: a JSON array of tag keys to strip, e.g. ["Owner","Env"].'
+outputs:
+  resource_arn:
+    value: '{{ .grains.tag_update.activities.deploy.commands.tag.outputs.resource_arn }}'
+    quick: true
+  region:
+    value: '{{ .grains.tag_update.activities.deploy.commands.tag.outputs.region }}'
+    quick: true
+  action_taken:
+    value: '{{ .grains.tag_update.activities.deploy.commands.tag.outputs.action_taken }}'
+    quick: true
+  tags_keys:
+    value: '{{ .grains.tag_update.activities.deploy.commands.tag.outputs.tags_keys }}'
+    quick: true
+grains:
+  tag_update:
+    kind: shell
+    spec:
+      agent:
+        name: '{{ .inputs.agent }}'
+      activities:
+        deploy:
+          commands:
+            - name: tag
+              command: |
+                set -euo pipefail
+
+                rid="{{ .bindings.resource_id }}"
+                gpath="{{ .bindings.grain_path }}"
+                contract="$CONTRACT_FILE_PATH"
+                action="{{ .inputs.action }}"
+                tags_in='{{ .inputs.tags }}'
+
+                resource_arn=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                  '.resources[]
+                    | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                    | (.attributes.arn // .attributes.ARN // empty)' \
+                  "$contract")
+
+                region=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                  '.resources[]
+                    | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                    | (.attributes.region // .attributes.aws_region // empty)' \
+                  "$contract")
+
+                # S3 buckets do not store a true region attribute; fall back to environment
+                if [ -z "${region:-}" ]; then
+                  region="${AWS_DEFAULT_REGION:-${AWS_REGION:-}}"
+                fi
+
+                if [ -z "${resource_arn:-}" ]; then
+                  echo "Failed to extract resource ARN from contract.json (resource_id=$rid, grain_path=$gpath)."
+                  echo "The selected resource type may not expose .attributes.arn - extend this workflow if needed."
+                  exit 1
+                fi
+                if [ -z "${region:-}" ]; then
+                  echo "Failed to determine AWS region for the selected resource."
+                  exit 1
+                fi
+
+                echo "Target: arn=$resource_arn region=$region action=$action"
+                echo "Input tags: $tags_in"
+
+                if [ "$action" = "add_tags" ]; then
+                  # tags_in is a JSON map - convert to AWS Tags=key=value,key=value form
+                  keys=$(echo "$tags_in" | jq -r 'keys | join(",")')
+                  if [ -z "$keys" ] || [ "$keys" = "null" ]; then
+                    echo "No tags provided to add."
+                    exit 1
+                  fi
+                  echo "Adding tags: $keys"
+                  echo "$tags_in" | jq '.' > /tmp/_tags.json
+                  aws resourcegroupstaggingapi tag-resources --region "$region" \
+                    --resource-arn-list "$resource_arn" \
+                    --tags "$tags_in" >/dev/null
+                  tags_keys="$keys"
+                else
+                  # tags_in is a JSON array of keys
+                  keys=$(echo "$tags_in" | jq -r '. | join(",")')
+                  if [ -z "$keys" ] || [ "$keys" = "null" ]; then
+                    echo "No tag keys provided to remove."
+                    exit 1
+                  fi
+                  echo "Removing tag keys: $keys"
+                  # Build --tag-keys argument as JSON array
+                  aws resourcegroupstaggingapi untag-resources --region "$region" \
+                    --resource-arn-list "$resource_arn" \
+                    --tag-keys "$tags_in" >/dev/null
+                  tags_keys="$keys"
+                fi
+
+                echo "Done. Verifying..."
+                aws resourcegroupstaggingapi get-resources --region "$region" \
+                  --resource-arn-list "$resource_arn" \
+                  --query "ResourceTagMappingList[0].Tags" --output table || true
+
+                export resource_arn="$resource_arn"
+                export region="$region"
+                export action_taken="$action"
+                export tags_keys="$tags_keys"
+              outputs:
+                - resource_arn
+                - region
+                - action_taken
+                - tags_keys

@@ -1,0 +1,145 @@
+spec_version: 2
+description: Resize an AWS EC2 instance by stopping it, changing its instance type, and starting it again.
+metadata:
+  self-service: false
+  display-name: AWS EC2 Resize (Shell)
+  icon:
+    path: graphics/aws_ec2.svg
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+      initial-color: aws
+    - key: category
+      value: Cloud
+      initial-color: teal
+    - key: Shell
+      initial-color: frogGreen
+workflow:
+  scope: env_resource
+  resource-types: aws_instance
+  labels-selector: hypervisor:AWS
+  triggers:
+    - type: manual
+  timeout: '20'
+inputs:
+  agent:
+    type: agent
+  instance_type:
+    type: string
+    description: New EC2 instance type. The instance must be stopped to change type, so this workflow stops it first if needed and starts it back up afterwards.
+    allowed-values:
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+      - m6i.large
+      - m6i.xlarge
+      - m6i.2xlarge
+      - m6i.4xlarge
+      - c6i.large
+      - c6i.xlarge
+      - c6i.2xlarge
+      - r6i.large
+      - r6i.xlarge
+      - r6i.2xlarge
+outputs:
+  instance_id:
+    value: '{{ .grains.ec2_resize.activities.deploy.commands.resize.outputs.instance_id }}'
+    quick: true
+  region:
+    value: '{{ .grains.ec2_resize.activities.deploy.commands.resize.outputs.region }}'
+    quick: true
+  instance_type_before:
+    value: '{{ .grains.ec2_resize.activities.deploy.commands.resize.outputs.instance_type_before }}'
+    quick: true
+  instance_type_after:
+    value: '{{ .grains.ec2_resize.activities.deploy.commands.resize.outputs.instance_type_after }}'
+    quick: true
+  state_after:
+    value: '{{ .grains.ec2_resize.activities.deploy.commands.resize.outputs.state_after }}'
+    quick: true
+grains:
+  ec2_resize:
+    kind: shell
+    spec:
+      agent:
+        name: '{{ .inputs.agent }}'
+      activities:
+        deploy:
+          commands:
+            - name: resize
+              command: |
+                set -euo pipefail
+
+                rid="{{ .bindings.resource_id }}"
+                gpath="{{ .bindings.grain_path }}"
+                contract="$CONTRACT_FILE_PATH"
+                new_type="{{ .inputs.instance_type }}"
+
+                instance_id=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                  '.resources[]
+                    | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                    | (.attributes.id // .attributes.instance_id // .attributes.InstanceId // empty)' \
+                  "$contract")
+
+                region=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                  '.resources[]
+                    | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                    | (.attributes.region // .attributes.aws_region // empty)' \
+                  "$contract")
+
+                if [ -z "${instance_id:-}" ] || [ -z "${region:-}" ]; then
+                  echo "Failed to extract instance_id/region from contract.json (resource_id=$rid, grain_path=$gpath)"
+                  exit 1
+                fi
+
+                echo "Target: instance_id=$instance_id region=$region new_type=$new_type"
+
+                instance_type_before=$(aws ec2 describe-instances --region "$region" --instance-ids "$instance_id" \
+                  --query "Reservations[0].Instances[0].InstanceType" --output text)
+                state_before=$(aws ec2 describe-instances --region "$region" --instance-ids "$instance_id" \
+                  --query "Reservations[0].Instances[0].State.Name" --output text)
+                echo "state_before=$state_before instance_type_before=$instance_type_before"
+
+                if [ "$instance_type_before" = "$new_type" ]; then
+                  echo "Instance is already of type $new_type - nothing to do."
+                  state_after="$state_before"
+                  instance_type_after="$instance_type_before"
+                else
+                  if [ "$state_before" != "stopped" ]; then
+                    echo "Stopping instance before resize..."
+                    aws ec2 stop-instances --region "$region" --instance-ids "$instance_id" >/dev/null
+                    aws ec2 wait instance-stopped --region "$region" --instance-ids "$instance_id"
+                  fi
+
+                  echo "Modifying instance type to $new_type..."
+                  aws ec2 modify-instance-attribute --region "$region" --instance-id "$instance_id" \
+                    --instance-type "{\"Value\":\"$new_type\"}"
+
+                  if [ "$state_before" = "running" ] || [ "$state_before" = "pending" ]; then
+                    echo "Starting instance back up..."
+                    aws ec2 start-instances --region "$region" --instance-ids "$instance_id" >/dev/null
+                    aws ec2 wait instance-running --region "$region" --instance-ids "$instance_id"
+                  fi
+
+                  instance_type_after=$(aws ec2 describe-instances --region "$region" --instance-ids "$instance_id" \
+                    --query "Reservations[0].Instances[0].InstanceType" --output text)
+                  state_after=$(aws ec2 describe-instances --region "$region" --instance-ids "$instance_id" \
+                    --query "Reservations[0].Instances[0].State.Name" --output text)
+                fi
+
+                echo "instance_type_after=$instance_type_after state_after=$state_after"
+
+                export instance_id="$instance_id"
+                export region="$region"
+                export instance_type_before="$instance_type_before"
+                export instance_type_after="$instance_type_after"
+                export state_after="$state_after"
+              outputs:
+                - instance_id
+                - region
+                - instance_type_before
+                - instance_type_after
+                - state_after

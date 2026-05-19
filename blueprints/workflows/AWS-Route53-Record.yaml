@@ -1,0 +1,162 @@
+spec_version: 2
+description: Create, update, or delete a DNS record in an AWS Route53 hosted zone. Runs against a Route53 zone resource in the environment and submits a change-batch via the AWS API.
+metadata:
+  self-service: false
+  display-name: AWS Route53 Record (Shell)
+  icon:
+    path: graphics/AWS-Dark.svg
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+      initial-color: aws
+    - key: category
+      value: Network
+      initial-color: blue
+    - key: Shell
+      initial-color: frogGreen
+workflow:
+  scope: env_resource
+  resource-types: aws_route53_zone
+  labels-selector: hypervisor:AWS
+  triggers:
+    - type: manual
+  timeout: '15'
+inputs:
+  agent:
+    type: agent
+  action:
+    type: string
+    default: UPSERT
+    description: UPSERT creates the record if it does not exist or replaces it if it does. DELETE removes the record (must match the existing record's type, value, and TTL exactly).
+    allowed-values:
+      - UPSERT
+      - DELETE
+  record_name:
+    type: string
+    description: 'Fully qualified record name, e.g. "api.example.com" or "www.example.com". A trailing dot is added automatically if missing.'
+  record_type:
+    type: string
+    default: A
+    description: DNS record type.
+    allowed-values:
+      - A
+      - AAAA
+      - CNAME
+      - TXT
+      - MX
+  record_value:
+    type: string
+    description: 'Record value(s). For multi-value records, separate with commas (e.g. "10.0.0.1,10.0.0.2"). For TXT values that contain spaces, wrap each value in double quotes.'
+  ttl:
+    type: string
+    default: '300'
+    description: Time-to-live in seconds for the record. 60 is the AWS minimum, 300 is a common safe default.
+outputs:
+  zone_id:
+    value: '{{ .grains.r53_record.activities.deploy.commands.change.outputs.zone_id }}'
+    quick: true
+  change_id:
+    value: '{{ .grains.r53_record.activities.deploy.commands.change.outputs.change_id }}'
+    quick: true
+  change_status:
+    value: '{{ .grains.r53_record.activities.deploy.commands.change.outputs.change_status }}'
+    quick: true
+  record_fqdn:
+    value: '{{ .grains.r53_record.activities.deploy.commands.change.outputs.record_fqdn }}'
+    quick: true
+  action_taken:
+    value: '{{ .grains.r53_record.activities.deploy.commands.change.outputs.action_taken }}'
+    quick: false
+grains:
+  r53_record:
+    kind: shell
+    spec:
+      agent:
+        name: '{{ .inputs.agent }}'
+      activities:
+        deploy:
+          commands:
+            - name: change
+              command: |
+                set -euo pipefail
+
+                rid="{{ .bindings.resource_id }}"
+                gpath="{{ .bindings.grain_path }}"
+                contract="$CONTRACT_FILE_PATH"
+                action="{{ .inputs.action }}"
+                rname="{{ .inputs.record_name }}"
+                rtype="{{ .inputs.record_type }}"
+                rvalue="{{ .inputs.record_value }}"
+                ttl="{{ .inputs.ttl }}"
+
+                zone_id=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                  '.resources[]
+                    | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                    | (.attributes.zone_id // .attributes.id // empty)' \
+                  "$contract")
+
+                if [ -z "${zone_id:-}" ]; then
+                  echo "Failed to extract Route53 zone_id from contract.json (resource_id=$rid, grain_path=$gpath)"
+                  exit 1
+                fi
+
+                # Ensure trailing dot on record name
+                case "$rname" in
+                  *.) ;;
+                  *) rname="${rname}." ;;
+                esac
+
+                # Build ResourceRecords JSON from comma-separated values
+                records_json=$(printf '%s' "$rvalue" | awk -v RS=',' '{
+                  gsub(/^[ \t]+|[ \t]+$/, "")
+                  if (length($0) > 0) {
+                    if (NR > 1) printf ","
+                    printf "{\"Value\":\"%s\"}", $0
+                  }
+                }')
+
+                change_batch=$(cat <<JSON
+                {
+                  "Comment": "Torque workflow $action $rname ($rtype)",
+                  "Changes": [
+                    {
+                      "Action": "$action",
+                      "ResourceRecordSet": {
+                        "Name": "$rname",
+                        "Type": "$rtype",
+                        "TTL": $ttl,
+                        "ResourceRecords": [$records_json]
+                      }
+                    }
+                  ]
+                }
+                JSON
+                )
+
+                echo "zone_id=$zone_id action=$action record=$rname type=$rtype ttl=$ttl"
+                echo "ChangeBatch:"
+                echo "$change_batch" | jq .
+
+                tmpfile=$(mktemp)
+                printf '%s' "$change_batch" > "$tmpfile"
+
+                result=$(aws route53 change-resource-record-sets --hosted-zone-id "$zone_id" \
+                  --change-batch "file://$tmpfile")
+                rm -f "$tmpfile"
+
+                change_id=$(echo "$result" | jq -r '.ChangeInfo.Id')
+                change_status=$(echo "$result" | jq -r '.ChangeInfo.Status')
+
+                echo "change_id=$change_id change_status=$change_status"
+
+                export zone_id="$zone_id"
+                export change_id="$change_id"
+                export change_status="$change_status"
+                export record_fqdn="$rname"
+                export action_taken="$action"
+              outputs:
+                - zone_id
+                - change_id
+                - change_status
+                - record_fqdn
+                - action_taken

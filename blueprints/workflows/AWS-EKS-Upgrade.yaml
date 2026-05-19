@@ -1,0 +1,150 @@
+spec_version: 2
+description: Upgrade an AWS EKS cluster's Kubernetes version. Updates the control plane to the target version, waits for it to become ACTIVE, and optionally upgrades all managed node groups to the same version.
+metadata:
+  self-service: false
+  display-name: AWS EKS Upgrade (Shell)
+  icon:
+    path: graphics/AWS EKS.svg
+  blueprint-labels:
+    - key: hypervisor
+      value: AWS
+      initial-color: aws
+    - key: category
+      value: Cloud
+      initial-color: teal
+    - key: Shell
+      initial-color: frogGreen
+workflow:
+  scope: env_resource
+  resource-types: aws_eks_cluster
+  labels-selector: hypervisor:AWS
+  triggers:
+    - type: manual
+  timeout: '120'
+inputs:
+  agent:
+    type: agent
+  target_version:
+    type: string
+    description: Target Kubernetes minor version. AWS allows upgrading by one minor version at a time (e.g. 1.31 -> 1.32). The control plane is upgraded first; node groups follow if enabled.
+    allowed-values:
+      - '1.31'
+      - '1.32'
+      - '1.33'
+      - '1.34'
+  upgrade_nodegroups:
+    type: string
+    default: 'true'
+    description: When true, every managed node group attached to this cluster is upgraded to the same target version after the control plane is ACTIVE. Set to false to upgrade only the control plane.
+    allowed-values:
+      - 'true'
+      - 'false'
+outputs:
+  cluster_name:
+    value: '{{ .grains.eks_upgrade.activities.deploy.commands.upgrade.outputs.cluster_name }}'
+    quick: true
+  region:
+    value: '{{ .grains.eks_upgrade.activities.deploy.commands.upgrade.outputs.region }}'
+    quick: true
+  version_before:
+    value: '{{ .grains.eks_upgrade.activities.deploy.commands.upgrade.outputs.version_before }}'
+    quick: true
+  version_after:
+    value: '{{ .grains.eks_upgrade.activities.deploy.commands.upgrade.outputs.version_after }}'
+    quick: true
+  nodegroups_upgraded:
+    value: '{{ .grains.eks_upgrade.activities.deploy.commands.upgrade.outputs.nodegroups_upgraded }}'
+    quick: false
+grains:
+  eks_upgrade:
+    kind: shell
+    spec:
+      agent:
+        name: '{{ .inputs.agent }}'
+      activities:
+        deploy:
+          commands:
+            - name: upgrade
+              command: |
+                set -euo pipefail
+
+                rid="{{ .bindings.resource_id }}"
+                gpath="{{ .bindings.grain_path }}"
+                contract="$CONTRACT_FILE_PATH"
+                target="{{ .inputs.target_version }}"
+                upgrade_ng="{{ .inputs.upgrade_nodegroups }}"
+
+                cluster_name=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                  '.resources[]
+                    | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                    | (.attributes.name // .attributes.cluster_name // .attributes.id // empty)' \
+                  "$contract")
+
+                region=$(jq -r --arg ResourceId "$rid" --arg GrainPath "$gpath" \
+                  '.resources[]
+                    | select(.identifier == $ResourceId and .grain_path == $GrainPath)
+                    | (.attributes.region // .attributes.aws_region // empty)' \
+                  "$contract")
+
+                if [ -z "${cluster_name:-}" ] || [ -z "${region:-}" ]; then
+                  echo "Failed to extract cluster_name/region from contract.json (resource_id=$rid, grain_path=$gpath)"
+                  exit 1
+                fi
+
+                echo "Target: cluster_name=$cluster_name region=$region target_version=$target"
+
+                version_before=$(aws eks describe-cluster --region "$region" --name "$cluster_name" \
+                  --query "cluster.version" --output text)
+                echo "version_before=$version_before"
+
+                if [ "$version_before" = "$target" ]; then
+                  echo "Cluster is already on $target - skipping control plane upgrade."
+                else
+                  echo "Updating cluster version $version_before -> $target..."
+                  aws eks update-cluster-version --region "$region" --name "$cluster_name" \
+                    --kubernetes-version "$target" >/dev/null
+                  echo "Waiting for cluster to become ACTIVE on $target (may take 20-40 minutes)..."
+                  aws eks wait cluster-active --region "$region" --name "$cluster_name"
+                fi
+
+                version_after=$(aws eks describe-cluster --region "$region" --name "$cluster_name" \
+                  --query "cluster.version" --output text)
+                echo "version_after=$version_after"
+
+                nodegroups_upgraded=""
+                if [ "$upgrade_ng" = "true" ]; then
+                  ngs=$(aws eks list-nodegroups --region "$region" --cluster-name "$cluster_name" \
+                    --query "nodegroups[]" --output text)
+                  if [ -z "$ngs" ]; then
+                    echo "No managed node groups attached - skipping."
+                  else
+                    for ng in $ngs; do
+                      ng_ver=$(aws eks describe-nodegroup --region "$region" --cluster-name "$cluster_name" \
+                        --nodegroup-name "$ng" --query "nodegroup.version" --output text)
+                      if [ "$ng_ver" = "$target" ]; then
+                        echo "Node group $ng already on $target - skipping."
+                        continue
+                      fi
+                      echo "Upgrading node group $ng from $ng_ver to $target..."
+                      aws eks update-nodegroup-version --region "$region" --cluster-name "$cluster_name" \
+                        --nodegroup-name "$ng" --kubernetes-version "$target" >/dev/null
+                      aws eks wait nodegroup-active --region "$region" --cluster-name "$cluster_name" \
+                        --nodegroup-name "$ng"
+                      nodegroups_upgraded="${nodegroups_upgraded}${ng} "
+                    done
+                  fi
+                else
+                  echo "upgrade_nodegroups=false - leaving node groups on their current versions."
+                fi
+
+                export cluster_name="$cluster_name"
+                export region="$region"
+                export version_before="$version_before"
+                export version_after="$version_after"
+                export nodegroups_upgraded="${nodegroups_upgraded:-none}"
+              outputs:
+                - cluster_name
+                - region
+                - version_before
+                - version_after
+                - nodegroups_upgraded
