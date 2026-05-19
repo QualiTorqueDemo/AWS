@@ -4,7 +4,7 @@ metadata:
   self-service: false
   display-name: AWS Route53 Record (Shell)
   icon:
-    path: graphics/AWS-Dark.svg
+    path: graphics/Route 53.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS
