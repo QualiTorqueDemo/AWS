@@ -98,7 +98,7 @@ grains:
         - interpreter: '["/bin/sh","-c"]'
         - run_deployment: 'true'
         - save_deploy_script: 'false'
-        - triggers: '[]'
+        - triggers: '{}'
         - use_existing_app: 'false'
         - use_existing_deployment_group: 'false'
         - wait_deployment_completion: 'true'
