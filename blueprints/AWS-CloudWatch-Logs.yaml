@@ -4,7 +4,7 @@ metadata:
   self-service: true
   display-name: AWS CloudWatch Logs
   icon:
-    path: graphics/AWS-Light.svg
+    path: graphics/CloudWatch.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS

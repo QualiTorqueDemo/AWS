@@ -4,7 +4,7 @@ metadata:
   self-service: true
   display-name: AWS ECR
   icon:
-    path: graphics/AWS-Light.svg
+    path: graphics/Elastic Container Registry.svg
   blueprint-labels:
     - key: hypervisor
       value: AWS
