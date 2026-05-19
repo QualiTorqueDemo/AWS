@@ -12,7 +12,7 @@ metadata:
   blueprint-labels:
     - key: hypervisor
       value: AWS
-      initial-color: orange
+      initial-color: aws
     - key: category
       value: Cloud
       initial-color: teal
