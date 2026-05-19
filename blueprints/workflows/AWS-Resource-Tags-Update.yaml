@@ -33,8 +33,7 @@ inputs:
       - remove_tags
   tags:
     type: string
-    default: '{}'
-    description: 'For add_tags: a JSON map of tag keys to values, e.g. {"Owner":"alice","Env":"prod"}. For remove_tags: a JSON array of tag keys to strip, e.g. ["Owner","Env"].'
+    description: 'For add_tags: comma-separated key=value pairs, e.g. Owner=alice,Env=prod,CostCenter=123. For remove_tags: just comma-separated keys, e.g. Owner,Env. Spaces around keys/values are trimmed. Keys cannot contain = or , and values cannot contain ,.'
 outputs:
   resource_arn:
     value: '{{ .grains.tag_update.activities.deploy.commands.tag.outputs.resource_arn }}'
@@ -85,47 +84,94 @@ grains:
                 fi
 
                 if [ -z "${resource_arn:-}" ]; then
-                  echo "Failed to extract resource ARN from contract.json (resource_id=$rid, grain_path=$gpath)."
+                  echo "ERROR: Failed to extract resource ARN from contract.json (resource_id=$rid, grain_path=$gpath)."
                   echo "The selected resource type may not expose .attributes.arn - extend this workflow if needed."
                   exit 1
                 fi
                 if [ -z "${region:-}" ]; then
-                  echo "Failed to determine AWS region for the selected resource."
+                  echo "ERROR: Failed to determine AWS region for the selected resource."
                   exit 1
                 fi
 
                 echo "Target: arn=$resource_arn region=$region action=$action"
-                echo "Input tags: $tags_in"
+                echo "Input: tags='$tags_in'"
 
-                if [ "$action" = "add_tags" ]; then
-                  # tags_in is a JSON map - convert to AWS Tags=key=value,key=value form
-                  keys=$(echo "$tags_in" | jq -r 'keys | join(",")')
-                  if [ -z "$keys" ] || [ "$keys" = "null" ]; then
-                    echo "No tags provided to add."
-                    exit 1
-                  fi
-                  echo "Adding tags: $keys"
-                  echo "$tags_in" | jq '.' > /tmp/_tags.json
-                  aws resourcegroupstaggingapi tag-resources --region "$region" \
-                    --resource-arn-list "$resource_arn" \
-                    --tags "$tags_in" >/dev/null
-                  tags_keys="$keys"
-                else
-                  # tags_in is a JSON array of keys
-                  keys=$(echo "$tags_in" | jq -r '. | join(",")')
-                  if [ -z "$keys" ] || [ "$keys" = "null" ]; then
-                    echo "No tag keys provided to remove."
-                    exit 1
-                  fi
-                  echo "Removing tag keys: $keys"
-                  # Build --tag-keys argument as JSON array
-                  aws resourcegroupstaggingapi untag-resources --region "$region" \
-                    --resource-arn-list "$resource_arn" \
-                    --tag-keys "$tags_in" >/dev/null
-                  tags_keys="$keys"
+                if [ -z "${tags_in:-}" ]; then
+                  echo "ERROR: 'tags' input is empty."
+                  exit 1
                 fi
 
-                echo "Done. Verifying..."
+                if [ "$action" = "add_tags" ]; then
+                  # Expect: key1=value1,key2=value2 (CSV of key=value pairs)
+                  # Validate every comma-separated chunk contains exactly one '='
+                  if ! printf '%s' "$tags_in" | awk -v RS=',' '
+                    {
+                      gsub(/^[ \t]+|[ \t]+$/, "")
+                      if (length($0) == 0) { bad=1; exit }
+                      n = gsub(/=/, "=")
+                      if (n != 1) { bad=1; exit }
+                      split($0, parts, "=")
+                      if (length(parts[1]) == 0) { bad=1; exit }
+                    }
+                    END { if (bad) exit 1 }
+                  '; then
+                    echo "ERROR: tags input is not in 'key=value,key=value' format."
+                    echo "       You provided: '$tags_in'"
+                    echo "       Example: Owner=alice,Env=prod"
+                    exit 1
+                  fi
+
+                  # Build JSON map for AWS CLI --tags
+                  tags_json=$(printf '%s' "$tags_in" | awk -v RS=',' '
+                    BEGIN { printf "{" }
+                    {
+                      gsub(/^[ \t]+|[ \t]+$/, "")
+                      eq = index($0, "=")
+                      key = substr($0, 1, eq - 1)
+                      val = substr($0, eq + 1)
+                      gsub(/^[ \t]+|[ \t]+$/, "", key)
+                      gsub(/^[ \t]+|[ \t]+$/, "", val)
+                      if (NR > 1) printf ","
+                      gsub(/"/, "\\\"", val)
+                      printf "\"%s\":\"%s\"", key, val
+                    }
+                    END { printf "}" }
+                  ')
+
+                  keys=$(printf '%s' "$tags_json" | jq -r 'keys | join(",")')
+                  echo "Adding tags ($keys): $tags_json"
+                  aws resourcegroupstaggingapi tag-resources --region "$region" \
+                    --resource-arn-list "$resource_arn" \
+                    --tags "$tags_json" >/dev/null
+                  tags_keys="$keys"
+                else
+                  # remove_tags: expect CSV of keys, e.g. "Owner,Env"
+                  # Strip whitespace, drop empties
+                  keys_csv=$(printf '%s' "$tags_in" | awk -v RS=',' '
+                    {
+                      gsub(/^[ \t]+|[ \t]+$/, "")
+                      if (length($0) == 0) next
+                      if (out != "") out = out ","
+                      out = out $0
+                    }
+                    END { print out }
+                  ')
+                  if [ -z "$keys_csv" ]; then
+                    echo "ERROR: no valid tag keys provided to remove."
+                    echo "       Example: Owner,Env"
+                    exit 1
+                  fi
+                  # AWS CLI --tag-keys expects space-separated shorthand
+                  keys_args=$(printf '%s' "$keys_csv" | tr ',' ' ')
+                  echo "Removing tag keys: $keys_csv"
+                  # shellcheck disable=SC2086
+                  aws resourcegroupstaggingapi untag-resources --region "$region" \
+                    --resource-arn-list "$resource_arn" \
+                    --tag-keys $keys_args >/dev/null
+                  tags_keys="$keys_csv"
+                fi
+
+                echo "Done. Current tags on resource:"
                 aws resourcegroupstaggingapi get-resources --region "$region" \
                   --resource-arn-list "$resource_arn" \
                   --query "ResourceTagMappingList[0].Tags" --output table || true

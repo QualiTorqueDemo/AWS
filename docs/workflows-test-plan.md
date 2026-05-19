@@ -134,14 +134,14 @@ Reuse the EC2 env from Test 1 (running, currently `t3.medium`).
 2. Inputs:
    - `agent`: `demo-prod`
    - `action`: `add_tags`
-   - `tags`: `{"Owner":"alice","Env":"test"}`
+   - `tags`: `Owner=alice,Env=test`
 3. Launch.
 
 **Verify:**
 
 4. Activity Feed contains:
    - `Target: arn=arn:aws:ec2:... region=... action=add_tags`
-   - `Adding tags: Env,Owner`
+   - `Adding tags (Env,Owner): {"Owner":"alice","Env":"test"}`
    - A formatted verification table at the end showing both keys present.
 5. Outputs: `tags_keys = Env,Owner`, `action_taken = add_tags`.
 6. In AWS console → EC2 → the instance → Tags tab: `Owner=alice` and `Env=test` both visible alongside the Torque-auto tags.
@@ -152,7 +152,7 @@ Reuse the EC2 env from Test 1 (running, currently `t3.medium`).
 
 1. Same workflow, inputs:
    - `action`: `add_tags`
-   - `tags`: `{"Owner":"bob","Team":"platform"}`
+   - `tags`: `Owner=bob,Team=platform`
 2. Launch.
 
 **Verify:**
@@ -168,7 +168,7 @@ Reuse the EC2 env from Test 1 (running, currently `t3.medium`).
 
 1. Same workflow, inputs:
    - `action`: `remove_tags`
-   - `tags`: `["Team"]`   *(JSON array, not map!)*
+   - `tags`: `Team`
 2. Launch.
 
 **Verify:**
@@ -186,7 +186,7 @@ Reuse the EC2 env from Test 1 (running, currently `t3.medium`).
 3. On the bucket resource card, kebab → **Run workflow** → **AWS Resource Tags Update**.
 4. Inputs:
    - `action`: `add_tags`
-   - `tags`: `{"CostCenter":"123"}`
+   - `tags`: `CostCenter=123`
 5. Launch.
 
 **Verify:**
@@ -198,7 +198,7 @@ This confirms the ARN extractor works for non-EC2 resources.
 
 ### Cleanup for Test 2
 
-1. Run Test 2.3 again with `tags = ["Owner","Env"]` to leave the EC2 instance clean.
+1. Run Test 2.3 again with `tags = Owner,Env` to leave the EC2 instance clean.
 2. End the S3 env from Test 2.4 (it'll cost <$0.01 per day, but tidy up).
 3. **Do not** end the EC2 env yet if you want to keep it for the smoke test at the end — otherwise end it now.
 
@@ -404,8 +404,8 @@ A quick, cheap, end-to-end check across EC2 + Tags. No Route53 zone or EKS neede
 1. Launch `AWS EC2 Instance` with `instance_type=t3.micro`, a valid `subnet_id`.
 2. Wait for Active.
 3. Run **AWS EC2 Resize** → `t3.small`. Confirm Outputs match (`instance_type_after=t3.small`).
-4. Run **AWS Resource Tags Update** → `add_tags`, `{"Owner":"smoke","Test":"yes"}`. Confirm in AWS console.
-5. Run **AWS Resource Tags Update** → `remove_tags`, `["Test"]`. Confirm `Test` is gone.
+4. Run **AWS Resource Tags Update** → `add_tags`, `Owner=smoke,Test=yes`. Confirm in AWS console.
+5. Run **AWS Resource Tags Update** → `remove_tags`, `Test`. Confirm `Test` is gone.
 6. End env.
 
 If all 6 steps succeed, the resource-action workflow path is healthy.
