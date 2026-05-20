@@ -35,10 +35,29 @@ inputs:
       - AL2023_x86_64_NVIDIA
       - BOTTLEROCKET_x86_64
       - BOTTLEROCKET_ARM_64
-  instance_types:
+  instance_type:
     type: string
-    default: '["t3.medium"]'
-    description: JSON array of EC2 instance types to consider for nodes, e.g. ["t3.medium","t3.large"]. The first one that has capacity is used (especially relevant for SPOT).
+    default: t3.medium
+    description: EC2 instance type for the worker nodes. t3 = burstable, m6i = general purpose, c6i = compute optimized, r6i = memory optimized. AL2023_ARM_64 AMI types require Graviton instances (t4g/m7g/c7g/r7g).
+    allowed-values:
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+      - m6i.large
+      - m6i.xlarge
+      - m6i.2xlarge
+      - m6i.4xlarge
+      - c6i.large
+      - c6i.xlarge
+      - c6i.2xlarge
+      - r6i.large
+      - r6i.xlarge
+      - r6i.2xlarge
+      - t4g.medium
+      - t4g.large
+      - m7g.large
+      - m7g.xlarge
   capacity_type:
     type: string
     default: ON_DEMAND
@@ -92,7 +111,7 @@ grains:
         - name: '{{ .inputs.name }}'
         - subnet_ids: '{{ .inputs.subnet_ids }}'
         - ami_type: '{{ .inputs.ami_type }}'
-        - instance_types: '{{ .inputs.instance_types }}'
+        - instance_types: '["{{ .inputs.instance_type }}"]'
         - capacity_type: '{{ .inputs.capacity_type }}'
         - desired_size: '{{ .inputs.desired_size }}'
         - min_size: '{{ .inputs.min_size }}'
