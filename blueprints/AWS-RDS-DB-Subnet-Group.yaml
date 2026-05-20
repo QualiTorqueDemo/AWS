@@ -20,7 +20,7 @@ inputs:
     description: DB subnet group name (1-255 chars).
   subnet_ids:
     type: string
-    description: JSON array of subnet IDs, e.g. ["subnet-abc","subnet-def"]. Use at least two subnets in different AZs for multi-AZ RDS.
+    description: Comma-separated subnet IDs, e.g. subnet-abc,subnet-def. Use at least 2 subnets in different AZs for multi-AZ RDS.
   description:
     type: string
     default: DB subnet group managed by Torque
@@ -48,7 +48,7 @@ grains:
         auto-tag: true
       inputs:
         - name: '{{ .inputs.name }}'
-        - subnet_ids: '{{ .inputs.subnet_ids }}'
+        - subnet_ids: '[{% assign __ids = inputs.subnet_ids | split: "," %}{% for __id in __ids %}"{{ __id | strip }}"{% unless forloop.last %},{% endunless %}{% endfor %}]'
         - description: '{{ .inputs.description }}'
         - tags: '{{ .inputs.resource_tags }}'
         - create: 'true'

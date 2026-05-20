@@ -318,7 +318,7 @@ Three sub-tests: 4.1 full upgrade, 4.2 idempotent, 4.3 control-plane only.
    - `cluster_name`: `torque-test-upgrade`
    - `cluster_version`: `1.31`   *(intentionally one minor behind so we have room to upgrade twice)*
    - `vpc_id`: an existing VPC with private subnets
-   - `subnet_ids`: 2+ private subnet IDs across different AZs
+   - `subnet_ids`: comma-separated, 2+ private subnet IDs across different AZs (e.g. `subnet-abc,subnet-def`)
    - `agent`: `demo-prod`
    - Leave node group defaults (gives you 2× t3.medium on 1.31)
 3. Click **Launch**. Wait until status **Active** (~15-20 min for EKS).
