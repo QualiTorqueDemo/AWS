@@ -60,12 +60,27 @@ inputs:
   agent:
     type: agent
 outputs:
-  cluster_id:
-    value: '{{ .grains.terraform-aws-eks.outputs.cluster_id }}'
+  cluster_name:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_name }}'
+    quick: true
+  cluster_arn:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_arn }}'
     quick: true
   cluster_endpoint:
     value: '{{ .grains.terraform-aws-eks.outputs.cluster_endpoint }}'
     quick: true
+  subnet_ids:
+    value: '{{ .inputs.subnet_ids }}'
+    quick: false
+  cluster_security_group_id:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_security_group_id }}'
+    quick: false
+  node_security_group_id:
+    value: '{{ .grains.terraform-aws-eks.outputs.node_security_group_id }}'
+    quick: false
+  oidc_provider_arn:
+    value: '{{ .grains.terraform-aws-eks.outputs.oidc_provider_arn }}'
+    quick: false
   cluster_certificate_authority_data:
     value: '{{ .grains.terraform-aws-eks.outputs.cluster_certificate_authority_data }}'
     quick: false
@@ -174,7 +189,11 @@ grains:
         - prefix_separator: '-'
         - putin_khuylo: 'true'
       outputs:
-        - cluster_id
+        - cluster_name
+        - cluster_arn
         - cluster_endpoint
+        - cluster_security_group_id
+        - node_security_group_id
+        - oidc_provider_arn
         - cluster_certificate_authority_data
         - cluster_oidc_issuer_url
