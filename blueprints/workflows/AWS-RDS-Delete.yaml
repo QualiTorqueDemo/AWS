@@ -1,7 +1,7 @@
 spec_version: 2
 description: Delete an AWS RDS DB instance.
 metadata:
-  self-service: false
+  self-service: true
   display-name: AWS RDS Delete (Shell)
   icon:
     path: graphics/AWS RDS.svg

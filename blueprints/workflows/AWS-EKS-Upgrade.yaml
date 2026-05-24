@@ -1,7 +1,7 @@
 spec_version: 2
 description: Upgrade an AWS EKS cluster's Kubernetes version. Updates the control plane to the target version, waits for it to become ACTIVE, and optionally upgrades all managed node groups to the same version.
 metadata:
-  self-service: false
+  self-service: true
   display-name: AWS EKS Upgrade (Shell)
   icon:
     path: graphics/AWS EKS.svg

@@ -1,7 +1,7 @@
 spec_version: 2
 description: Create, update, or delete a DNS record in an AWS Route53 hosted zone. Runs against a Route53 zone resource in the environment and submits a change-batch via the AWS API.
 metadata:
-  self-service: false
+  self-service: true
   display-name: AWS Route53 Record (Shell)
   icon:
     path: graphics/Route 53.svg
