@@ -1,7 +1,7 @@
 spec_version: 2
 description: Restart an AWS EC2 instance.
 metadata:
-  self-service: true
+  self-service: false
   display-name: AWS EC2 Restart (Shell)
   icon:
     path: graphics/aws_ec2.svg

@@ -1,7 +1,7 @@
 spec_version: 2
 description: Resize an AWS EC2 instance by stopping it, changing its instance type, and starting it again.
 metadata:
-  self-service: true
+  self-service: false
   display-name: AWS EC2 Resize (Shell)
   icon:
     path: graphics/aws_ec2.svg

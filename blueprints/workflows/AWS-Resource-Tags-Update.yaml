@@ -1,7 +1,7 @@
 spec_version: 2
 description: Add or remove AWS resource tags on a selected resource. Works across any AWS resource that exposes an ARN (EC2, RDS, S3, EKS, Lambda, ECR, Secrets Manager, CloudWatch, App Runner) using the unified Resource Groups Tagging API.
 metadata:
-  self-service: true
+  self-service: false
   display-name: AWS Resource Tags Update (Shell)
   icon:
     path: graphics/AWS-Dark.svg
