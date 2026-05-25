@@ -133,7 +133,7 @@ grains:
       inputs:
         - cluster_name: '{{ .inputs.cluster_name }}'
         - name: '{{ .inputs.name }}'
-        - subnet_ids: '["{{ .inputs.subnet_id_1 }}"{% if inputs.subnet_id_2 != "" %},"{{ .inputs.subnet_id_2 }}"{% endif %}{% if inputs.subnet_id_3 != "" %},"{{ .inputs.subnet_id_3 }}"{% endif %}{% if inputs.subnet_id_4 != "" %},"{{ .inputs.subnet_id_4 }}"{% endif %}]'
+        - subnet_ids: '["{{ .inputs.subnet_id_1 | strip }}"{% if inputs.subnet_id_2 != "" %},"{{ .inputs.subnet_id_2 | strip }}"{% endif %}{% if inputs.subnet_id_3 != "" %},"{{ .inputs.subnet_id_3 | strip }}"{% endif %}{% if inputs.subnet_id_4 != "" %},"{{ .inputs.subnet_id_4 | strip }}"{% endif %}]'
         - ami_type: '{{ .inputs.ami_type }}'
         - instance_types: '["{{ .inputs.instance_type }}"]'
         - capacity_type: '{{ .inputs.capacity_type }}'

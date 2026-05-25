@@ -85,7 +85,7 @@ grains:
             }}}}{% when ''EKS essentials (Interface)'' %}{"ec2":{"service":"ec2","service_type":"Interface","private_dns_enabled":true},"ecr_api":{"service":"ecr.api","service_type":"Interface","private_dns_enabled":true},"ecr_dkr":{"service":"ecr.dkr","service_type":"Interface","private_dns_enabled":true},"sts":{"service":"sts","service_type":"Interface","private_dns_enabled":true},"logs":{"service":"logs","service_type":"Interface","private_dns_enabled":true},"elasticloadbalancing":{"service":"elasticloadbalancing","service_type":"Interface","private_dns_enabled":true}}{%
             when ''Lambda essentials'' %}{"sts":{"service":"sts","service_type":"Interface","private_dns_enabled":true},"logs":{"service":"logs","service_type":"Interface","private_dns_enabled":true},"kms":{"service":"kms","service_type":"Interface","private_dns_enabled":true},"s3":{"service":"s3","service_type":"Gateway","route_table_ids":{{
             inputs.route_table_ids }}}}{% when ''Custom'' %}{{ inputs.endpoints_custom }}{% endcase %}'
-        - subnet_ids: '{% if inputs.subnet_id_1 == "" %}[]{% else %}["{{ .inputs.subnet_id_1 }}"{% if inputs.subnet_id_2 != "" %},"{{ .inputs.subnet_id_2 }}"{% endif %}{% if inputs.subnet_id_3 != "" %},"{{ .inputs.subnet_id_3 }}"{% endif %}]{% endif %}'
+        - subnet_ids: '{% if inputs.subnet_id_1 == "" %}[]{% else %}["{{ .inputs.subnet_id_1 | strip }}"{% if inputs.subnet_id_2 != "" %},"{{ .inputs.subnet_id_2 | strip }}"{% endif %}{% if inputs.subnet_id_3 != "" %},"{{ .inputs.subnet_id_3 | strip }}"{% endif %}]{% endif %}'
         - security_group_ids: '{{ .inputs.security_group_ids }}'
         - tags: '{{ .inputs.resource_tags }}'
         - create: 'true'
