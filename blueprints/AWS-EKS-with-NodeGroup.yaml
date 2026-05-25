@@ -124,6 +124,8 @@ grains:
         - cluster_name
         - cluster_endpoint
         - cluster_arn
+        - cluster_service_cidr
+        - cluster_certificate_authority_data
         - subnet_ids
   nodegroup:
     depends-on: eks_cluster
@@ -139,6 +141,9 @@ grains:
         - subnet_id_2: '{{ .inputs.subnet_id_2 }}'
         - subnet_id_3: '{{ .inputs.subnet_id_3 }}'
         - subnet_id_4: '{{ .inputs.subnet_id_4 }}'
+        - cluster_service_cidr: '{{ .grains.eks_cluster.outputs.cluster_service_cidr }}'
+        - cluster_endpoint: '{{ .grains.eks_cluster.outputs.cluster_endpoint }}'
+        - cluster_auth_base64: '{{ .grains.eks_cluster.outputs.cluster_certificate_authority_data }}'
         - instance_type: '{{ .inputs.instance_type }}'
         - capacity_type: '{{ .inputs.capacity_type }}'
         - desired_size: '{{ .inputs.desired_size }}'

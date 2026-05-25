@@ -37,6 +37,18 @@ inputs:
     type: string
     default: ''
     description: Fourth subnet ID (optional). Leave blank if not needed.
+  cluster_service_cidr:
+    type: string
+    default: ''
+    description: Kubernetes service CIDR for the cluster (e.g. 172.20.0.0/16 or 10.100.0.0/16). When attached to an AWS-EKS env, wire this from the cluster's cluster_service_cidr output. Required by the managed NG module's user-data templates.
+  cluster_endpoint:
+    type: string
+    default: ''
+    description: EKS cluster API endpoint URL. When attached to an AWS-EKS env, wire this from the cluster's cluster_endpoint output.
+  cluster_auth_base64:
+    type: string
+    default: ''
+    description: Base64-encoded cluster CA data. When attached to an AWS-EKS env, wire this from the cluster's cluster_certificate_authority_data output.
   ami_type:
     type: string
     default: AL2023_x86_64_STANDARD
@@ -132,9 +144,9 @@ grains:
         - tags: '{{ .inputs.resource_tags }}'
         - create: 'true'
         - enable_bootstrap_user_data: 'false'
-        - cluster_endpoint: 'null'
-        - cluster_auth_base64: 'null'
-        - cluster_service_cidr: 'null'
+        - cluster_endpoint: '{{ .inputs.cluster_endpoint }}'
+        - cluster_auth_base64: '{{ .inputs.cluster_auth_base64 }}'
+        - cluster_service_cidr: '{{ .inputs.cluster_service_cidr }}'
         - pre_bootstrap_user_data: ''
         - post_bootstrap_user_data: ''
         - bootstrap_extra_args: ''
@@ -142,8 +154,8 @@ grains:
         - cloudinit_pre_nodeadm: 'null'
         - cloudinit_post_nodeadm: 'null'
         - region: 'null'
-        - partition: 'null'
-        - account_id: 'null'
+        - partition: ''
+        - account_id: ''
         - create_launch_template: 'true'
         - use_custom_launch_template: 'true'
         - launch_template_id: ''

@@ -95,6 +95,9 @@ outputs:
   cluster_certificate_authority_data:
     value: '{{ .grains.terraform-aws-eks.outputs.cluster_certificate_authority_data }}'
     quick: false
+  cluster_service_cidr:
+    value: '{{ .grains.terraform-aws-eks.outputs.cluster_service_cidr }}'
+    quick: false
   cluster_oidc_issuer_url:
     value: '{{ .grains.terraform-aws-eks.outputs.cluster_oidc_issuer_url }}'
     quick: false
@@ -205,4 +208,5 @@ grains:
         - node_security_group_id
         - oidc_provider_arn
         - cluster_certificate_authority_data
+        - cluster_service_cidr
         - cluster_oidc_issuer_url
